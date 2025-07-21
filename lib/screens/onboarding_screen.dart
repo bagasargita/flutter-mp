@@ -6,7 +6,8 @@ import '../constants/app_text.dart';
 import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  final VoidCallback? onDone;
+  const OnboardingScreen({super.key, this.onDone});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -269,8 +270,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onDone(BuildContext context) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+    if (widget.onDone != null) {
+      widget.onDone!();
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(onLoginSuccess: () {}),
+        ),
+      );
+    }
   }
 }

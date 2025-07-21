@@ -5,7 +5,8 @@ import '../constants/app_text.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final VoidCallback onLoginSuccess;
+  const LoginScreen({super.key, required this.onLoginSuccess});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -27,13 +28,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement login logic
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Login functionality will be implemented here'),
-          backgroundColor: AppColors.primaryRed,
+          content: Text('Login Berhasil'),
+          backgroundColor: AppColors.successGreen,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 4,
         ),
       );
+      // ignore: use_build_context_synchronously
+      widget.onLoginSuccess();
     }
   }
 

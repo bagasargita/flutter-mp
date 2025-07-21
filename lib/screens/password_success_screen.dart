@@ -15,7 +15,9 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> {
 
   void _handleOk() {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(onLoginSuccess: () {}),
+      ),
       (route) => false,
     );
   }
