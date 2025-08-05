@@ -83,25 +83,81 @@ class _RootScreenState extends State<RootScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primaryRed,
-        unselectedItemColor: AppColors.textGray,
-        showUnselectedLabels: true,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code_scanner),
-            label: 'Scan',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(
+            top: BorderSide(color: Colors.blue.withOpacity(0.3), width: 1),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notif',
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _BottomNavItem(
+                      icon: Icons.home_outlined,
+                      isSelected: _selectedIndex == 0,
+                      onTap: () => _onItemTapped(0),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.location_on_outlined,
+                      isSelected: _selectedIndex == 1,
+                      onTap: () => _onItemTapped(1),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.qr_code_scanner_outlined,
+                      isSelected: _selectedIndex == 2,
+                      onTap: () => _onItemTapped(2),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.trending_up_outlined,
+                      isSelected: _selectedIndex == 3,
+                      onTap: () => _onItemTapped(3),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.grid_view_outlined,
+                      isSelected: _selectedIndex == 4,
+                      onTap: () => _onItemTapped(4),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu'),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Icon(
+        icon,
+        color: isSelected ? AppColors.primaryRed : Colors.grey,
+        size: 26,
       ),
     );
   }

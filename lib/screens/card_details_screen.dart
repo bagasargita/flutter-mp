@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_text.dart';
 
 class CardDetailsScreen extends StatelessWidget {
   const CardDetailsScreen({super.key});
