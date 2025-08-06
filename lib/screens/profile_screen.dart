@@ -1,230 +1,283 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_mob/constants/app_colors.dart';
+import 'package:smart_mob/core/di/injection.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        backgroundColor: AppColors.backgroundWhite,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textBlack),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            color: AppColors.textBlack,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Profile Header
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundWhite,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: AssetImage(
-                            'assets/images/MP-Logo.png',
-                          ),
-                          radius: 40,
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: const BoxDecoration(
-                              color: Colors.green,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Mr. John Doe',
-                            style: TextStyle(
-                              color: AppColors.textBlack,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'john.doe@email.com',
-                            style: TextStyle(
-                              color: AppColors.textGray,
-                              fontSize: 14,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Member since 2023',
-                            style: TextStyle(
-                              color: AppColors.textGray,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: AppColors.primaryRed),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Menu Items
-              _ProfileMenuItem(
-                icon: Icons.person_outline,
-                title: 'Personal Information',
-                subtitle: 'Update your personal details',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.security,
-                title: 'Security Settings',
-                subtitle: 'Password, PIN, and security',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.notifications_outlined,
-                title: 'Notification Settings',
-                subtitle: 'Manage your notifications',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.language,
-                title: 'Language',
-                subtitle: 'English (US)',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.help_outline,
-                title: 'Help & Support',
-                subtitle: 'Get help and contact support',
-                onTap: () {},
-              ),
-              _ProfileMenuItem(
-                icon: Icons.info_outline,
-                title: 'About',
-                subtitle: 'App version and information',
-                onTap: () {},
-              ),
-              const SizedBox(height: 24),
-
-              // Logout Button
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.errorRed,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Logout',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileMenuItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _ProfileMenuItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load profile data when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileNotifierProvider.notifier).getProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    final profileState = ref.watch(profileNotifierProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        backgroundColor: AppColors.primaryRed,
+        foregroundColor: Colors.white,
+      ),
+      body: profileState.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : profileState.user != null
+          ? _buildProfileContent(profileState.user!)
+          : _buildErrorContent(profileState.error),
+    );
+  }
+
+  Widget _buildProfileContent(user) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile Header
+          Center(
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: AppColors.primaryRed,
+                  child: Text(
+                    user.name.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  user.name,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  user.email,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Profile Information
+          _buildInfoSection('Personal Information', [
+            _buildInfoTile('Name', user.name),
+            _buildInfoTile('Email', user.email),
+            if (user.phoneNumber != null)
+              _buildInfoTile('Phone', user.phoneNumber),
+            _buildInfoTile('Member Status', user.memberStatus),
+          ]),
+
+          const SizedBox(height: 24),
+
+          // Account Actions
+          _buildInfoSection('Account', [
+            _buildActionTile(
+              'Edit Profile',
+              Icons.edit,
+              () => _showEditProfileDialog(),
+            ),
+            _buildActionTile(
+              'Change Password',
+              Icons.lock,
+              () => _showChangePasswordDialog(),
+            ),
+            _buildActionTile(
+              'Logout',
+              Icons.logout,
+              () => _logout(),
+              isDestructive: true,
+            ),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorContent(String? error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            size: 64,
+            color: AppColors.primaryRed,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            error ?? 'Failed to load profile',
+            style: const TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(profileNotifierProvider.notifier).getProfile();
+            },
+            child: const Text('Retry'),
           ),
         ],
       ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: AppColors.backgroundLight,
-          child: Icon(icon, color: AppColors.primaryRed),
-        ),
-        title: Text(
+    );
+  }
+
+  Widget _buildInfoSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textBlack,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
+          child: Column(children: children),
         ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(color: AppColors.textGray, fontSize: 14),
+      ],
+    );
+  }
+
+  Widget _buildInfoTile(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, color: AppColors.textGray),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionTile(
+    String title,
+    IconData icon,
+    VoidCallback onTap, {
+    bool isDestructive = false,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isDestructive ? Colors.red : AppColors.primaryRed,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(color: isDestructive ? Colors.red : null),
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
+    );
+  }
+
+  void _showEditProfileDialog() {
+    // Show edit profile dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Profile'),
+        content: const Text(
+          'Edit profile functionality will be implemented here.',
         ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          color: AppColors.textGray,
-          size: 16,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    // Show change password dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Password'),
+        content: const Text(
+          'Change password functionality will be implemented here.',
         ),
-        onTap: onTap,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Change'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _logout() {
+    // Show logout confirmation
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Implement logout functionality
+              ref.read(authNotifierProvider.notifier).logout();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }

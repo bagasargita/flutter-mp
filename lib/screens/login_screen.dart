@@ -1,133 +1,94 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_text.dart';
-import 'forgot_password_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_mob/constants/app_colors.dart';
+import 'package:smart_mob/constants/app_text.dart';
+import 'package:smart_mob/core/di/injection.dart';
+import 'package:smart_mob/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_mob/screens/forgot_password_screen.dart';
+import 'package:smart_mob/screens/home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  final VoidCallback onLoginSuccess;
-  const LoginScreen({super.key, required this.onLoginSuccess});
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
-  bool _isLoginPressed = false;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login Berhasil'),
-          backgroundColor: AppColors.successGreen,
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          elevation: 4,
-        ),
-      );
-      // ignore: use_build_context_synchronously
-      widget.onLoginSuccess();
+      await ref
+          .read(authNotifierProvider.notifier)
+          .login(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+
+    // Listen to authentication state changes
+    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+      if (next.isAuthenticated && next.user != null) {
+        // Navigate to home screen on successful login
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (next.error != null) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.backgroundWhite,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo and app name
-                Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 20),
-                      Image.asset(
-                        'assets/images/MP-Logo.png',
-                        width: 140,
-                        height: 140,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 10),
-                      Image.asset(
-                        'assets/images/SMARTMobsText.png',
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-                ),
+                Image.asset('assets/images/MP-Logo.png', height: 140),
                 const SizedBox(height: 20),
-                // Login title
-                Center(
-                  child: Text(
-                    AppText.loginTitle,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textBlack,
-                    ),
+                // Logo and Title
+                Text(
+                  'SMARTMobs',
+                  style: AppText.kalamBold.copyWith(
+                    fontSize: 32,
+                    color: AppColors.primaryRed,
                   ),
+                  textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 48),
 
-                const SizedBox(height: 32),
-
-                // Phone number input
+                // Email Field
                 TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: AppText.phoneNumberPlaceholder,
-                    labelStyle: GoogleFonts.poppins(
-                      color: AppColors.textGray,
-                      fontSize: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.textLightGray),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.textLightGray),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: AppColors.primaryRed,
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.phone,
-                      color: AppColors.textGray,
-                      size: 20,
-                    ),
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone Number or Username',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -136,50 +97,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
 
-                const SizedBox(height: 24),
-
-                // Password input
+                // Password Field
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
-                    labelText: AppText.passwordPlaceholder,
-                    labelStyle: GoogleFonts.poppins(
-                      color: AppColors.textGray,
-                      fontSize: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.textLightGray),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.textLightGray),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: AppColors.primaryRed,
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.lock,
-                      color: AppColors.textGray,
-                      size: 20,
-                    ),
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: AppColors.textGray,
-                        size: 20,
                       ),
                       onPressed: () {
                         setState(() {
@@ -198,69 +130,55 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 8),
 
-                const SizedBox(height: 16),
-
-                // Forgot password
+                // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
                         MaterialPageRoute(
                           builder: (context) => const ForgotPasswordScreen(),
                         ),
                       );
                     },
                     child: Text(
-                      AppText.forgotPassword,
-                      style: GoogleFonts.poppins(
-                        color: AppColors.primaryRed,
-                        fontWeight: FontWeight.w500,
+                      'Forgot Password?',
+                      style: AppText.bodyMedium.copyWith(
+                        color: AppColors.primaryBlue,
                       ),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 32),
-
-                // Login button
-                GestureDetector(
-                  onTapDown: (_) => setState(() => _isLoginPressed = true),
-                  onTapUp: (_) => setState(() => _isLoginPressed = false),
-                  onTapCancel: () => setState(() => _isLoginPressed = false),
-                  onTap: _handleLogin,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: double.infinity,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.buttonRed,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.buttonRed.withOpacity(
-                            _isLoginPressed ? 0.1 : 0.3,
-                          ),
-                          blurRadius: _isLoginPressed ? 4 : 8,
-                          offset: Offset(0, _isLoginPressed ? 2 : 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        AppText.loginButton,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.backgroundWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 24),
+
+                // Login Button
+                ElevatedButton(
+                  onPressed: authState.isLoading ? null : _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: authState.isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : Text('Login', style: AppText.buttonPrimary),
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           ),

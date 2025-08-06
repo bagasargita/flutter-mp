@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
 import 'onboarding_screen.dart';
@@ -49,21 +48,22 @@ class _SplashScreenState extends State<SplashScreen> {
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 50),
-                    Image.asset(
-                      'assets/images/SMARTMobsText.png',
-                      width: 30,
-                      height: 30,
-                      fit: BoxFit.contain,
+                    Text(
+                      'SMARTMobs',
+                      style: AppText.kalamBold.copyWith(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primaryRed,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
 
                     // Tagline
                     Text(
-                      AppText.appTagline,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
+                      'Your Best Cash Partner',
+                      style: AppText.description.copyWith(
                         color: AppColors.textGray,
-                        fontWeight: FontWeight.w400,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -80,21 +80,17 @@ class _SplashScreenState extends State<SplashScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      AppText.poweredBy,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
+                      'Powered by ',
+                      style: AppText.bodySmall.copyWith(
                         color: AppColors.textLightGray,
-                        fontWeight: FontWeight.w400,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(width: 4),
                     Text(
-                      AppText.merahPutih,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
+                      'Merah Putih',
+                      style: AppText.bodySmall.copyWith(
                         color: AppColors.primaryRed,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                       textAlign: TextAlign.center,
                     ),

@@ -1,406 +1,300 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_text.dart';
-import 'card_details_screen.dart';
-import 'all_services_screen.dart';
-import 'profile_screen.dart';
-import 'notifications_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_mob/constants/app_colors.dart';
+import 'package:smart_mob/core/di/injection.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load services when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(homeNotifierProvider.notifier).getServices();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final homeState = ref.watch(homeNotifierProvider);
+
     return Container(
-      color: AppColors.backgroundLight,
-      child: Column(
-        children: [
-          // Custom AppBar
-          Container(
-            padding: const EdgeInsets.only(
-              top: 60,
-              left: 16,
-              right: 16,
-              bottom: 16,
-            ),
-            decoration: const BoxDecoration(
-              color: AppColors.backgroundWhite,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-            ),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ProfileScreen(),
-                      ),
-                    );
-                  },
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        backgroundImage: AssetImage(
-                          'assets/images/MP-Logo.png',
-                        ),
-                        radius: 20,
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    AppText.appName,
-                    style: const TextStyle(
-                      color: AppColors.textBlack,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const NotificationsScreen(),
-                      ),
-                    );
-                  },
-                  child: Stack(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.grey,
-                          size: 24,
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Body Content
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Balance Card
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const CardDetailsScreen(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: const LinearGradient(
-                            colors: [
-                              AppColors.primaryRed,
-                              AppColors.primaryPurple,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryRed.withOpacity(0.15),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Saldo yang tersedia',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Rp. 10.350.000',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: const [
-                                Text(
-                                  '**** **** **** 8635',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    letterSpacing: 2,
-                                  ),
-                                ),
-                                Spacer(),
-                                Icon(
-                                  Icons.credit_card,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Pemegang kartu',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const Text(
-                              'Mr. John Doe',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Services Grid
-                    GridView.count(
-                      crossAxisCount: 3,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 24,
-                      childAspectRatio: 1.3,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.primaryRed, AppColors.primaryBlue],
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Custom Header
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
+              child: Row(
+                children: [
+                  // Profile Picture with Status
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/profile');
+                    },
+                    child: Stack(
                       children: [
-                        _ServiceIcon(
-                          icon: 'assets/images/SetorTunai.png',
-                          label: 'Setor Tunai',
-                        ),
-                        _ServiceIcon(
-                          icon: 'assets/images/ListrikPln.png',
-                          label: 'Listrik PLN',
-                        ),
-                        _ServiceIcon(
-                          icon: 'assets/images/RiwayatTransaksi.png',
-                          label: 'Riwayat Transaksi',
-                        ),
-                        _ServiceIcon(
-                          icon: 'assets/images/KirimUang.png',
-                          label: 'Kirim Uang',
-                        ),
-                        _ServiceIcon(
-                          icon: 'assets/images/WarungGrosir.png',
-                          label: 'Warung / Grosir',
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const AllServicesScreen(),
-                              ),
-                            );
-                          },
-                          child: _ServiceIcon(
-                            icon: 'assets/images/IconLainnya.png',
-                            label: 'Lainnya',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    // Transactions
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          'Transactions',
-                          style: TextStyle(
-                            color: AppColors.textBlack,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          'All transactions',
-                          style: TextStyle(
+                        const CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.person,
                             color: AppColors.primaryRed,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    _TransactionItem(
-                      icon: Icons.account_balance,
-                      title: 'Setor Mesin',
-                      subtitle: 'Setoran 03/10/25',
-                      amount: '+Rp. 1.500.000',
-                      amountColor: AppColors.successGreen,
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome back!',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                        Text(
+                          'John Doe',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    _TransactionItem(
-                      icon: Icons.local_shipping,
-                      title: 'Pickup Barang',
-                      subtitle: 'SRC Lebak Bulus',
-                      amount: '-Rp. 9.500',
-                      amountColor: AppColors.errorRed,
+                  ),
+                  // Notification Bell
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/notifications');
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.notifications,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    _TransactionItem(
-                      icon: Icons.receipt_long,
-                      title: 'Bayar Tagihan',
-                      subtitle: 'PLN Pascabayar',
-                      amount: '-Rp. 350.000',
-                      amountColor: AppColors.errorRed,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+            // Body Content
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                ),
+                child: homeState.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : homeState.error != null
+                    ? _buildErrorContent(homeState.error!)
+                    : _buildServicesContent(homeState.services),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServicesContent(List<Map<String, dynamic>> services) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Available Services',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          if (services.isEmpty)
+            _buildEmptyState()
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: services.length,
+              itemBuilder: (context, index) {
+                final service = services[index];
+                return _buildServiceCard(service);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceCard(Map<String, dynamic> service) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _getServiceIcon(service['name'] ?? ''),
+              color: AppColors.primaryRed,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            service['name'] ?? 'Service',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
-}
 
-class _ServiceIcon extends StatelessWidget {
-  final String icon;
-  final String label;
-  const _ServiceIcon({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.textGray.withOpacity(0.08),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            'No services available',
+            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
           ),
-          child: Center(
-            child: Image.asset(
-              icon,
-              width: 24,
-              height: 24,
-              fit: BoxFit.contain,
-            ),
+          const SizedBox(height: 8),
+          Text(
+            'Check back later for available services',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textBlack,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-class _TransactionItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String amount;
-  final Color amountColor;
-  const _TransactionItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.amount,
-    required this.amountColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: AppColors.backgroundLight,
-          child: Icon(icon, color: AppColors.primaryRed),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.textBlack,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(color: AppColors.textGray, fontSize: 12),
-        ),
-        trailing: Text(
-          amount,
-          style: TextStyle(
-            color: amountColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
+        ],
       ),
     );
+  }
+
+  Widget _buildErrorContent(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            size: 64,
+            color: AppColors.primaryRed,
+          ),
+          const SizedBox(height: 16),
+          Text('Failed to load services', style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+          Text(
+            error,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(homeNotifierProvider.notifier).getServices();
+            },
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getServiceIcon(String serviceName) {
+    switch (serviceName.toLowerCase()) {
+      case 'transfer':
+        return Icons.swap_horiz;
+      case 'payment':
+        return Icons.payment;
+      case 'topup':
+        return Icons.account_balance_wallet;
+      case 'bills':
+        return Icons.receipt;
+      case 'savings':
+        return Icons.savings;
+      case 'investments':
+        return Icons.trending_up;
+      default:
+        return Icons.apps;
+    }
   }
 }

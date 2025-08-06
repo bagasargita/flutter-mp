@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../constants/app_colors.dart';
-import 'forgot_password_otp_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_mob/constants/app_colors.dart';
+import 'package:smart_mob/constants/app_text.dart';
+import 'package:smart_mob/core/di/injection.dart';
+import 'package:smart_mob/screens/forgot_password_otp_screen.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  bool _isSendPressed = false;
   bool _isPhoneValid = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _phoneController.addListener(_validatePhone);
-  }
 
   @override
   void dispose() {
@@ -27,18 +24,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _validatePhone() {
+  void _validatePhone(String value) {
     setState(() {
-      _isPhoneValid = _phoneController.text.length >= 10;
+      _isPhoneValid = value.length >= 10;
     });
   }
 
-  void _handleSend() {
-    if (_isPhoneValid) {
-      Navigator.of(context).push(
+  void _sendResetCode() async {
+    if (_formKey.currentState!.validate()) {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Navigate to OTP screen
+      Navigator.push(
+        context,
         MaterialPageRoute(
-          builder: (context) =>
-              ForgotPasswordOTPScreen(phoneNumber: _phoneController.text),
+          builder: (context) => ForgotPasswordOTPScreen(
+            phoneNumber: _phoneController.text.trim(),
+          ),
         ),
       );
     }
@@ -53,121 +66,82 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textBlack),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Forgot password',
-          style: GoogleFonts.poppins(
-            color: AppColors.textBlack,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+          style: AppText.heading3.copyWith(color: AppColors.textBlack),
         ),
-        centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 32),
 
-              // Phone number input
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Type your phone number',
-                  labelStyle: GoogleFonts.poppins(
-                    color: AppColors.textGray,
-                    fontSize: 14,
+                // Phone Number Field
+                TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  onChanged: _validatePhone,
+                  decoration: InputDecoration(
+                    labelText: 'Type your phone number',
+                    hintText: '(+42)',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.phone),
                   ),
-                  hintText: '(+62)',
-                  hintStyle: GoogleFonts.poppins(
-                    color: AppColors.textLightGray,
-                    fontSize: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.textLightGray),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.textLightGray),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: AppColors.primaryRed,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.phone,
-                    color: AppColors.textGray,
-                    size: 20,
-                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    if (value.length < 10) {
+                      return 'Please enter a valid phone number';
+                    }
+                    return null;
+                  },
                 ),
-              ),
+                const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
-
-              // Info text
-              Text(
-                'We texted you a code to verify your phone number',
-                style: GoogleFonts.poppins(
-                  color: AppColors.textGray,
-                  fontSize: 12,
+                // Description
+                Text(
+                  'We texted you a code to verify your phone number',
+                  style: AppText.bodySmall.copyWith(color: AppColors.textGray),
+                  textAlign: TextAlign.center,
                 ),
-              ),
+                const SizedBox(height: 32),
 
-              const Spacer(),
-
-              // Send button
-              GestureDetector(
-                onTapDown: (_) => setState(() => _isSendPressed = true),
-                onTapUp: (_) => setState(() => _isSendPressed = false),
-                onTapCancel: () => setState(() => _isSendPressed = false),
-                onTap: _handleSend,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
+                // Send Button
+                SizedBox(
                   width: double.infinity,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: _isPhoneValid
-                        ? AppColors.buttonRed
-                        : AppColors.textLightGray,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color:
-                            (_isPhoneValid
-                                    ? AppColors.buttonRed
-                                    : AppColors.textLightGray)
-                                .withOpacity(_isSendPressed ? 0.1 : 0.3),
-                        blurRadius: _isSendPressed ? 4 : 8,
-                        offset: Offset(0, _isSendPressed ? 2 : 4),
+                  child: ElevatedButton(
+                    onPressed: _isPhoneValid ? _sendResetCode : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isPhoneValid
+                          ? AppColors.primaryRed
+                          : Colors.grey[300],
+                      foregroundColor: _isPhoneValid
+                          ? Colors.white
+                          : Colors.grey[600],
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
-                  child: Center(
+                      elevation: 0,
+                    ),
                     child: Text(
                       'Send',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.backgroundWhite,
+                      style: AppText.buttonPrimary.copyWith(
+                        color: _isPhoneValid ? Colors.white : Colors.grey[600],
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

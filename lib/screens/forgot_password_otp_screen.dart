@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../constants/app_colors.dart';
-import 'change_password_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_mob/constants/app_colors.dart';
+import 'package:smart_mob/constants/app_text.dart';
+import 'package:smart_mob/core/di/injection.dart';
+import 'package:smart_mob/screens/change_password_screen.dart';
+import 'dart:async';
 
-class ForgotPasswordOTPScreen extends StatefulWidget {
+class ForgotPasswordOTPScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
 
   const ForgotPasswordOTPScreen({super.key, required this.phoneNumber});
 
   @override
-  State<ForgotPasswordOTPScreen> createState() =>
+  ConsumerState<ForgotPasswordOTPScreen> createState() =>
       _ForgotPasswordOTPScreenState();
 }
 
-class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
+class _ForgotPasswordOTPScreenState
+    extends ConsumerState<ForgotPasswordOTPScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
-  bool _isChangePasswordPressed = false;
+  bool _isResendEnabled = true;
   bool _isOtpValid = false;
+  int _resendCountdown = 60;
 
   @override
   void initState() {
     super.initState();
-    _otpController.addListener(_validateOtp);
+    _startResendCountdown();
   }
 
   @override
@@ -30,27 +36,79 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
     super.dispose();
   }
 
-  void _validateOtp() {
+  void _validateOtp(String value) {
     setState(() {
-      _isOtpValid = _otpController.text.length == 4;
+      _isOtpValid = value.length == 4;
     });
   }
 
-  void _handleResend() {
-    // TODO: Implement resend OTP logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('OTP resent successfully'),
-        backgroundColor: AppColors.successGreen,
-      ),
-    );
+  void _startResendCountdown() {
+    setState(() {
+      _isResendEnabled = false;
+      _resendCountdown = 60;
+    });
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _resendCountdown--;
+        });
+
+        if (_resendCountdown <= 0) {
+          setState(() {
+            _isResendEnabled = true;
+          });
+          timer.cancel();
+        }
+      } else {
+        timer.cancel();
+      }
+    });
   }
 
-  void _handleChangePassword() {
-    if (_isOtpValid) {
-      Navigator.of(context).push(
+  void _verifyOtp() async {
+    if (_formKey.currentState!.validate()) {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Navigate to change password screen
+      Navigator.push(
+        context,
         MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
       );
+    }
+  }
+
+  void _resendOtp() {
+    if (_isResendEnabled) {
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Resending OTP...'),
+          backgroundColor: AppColors.primaryBlue,
+        ),
+      );
+
+      // Simulate API call
+      Future.delayed(const Duration(seconds: 1), () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('OTP sent successfully'),
+            backgroundColor: AppColors.successGreen,
+          ),
+        );
+        _startResendCountdown();
+      });
     }
   }
 
@@ -63,176 +121,124 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textBlack),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Forgot password',
-          style: GoogleFonts.poppins(
-            color: AppColors.textBlack,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+          style: AppText.heading3.copyWith(color: AppColors.textBlack),
         ),
-        centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 32),
 
-              // OTP input row
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _otpController,
-                      keyboardType: TextInputType.number,
-                      maxLength: 4,
-                      decoration: InputDecoration(
-                        labelText: 'Type a code',
-                        labelStyle: GoogleFonts.poppins(
-                          color: AppColors.textGray,
-                          fontSize: 14,
+                // OTP Field with Resend Button
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _otpController,
+                        keyboardType: TextInputType.number,
+                        maxLength: 4,
+                        onChanged: _validateOtp,
+                        decoration: const InputDecoration(
+                          labelText: 'Type a code',
+                          hintText: 'Code',
+                          border: OutlineInputBorder(),
+                          counterText: '',
                         ),
-                        hintText: 'Code',
-                        hintStyle: GoogleFonts.poppins(
-                          color: AppColors.textLightGray,
-                          fontSize: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.textLightGray,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.textLightGray,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.primaryRed,
-                            width: 1.5,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        counterText: '',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter the OTP code';
+                          }
+                          if (value.length != 4) {
+                            return 'Please enter a 4-digit code';
+                          }
+                          return null;
+                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  GestureDetector(
-                    onTap: _handleResend,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryRed,
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 16),
+                    TextButton(
+                      onPressed: _isResendEnabled ? _resendOtp : null,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primaryRed,
                       ),
                       child: Text(
                         'Resend',
-                        style: GoogleFonts.poppins(
-                          color: AppColors.backgroundWhite,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                        style: AppText.bodyMedium.copyWith(
+                          color: _isResendEnabled
+                              ? AppColors.primaryRed
+                              : AppColors.textGray,
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Info text
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.poppins(
-                    color: AppColors.textGray,
-                    fontSize: 12,
-                  ),
-                  children: [
-                    const TextSpan(
-                      text: 'We texted you a code to verify your phone number ',
-                    ),
-                    TextSpan(
-                      text: '(+62) ${widget.phoneNumber}',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const TextSpan(
-                      text:
-                          '. This code will expired 10 minutes after this message. If you don\'t get a message, ',
-                    ),
-                    TextSpan(
-                      text: 'change your phone number',
-                      style: TextStyle(
-                        color: AppColors.primaryRed,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 16),
 
-              const Spacer(),
+                // Description
+                Text(
+                  'We texted you a code to verify your phone number ${widget.phoneNumber}',
+                  style: AppText.bodySmall.copyWith(color: AppColors.textGray),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
 
-              // Change password button
-              GestureDetector(
-                onTapDown: (_) =>
-                    setState(() => _isChangePasswordPressed = true),
-                onTapUp: (_) =>
-                    setState(() => _isChangePasswordPressed = false),
-                onTapCancel: () =>
-                    setState(() => _isChangePasswordPressed = false),
-                onTap: _handleChangePassword,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
+                // Expiry message
+                Text(
+                  'This code will expired 10 minutes after this message. If you don\'t get a message.',
+                  style: AppText.bodySmall.copyWith(color: AppColors.textGray),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+
+                // Change Password Button
+                SizedBox(
                   width: double.infinity,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: _isOtpValid
-                        ? AppColors.buttonRed
-                        : AppColors.textLightGray,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color:
-                            (_isOtpValid
-                                    ? AppColors.buttonRed
-                                    : AppColors.textLightGray)
-                                .withOpacity(
-                                  _isChangePasswordPressed ? 0.1 : 0.3,
-                                ),
-                        blurRadius: _isChangePasswordPressed ? 4 : 8,
-                        offset: Offset(0, _isChangePasswordPressed ? 2 : 4),
+                  child: ElevatedButton(
+                    onPressed: _isOtpValid ? _verifyOtp : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isOtpValid
+                          ? AppColors.primaryRed
+                          : Colors.grey[300],
+                      foregroundColor: _isOtpValid
+                          ? Colors.white
+                          : Colors.grey[600],
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
-                  child: Center(
+                      elevation: 0,
+                    ),
                     child: Text(
                       'Change password',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.backgroundWhite,
+                      style: AppText.buttonPrimary.copyWith(
+                        color: _isOtpValid ? Colors.white : Colors.grey[600],
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // Change Phone Number Link
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Change your phone number',
+                    style: AppText.bodyMedium.copyWith(
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

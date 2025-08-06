@@ -1,51 +1,169 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class AppText {
-  // App name and tagline
-  static const String appName = "SMARTMobs";
-  static const String appTagline = "Your Best Cash Partner";
-  static const String poweredBy = "Secured by";
-  static const String merahPutih = "MerahPutih";
+  // Amaranth Font Styles (for Headers/Titles)
+  static const TextStyle amaranthRegular = TextStyle(
+    fontFamily: 'Amaranth',
+    fontWeight: FontWeight.w400,
+  );
 
-  // Onboarding texts
-  static const String welcomeTitle = "Welcome to SMARTMobs";
-  static const String getStarted = "Get Started";
-  static const String continueText = "Continue";
+  static const TextStyle amaranthBold = TextStyle(
+    fontFamily: 'Amaranth',
+    fontWeight: FontWeight.w700,
+  );
 
-  // Onboarding screen 1
-  static const String onboarding1Title = "Welcome to SMARTMobs";
+  static const TextStyle amaranthItalic = TextStyle(
+    fontFamily: 'Amaranth',
+    fontWeight: FontWeight.w400,
+    fontStyle: FontStyle.italic,
+  );
 
-  // Onboarding screen 2
-  static const String onboarding2Title = "Saving Your Money";
-  static const String onboarding2Description =
-      "Track the progress of your savings and start a habit of saving with SMARTMobs";
+  // Kaisei Tokumin Font Styles (for Body/Descriptions)
+  static const TextStyle kaiseiRegular = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontWeight: FontWeight.w400,
+  );
 
-  // Onboarding screen 3
-  static const String onboarding3Title = "Easy, Fast & Trusted";
-  static const String onboarding3Description =
-      "Money transfer and payment safe transactions with others.";
+  static const TextStyle kaiseiMedium = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontWeight: FontWeight.w500,
+  );
 
-  // Onboarding screen 4
-  static const String onboarding4Title = "Flexible transactions";
-  static const String onboarding4Description =
-      "Cash or non cash deposit, transfer, pickup and delivery packages can be done anywhere in a safe of SMARTMobs.";
+  static const TextStyle kaiseiBold = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontWeight: FontWeight.w700,
+  );
 
-  // Login texts
-  static const String loginTitle = "Log in";
-  static const String phoneNumberPlaceholder = "Phone Number or Username";
-  static const String passwordPlaceholder = "Password";
-  static const String forgotPassword = "Forgot Password?";
-  static const String loginButton = "Log in";
-}
+  static const TextStyle kalamBold = TextStyle(
+    fontFamily: 'Kalam',
+    fontWeight: FontWeight.w700,
+    fontSize: 24,
+  );
 
-// Extension untuk styling SMARTMobs text
-extension SmartMobsTextStyle on AppText {
-  static TextStyle getSmartMobsStyle({double fontSize = 32, Color? color}) {
-    return TextStyle(
-      fontFamily: 'Abhaya Libre',
-      fontWeight: FontWeight.w500,
-      fontSize: fontSize,
-      color: color,
-    );
-  }
+  static const TextStyle kalamBoldLarge = TextStyle(
+    fontFamily: 'Kalam',
+    fontWeight: FontWeight.w700,
+    fontSize: 32,
+    color: AppColors.primaryRed,
+  );
+
+  static const TextStyle kalamMediumItalic = TextStyle(
+    fontFamily: 'Kalam',
+    fontWeight: FontWeight.w500,
+    fontSize: 24,
+    fontStyle: FontStyle.italic,
+    color: AppColors.primaryRed,
+  );
+
+  static const TextStyle kalamRegular = TextStyle(
+    fontFamily: 'Kalam',
+    fontWeight: FontWeight.w400,
+  );
+
+  // Heading Styles (Amaranth)
+  static const TextStyle heading1 = TextStyle(
+    fontFamily: 'Amaranth',
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textBlack,
+  );
+
+  static const TextStyle heading2 = TextStyle(
+    fontFamily: 'Amaranth',
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textBlack,
+  );
+
+  static const TextStyle heading3 = TextStyle(
+    fontFamily: 'Amaranth',
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textBlack,
+  );
+
+  static const TextStyle heading4 = TextStyle(
+    fontFamily: 'Amaranth',
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textBlack,
+  );
+
+  // Body Styles (Kaisei Tokumin)
+  static const TextStyle bodyLarge = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textBlack,
+  );
+
+  static const TextStyle bodyMedium = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textBlack,
+  );
+
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textGray,
+  );
+
+  // Button Styles (Amaranth)
+  static const TextStyle buttonPrimary = TextStyle(
+    fontFamily: 'Amaranth',
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    color: Colors.white,
+  );
+
+  static const TextStyle buttonSecondary = TextStyle(
+    fontFamily: 'Amaranth',
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    color: AppColors.primaryRed,
+  );
+
+  // Label Styles (Kaisei Tokumin)
+  static const TextStyle labelMedium = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textGray,
+  );
+
+  static const TextStyle labelSmall = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textGray,
+  );
+
+  // Caption Styles (Kaisei Tokumin)
+  static const TextStyle caption = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textLightGray,
+  );
+
+  // Description Styles (Kaisei Tokumin)
+  static const TextStyle description = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textGray,
+    height: 1.5,
+  );
+
+  static const TextStyle descriptionSmall = TextStyle(
+    fontFamily: 'Kaisei Tokumin',
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textGray,
+    height: 1.4,
+  );
 }

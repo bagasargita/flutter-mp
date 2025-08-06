@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_text.dart';
@@ -19,14 +18,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: AppText.appName,
+      title: 'SMARTMobs',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primaryRed,
           brightness: Brightness.light,
         ),
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        textTheme: Theme.of(context).textTheme.apply(
+          bodyColor: AppColors.textBlack,
+          displayColor: AppColors.textBlack,
+        ),
         useMaterial3: true,
       ),
       home: const AppEntry(),
@@ -47,10 +49,10 @@ class AppEntry extends ConsumerWidget {
       return const SplashScreen();
     }
     if (!appState.hasSeenOnboarding) {
-      return OnboardingScreen(onDone: notifier.completeOnboarding);
+      return const OnboardingScreen();
     }
     if (!appState.isAuthenticated) {
-      return LoginScreen(onLoginSuccess: notifier.login);
+      return const LoginScreen();
     }
     return const RootScreen();
   }
