@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/core/di/injection.dart';
 import 'package:smart_mob/screens/password_success_screen.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -29,6 +28,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   void _changePassword() async {
     if (_formKey.currentState!.validate()) {
+      // Store context before async operation
+      final navigatorContext = context;
+
       // Show loading dialog
       showDialog(
         context: context,
@@ -40,13 +42,19 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       await Future.delayed(const Duration(seconds: 2));
 
       // Close loading dialog
-      Navigator.pop(context);
+      if (navigatorContext.mounted) {
+        Navigator.pop(navigatorContext);
+      }
 
       // Navigate to success screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PasswordSuccessScreen()),
-      );
+      if (navigatorContext.mounted) {
+        Navigator.pushReplacement(
+          navigatorContext,
+          MaterialPageRoute(
+            builder: (context) => const PasswordSuccessScreen(),
+          ),
+        );
+      }
     }
   }
 

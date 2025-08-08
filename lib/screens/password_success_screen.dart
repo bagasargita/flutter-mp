@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/core/di/injection.dart';
 import 'package:smart_mob/screens/login_screen.dart';
 
 class PasswordSuccessScreen extends ConsumerStatefulWidget {
@@ -58,7 +57,7 @@ class _PasswordSuccessScreenState extends ConsumerState<PasswordSuccessScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),

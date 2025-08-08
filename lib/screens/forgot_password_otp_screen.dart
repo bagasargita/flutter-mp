@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/core/di/injection.dart';
 import 'package:smart_mob/screens/change_password_screen.dart';
 import 'dart:async';
 
@@ -68,6 +67,9 @@ class _ForgotPasswordOTPScreenState
 
   void _verifyOtp() async {
     if (_formKey.currentState!.validate()) {
+      // Store context before async operation
+      final navigatorContext = context;
+
       // Show loading dialog
       showDialog(
         context: context,
@@ -79,18 +81,25 @@ class _ForgotPasswordOTPScreenState
       await Future.delayed(const Duration(seconds: 2));
 
       // Close loading dialog
-      Navigator.pop(context);
+      if (navigatorContext.mounted) {
+        Navigator.pop(navigatorContext);
+      }
 
       // Navigate to change password screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
-      );
+      if (navigatorContext.mounted) {
+        Navigator.push(
+          navigatorContext,
+          MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+        );
+      }
     }
   }
 
   void _resendOtp() {
     if (_isResendEnabled) {
+      // Store context before async operation
+      final scaffoldContext = context;
+
       // Show loading
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -101,12 +110,14 @@ class _ForgotPasswordOTPScreenState
 
       // Simulate API call
       Future.delayed(const Duration(seconds: 1), () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('OTP sent successfully'),
-            backgroundColor: AppColors.successGreen,
-          ),
-        );
+        if (scaffoldContext.mounted) {
+          ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+            const SnackBar(
+              content: Text('OTP sent successfully'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+        }
         _startResendCountdown();
       });
     }

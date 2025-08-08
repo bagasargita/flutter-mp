@@ -1,198 +1,212 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/core/di/injection.dart';
+import 'package:smart_mob/constants/app_text.dart';
+import 'package:smart_mob/features/notifications/presentation/bloc/notifications_bloc.dart';
 
-class NotificationsScreen extends ConsumerStatefulWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() =>
-      _NotificationsScreenState();
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    // Load notifications when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationsNotifierProvider.notifier).getNotifications();
+      context.read<NotificationsBloc>().add(const NotificationsDataRequested());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final notificationsState = ref.watch(notificationsNotifierProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        backgroundColor: AppColors.primaryRed,
-        foregroundColor: Colors.white,
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Mark all notifications as read
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('All notifications marked as read'),
-                ),
-              );
-            },
-            child: const Text(
-              'Mark all read',
-              style: TextStyle(color: Colors.white),
+    return BlocProvider(
+      create: (context) => NotificationsBloc(),
+      child: BlocBuilder<NotificationsBloc, NotificationsState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppColors.backgroundWhite,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildTopBar(),
+                  Expanded(child: _buildNotificationsContent(state)),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
-      body: notificationsState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : notificationsState.error != null
-          ? _buildErrorContent(notificationsState.error!)
-          : _buildNotificationsContent(notificationsState.notifications),
     );
   }
 
-  Widget _buildNotificationsContent(List<Map<String, dynamic>> notifications) {
-    if (notifications.isEmpty) {
+  Widget _buildTopBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: AppColors.textBlack,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Notifications',
+              style: AppText.heading2.copyWith(
+                color: AppColors.textBlack,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.grey[200],
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.primaryRed,
+                  size: 24,
+                ),
+              ),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationsContent(NotificationsState state) {
+    if (state is NotificationsLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is NotificationsLoaded) {
+      return _buildNotificationsList();
+    } else if (state is NotificationsFailure) {
+      return _buildErrorContent(state.message);
+    } else {
       return _buildEmptyState();
     }
+  }
 
-    // Group notifications by date (today, this week, older)
-    final todayNotifications = notifications.where((notification) {
-      final date = DateTime.parse(
-        notification['created_at'] ?? DateTime.now().toString(),
-      );
-      final now = DateTime.now();
-      return date.year == now.year &&
-          date.month == now.month &&
-          date.day == now.day;
-    }).toList();
-
-    final weekNotifications = notifications.where((notification) {
-      final date = DateTime.parse(
-        notification['created_at'] ?? DateTime.now().toString(),
-      );
-      final now = DateTime.now();
-      final weekAgo = now.subtract(const Duration(days: 7));
-      return date.isAfter(weekAgo) &&
-          !todayNotifications.contains(notification);
-    }).toList();
-
-    final olderNotifications = notifications.where((notification) {
-      return !todayNotifications.contains(notification) &&
-          !weekNotifications.contains(notification);
-    }).toList();
-
+  Widget _buildNotificationsList() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       children: [
-        if (todayNotifications.isNotEmpty) ...[
-          _buildSectionHeader('Today'),
-          ...todayNotifications.map(
-            (notification) => _buildNotificationTile(notification),
-          ),
-          const SizedBox(height: 24),
-        ],
-        if (weekNotifications.isNotEmpty) ...[
-          _buildSectionHeader('This Week'),
-          ...weekNotifications.map(
-            (notification) => _buildNotificationTile(notification),
-          ),
-          const SizedBox(height: 24),
-        ],
-        if (olderNotifications.isNotEmpty) ...[
-          _buildSectionHeader('Older'),
-          ...olderNotifications.map(
-            (notification) => _buildNotificationTile(notification),
-          ),
-        ],
+        _buildSectionHeader('Today'),
+        _buildNotificationItem(
+          'Setor tunai Mesin Rp. 123.000.000 sukses',
+          'Cash deposit Machine Rp. 123,000,000 successful',
+        ),
+        _buildNotificationItem(
+          'Setor tunai Mesin Rp. 5.500.000 masih dalam proses',
+          'Cash deposit Machine Rp. 5,500,000 still in process',
+        ),
+        const SizedBox(height: 24),
+        _buildSectionHeader('This Week'),
+        _buildNotificationItem(
+          'Setor tunai Warung Rp. 500.000 sukses',
+          'Cash deposit Shop Rp. 500,000 successful',
+        ),
       ],
     );
   }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
+        style: AppText.heading3.copyWith(
+          color: AppColors.textBlack,
           fontWeight: FontWeight.bold,
-          color: AppColors.textGray,
         ),
       ),
     );
   }
 
-  Widget _buildNotificationTile(Map<String, dynamic> notification) {
-    final isRead = notification['is_read'] ?? false;
-    final type = notification['type'] ?? 'general';
-    final title = notification['title'] ?? 'Notification';
-    final message = notification['message'] ?? 'You have a new notification';
-    final timestamp = DateTime.parse(
-      notification['created_at'] ?? DateTime.now().toString(),
-    );
-
+  Widget _buildNotificationItem(String title, String subtitle) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isRead ? Colors.white : AppColors.primaryRed.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isRead
-              ? Colors.grey.withOpacity(0.2)
-              : AppColors.primaryRed.withOpacity(0.2),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getNotificationColor(type).withOpacity(0.1),
-          child: Icon(
-            _getNotificationIcon(type),
-            color: _getNotificationColor(type),
-            size: 20,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-            color: isRead ? AppColors.textGray : AppColors.textBlack,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              message,
-              style: TextStyle(
-                color: isRead ? AppColors.textGray : AppColors.textBlack,
-              ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 4),
-            Text(
-              _formatTimestamp(timestamp),
-              style: const TextStyle(fontSize: 12, color: AppColors.textGray),
+            child: const Icon(
+              Icons.error_outline,
+              color: AppColors.primaryRed,
+              size: 20,
             ),
-          ],
-        ),
-        trailing: !isRead
-            ? Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryRed,
-                  shape: BoxShape.circle,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppText.bodyMedium.copyWith(
+                    color: AppColors.textBlack,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              )
-            : null,
-        onTap: () {
-          // Mark notification as read and handle tap
-          _handleNotificationTap(notification);
-        },
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: AppText.bodySmall.copyWith(color: AppColors.textGray),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -243,93 +257,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              ref
-                  .read(notificationsNotifierProvider.notifier)
-                  .getNotifications();
+              context.read<NotificationsBloc>().add(
+                const NotificationsDataRequested(),
+              );
             },
             child: const Text('Retry'),
           ),
         ],
       ),
     );
-  }
-
-  Color _getNotificationColor(String type) {
-    switch (type.toLowerCase()) {
-      case 'success':
-        return Colors.green;
-      case 'warning':
-        return Colors.orange;
-      case 'error':
-        return Colors.red;
-      case 'info':
-        return AppColors.primaryBlue;
-      default:
-        return AppColors.primaryRed;
-    }
-  }
-
-  IconData _getNotificationIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'success':
-        return Icons.check_circle;
-      case 'warning':
-        return Icons.warning;
-      case 'error':
-        return Icons.error;
-      case 'info':
-        return Icons.info;
-      case 'payment':
-        return Icons.payment;
-      case 'transfer':
-        return Icons.swap_horiz;
-      default:
-        return Icons.notifications;
-    }
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
-    } else {
-      return 'Just now';
-    }
-  }
-
-  void _handleNotificationTap(Map<String, dynamic> notification) {
-    // Handle notification tap
-    // You can navigate to specific screens based on notification type
-    final type = notification['type'] ?? 'general';
-
-    switch (type.toLowerCase()) {
-      case 'payment':
-        // Navigate to payment screen
-        break;
-      case 'transfer':
-        // Navigate to transfer screen
-        break;
-      default:
-        // Show notification details
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(notification['title'] ?? 'Notification'),
-            content: Text(notification['message'] ?? ''),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        );
-    }
   }
 }

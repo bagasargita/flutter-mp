@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/core/di/injection.dart';
 import 'package:smart_mob/screens/forgot_password_otp_screen.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -32,6 +31,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   void _sendResetCode() async {
     if (_formKey.currentState!.validate()) {
+      // Store context before async operation
+      final navigatorContext = context;
+
       // Show loading dialog
       showDialog(
         context: context,
@@ -43,17 +45,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       await Future.delayed(const Duration(seconds: 2));
 
       // Close loading dialog
-      Navigator.pop(context);
+      if (navigatorContext.mounted) {
+        Navigator.pop(navigatorContext);
+      }
 
       // Navigate to OTP screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ForgotPasswordOTPScreen(
-            phoneNumber: _phoneController.text.trim(),
+      if (navigatorContext.mounted) {
+        Navigator.push(
+          navigatorContext,
+          MaterialPageRoute(
+            builder: (context) => ForgotPasswordOTPScreen(
+              phoneNumber: _phoneController.text.trim(),
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 

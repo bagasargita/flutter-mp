@@ -2,26 +2,35 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class ReportScreen extends StatefulWidget {
+  const ReportScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<ReportScreen> createState() => _ReportScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ReportScreenState extends State<ReportScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'Jhon');
-  final _emailController = TextEditingController(text: 'jhondoe@gmail.com');
-  final _phoneController = TextEditingController(text: '+62 896-1234-1234');
-  final _passwordController = TextEditingController(text: '••••••••');
+  final _transactionController = TextEditingController();
+  final _terminalController = TextEditingController();
+  final _complaintController = TextEditingController();
+  final _messageController = TextEditingController();
+  String? _selectedComplaintType;
+
+  final List<String> _complaintTypes = [
+    'Technical Issue',
+    'Payment Problem',
+    'Account Issue',
+    'Service Complaint',
+    'Other',
+  ];
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
+    _transactionController.dispose();
+    _terminalController.dispose();
+    _complaintController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -39,12 +48,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Form(
                   key: _formKey,
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildProfileSection(),
+                      _buildDetailSection(),
+                      const SizedBox(height: 24),
+                      _buildComplaintSection(),
                       const SizedBox(height: 32),
-                      _buildFormFields(),
-                      const SizedBox(height: 32),
-                      _buildSaveButton(),
+                      _buildSendButton(),
                     ],
                   ),
                 ),
@@ -71,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const Expanded(
             child: Text(
-              'Profile',
+              'Bantuan',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -106,77 +116,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildDetailSection() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Stack(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: const AssetImage('assets/images/profile.png'),
-              onBackgroundImageError: (exception, stackTrace) {
-                // Handle error if image fails to load
-              },
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryRed,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.error, color: Colors.white, size: 16),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
         const Text(
-          'Jhon Doe',
+          'Detail',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColors.primaryRed,
+            color: AppColors.textBlack,
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
-          'WSMM Pondok Pinang',
-          style: TextStyle(fontSize: 16, color: AppColors.textGray),
+        const SizedBox(height: 16),
+        _buildFormField(
+          controller: _transactionController,
+          label: 'No transaksi',
+          icon: Icons.receipt,
         ),
+        const SizedBox(height: 16),
+        _buildFormField(
+          controller: _terminalController,
+          label: 'Terminal Id',
+          icon: Icons.devices,
+        ),
+        const SizedBox(height: 16),
+        _buildDropdownField(),
       ],
     );
   }
 
-  Widget _buildFormFields() {
+  Widget _buildComplaintSection() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildFormField(
-          controller: _nameController,
-          label: 'Nama',
-          icon: Icons.person,
+        const Text(
+          'Masukkan Keluhan Anda',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textBlack,
+          ),
         ),
         const SizedBox(height: 16),
-        _buildFormField(
-          controller: _emailController,
-          label: 'Email',
-          icon: Icons.email,
-        ),
-        const SizedBox(height: 16),
-        _buildFormField(
-          controller: _phoneController,
-          label: 'No Handphone',
-          icon: Icons.phone,
-        ),
-        const SizedBox(height: 16),
-        _buildFormField(
-          controller: _passwordController,
-          label: 'Password',
-          icon: Icons.lock,
-          isPassword: true,
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: TextFormField(
+            controller: _messageController,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              hintText: 'Ketik pesan Anda di sini.',
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.all(16),
+              hintStyle: TextStyle(color: AppColors.textGray),
+            ),
+            style: const TextStyle(color: AppColors.textBlack, fontSize: 16),
+          ),
         ),
       ],
     );
@@ -186,11 +184,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    bool isPassword = false,
   }) {
     return TextFormField(
       controller: controller,
-      obscureText: isPassword,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -201,19 +197,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildDropdownField() {
+    return DropdownButtonFormField<String>(
+      value: _selectedComplaintType,
+      decoration: const InputDecoration(
+        labelText: 'Keluhan (DROP DOW)',
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.report),
+        labelStyle: TextStyle(color: AppColors.textGray),
+      ),
+      style: const TextStyle(color: AppColors.textBlack, fontSize: 16),
+      items: _complaintTypes.map((String type) {
+        return DropdownMenuItem<String>(value: type, child: Text(type));
+      }).toList(),
+      onChanged: (String? newValue) {
+        setState(() {
+          _selectedComplaintType = newValue;
+        });
+      },
+    );
+  }
+
+  Widget _buildSendButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
           if (_formKey.currentState!.validate()) {
-            // Handle save logic
+            // Handle send logic
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Profile updated successfully'),
+                content: Text('Report sent successfully'),
                 backgroundColor: AppColors.primaryRed,
               ),
             );
+            Navigator.pop(context);
           }
         },
         style: ElevatedButton.styleFrom(
@@ -222,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text('Simpan', style: AppText.buttonPrimary),
+        child: Text('Kirim', style: AppText.buttonPrimary),
       ),
     );
   }
