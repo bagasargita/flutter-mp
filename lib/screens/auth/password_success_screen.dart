@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/login_screen.dart';
+import 'package:smart_mob/screens/auth/login_screen.dart';
 
 class PasswordSuccessScreen extends StatefulWidget {
   const PasswordSuccessScreen({super.key});

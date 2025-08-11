@@ -16,44 +16,74 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   ) async {
     emit(NotificationsLoading());
     try {
-      // Simulate API call
       await Future.delayed(const Duration(seconds: 1));
 
-      // Mock notifications data
       final notifications = [
         {
           'id': '1',
-          'title': 'Payment Successful',
-          'message':
-              'Your payment of Rp 50,000 has been processed successfully.',
-          'time': '2 minutes ago',
+          'title': 'Setor Tunai Berhasil',
+          'message': 'Setor tunai Mesin CDM Rp. 123.000.000 berhasil diproses',
+          'time': '2 menit yang lalu',
           'isRead': false,
-          'type': 'payment',
+          'type': 'deposit_success',
         },
         {
           'id': '2',
-          'title': 'Welcome to SMARTMobs',
+          'title': 'Setor Tunai Dalam Proses',
           'message':
-              'Thank you for joining SMARTMobs! Start exploring our services.',
-          'time': '1 hour ago',
-          'isRead': true,
-          'type': 'welcome',
+              'Setor tunai Mesin CDM Rp. 5.500.000 masih dalam proses verifikasi',
+          'time': '15 menit yang lalu',
+          'isRead': false,
+          'type': 'deposit_pending',
         },
         {
           'id': '3',
-          'title': 'Security Alert',
-          'message': 'New login detected from Jakarta, Indonesia.',
-          'time': '2 hours ago',
-          'isRead': false,
-          'type': 'security',
+          'title': 'Setor Tunai Warung Berhasil',
+          'message': 'Setor tunai Warung Grosir Rp. 500.000 berhasil diproses',
+          'time': '1 jam yang lalu',
+          'isRead': true,
+          'type': 'deposit_success',
         },
         {
           'id': '4',
-          'title': 'Service Update',
-          'message': 'New features are now available in your SMARTMobs app.',
-          'time': '1 day ago',
+          'title': 'Pembayaran Listrik PLN',
+          'message': 'Pembayaran listrik PLN Rp. 250.000 berhasil diproses',
+          'time': '2 jam yang lalu',
           'isRead': true,
-          'type': 'update',
+          'type': 'bill_payment',
+        },
+        {
+          'id': '5',
+          'title': 'Pulsa Berhasil',
+          'message': 'Pembelian pulsa Rp. 100.000 untuk 08123456789 berhasil',
+          'time': '3 jam yang lalu',
+          'isRead': true,
+          'type': 'pulsa_success',
+        },
+        {
+          'id': '6',
+          'title': 'Komisi Diterima',
+          'message': 'Komisi Rp. 25.000 telah ditransfer ke saldo Anda',
+          'time': '1 hari yang lalu',
+          'isRead': true,
+          'type': 'commission',
+        },
+        {
+          'id': '7',
+          'title': 'Maintenance Mesin CDM',
+          'message': 'Mesin CDM di lokasi Anda sedang dalam maintenance',
+          'time': '2 hari yang lalu',
+          'isRead': true,
+          'type': 'maintenance',
+        },
+        {
+          'id': '8',
+          'title': 'Selamat Datang di SMARTMobs',
+          'message':
+              'Terima kasih telah bergabung dengan SMARTMobs! Mulai jelajahi layanan kami',
+          'time': '1 minggu yang lalu',
+          'isRead': true,
+          'type': 'welcome',
         },
       ];
 

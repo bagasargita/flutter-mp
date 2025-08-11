@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/features/notifications/presentation/bloc/notifications_bloc.dart';
+import 'package:smart_mob/widgets/common/app_top_bar.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -15,97 +16,44 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NotificationsBloc>().add(const NotificationsDataRequested());
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: BlocProvider(
-        create: (context) => NotificationsBloc(),
-        child: BlocBuilder<NotificationsBloc, NotificationsState>(
-          builder: (context, state) {
-            return Scaffold(
-              backgroundColor: AppColors.backgroundWhite,
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    _buildTopBar(),
-                    Expanded(child: _buildNotificationsContent(state)),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
+    return BlocProvider(
+      create: (context) => NotificationsBloc(),
+      child: MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(1.0)),
+        child: BlocListener<NotificationsBloc, NotificationsState>(
+          listener: (context, state) {},
+          child: BlocBuilder<NotificationsBloc, NotificationsState>(
+            builder: (context, state) {
+              if (state is NotificationsInitial) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    context.read<NotificationsBloc>().add(
+                      const NotificationsDataRequested(),
+                    );
+                  }
+                });
+              }
 
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: AppColors.textBlack,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'Notifications',
-              style: AppText.heading2.copyWith(
-                color: AppColors.textBlack,
-                fontWeight: FontWeight.bold,
-              ),
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.grey[200],
-                child: const Icon(
-                  Icons.person,
-                  color: AppColors.primaryRed,
-                  size: 24,
-                ),
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+              return Scaffold(
+                backgroundColor: AppColors.backgroundWhite,
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      const AppTopBar(title: 'Notifications', showBack: true),
+                      Expanded(child: _buildNotificationsContent(state)),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }
@@ -114,7 +62,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (state is NotificationsLoading) {
       return const Center(child: CircularProgressIndicator());
     } else if (state is NotificationsLoaded) {
-      return _buildNotificationsList();
+      return _buildNotificationsList(state.notifications);
     } else if (state is NotificationsFailure) {
       return _buildErrorContent(state.message);
     } else {
@@ -122,98 +70,163 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  Widget _buildNotificationsList() {
-    return ListView(
+  Widget _buildNotificationsList(List<Map<String, dynamic>> notifications) {
+    if (notifications.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return ListView.builder(
       padding: const EdgeInsets.all(20),
-      children: [
-        _buildSectionHeader('Today'),
-        _buildNotificationItem(
-          'Setor tunai Mesin Rp. 123.000.000 sukses',
-          'Cash deposit Machine Rp. 123,000,000 successful',
-        ),
-        _buildNotificationItem(
-          'Setor tunai Mesin Rp. 5.500.000 masih dalam proses',
-          'Cash deposit Machine Rp. 5,500,000 still in process',
-        ),
-        const SizedBox(height: 24),
-        _buildSectionHeader('This Week'),
-        _buildNotificationItem(
-          'Setor tunai Warung Rp. 500.000 sukses',
-          'Cash deposit Shop Rp. 500,000 successful',
-        ),
-      ],
+      itemCount: notifications.length,
+      itemBuilder: (context, index) {
+        final notification = notifications[index];
+        return _buildNotificationItem(
+          notification['title'] as String,
+          notification['message'] as String,
+          notification['time'] as String,
+          notification['isRead'] as bool,
+          notification['type'] as String,
+          notification['id'] as String,
+        );
+      },
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        title,
-        style: AppText.heading3.copyWith(
-          color: AppColors.textBlack,
-          fontWeight: FontWeight.bold,
-        ),
-        textScaler: TextScaler.linear(1.0),
-      ),
-    );
-  }
+  Widget _buildNotificationItem(
+    String title,
+    String message,
+    String time,
+    bool isRead,
+    String type,
+    String id,
+  ) {
+    IconData iconData;
+    Color iconColor;
 
-  Widget _buildNotificationItem(String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    switch (type) {
+      case 'deposit_success':
+        iconData = Icons.account_balance;
+        iconColor = Colors.green;
+        break;
+      case 'deposit_pending':
+        iconData = Icons.pending;
+        iconColor = Colors.orange;
+        break;
+      case 'bill_payment':
+        iconData = Icons.electric_bolt;
+        iconColor = Colors.blue;
+        break;
+      case 'pulsa_success':
+        iconData = Icons.phone_android;
+        iconColor = Colors.purple;
+        break;
+      case 'commission':
+        iconData = Icons.monetization_on;
+        iconColor = Colors.amber;
+        break;
+      case 'maintenance':
+        iconData = Icons.build;
+        iconColor = Colors.red;
+        break;
+      case 'welcome':
+        iconData = Icons.celebration;
+        iconColor = Colors.pink;
+        break;
+      default:
+        iconData = Icons.notifications;
+        iconColor = AppColors.primaryRed;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (!isRead) {
+          context.read<NotificationsBloc>().add(NotificationMarkedAsRead(id));
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isRead ? Colors.white : Colors.blue.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isRead
+                ? Colors.grey[200]!
+                : Colors.blue.withValues(alpha: 0.2),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primaryRed.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-            child: const Icon(
-              Icons.error_outline,
-              color: AppColors.primaryRed,
-              size: 20,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(iconData, color: iconColor, size: 20),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppText.bodyMedium.copyWith(
-                    color: AppColors.textBlack,
-                    fontWeight: FontWeight.w500,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: AppText.bodyMedium.copyWith(
+                            color: AppColors.textBlack,
+                            fontWeight: isRead
+                                ? FontWeight.normal
+                                : FontWeight.w600,
+                          ),
+                          textScaler: TextScaler.linear(1.0),
+                        ),
+                      ),
+                      if (!isRead)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
                   ),
-                  textScaler: TextScaler.linear(1.0),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: AppText.bodySmall.copyWith(color: AppColors.textGray),
-                  textScaler: TextScaler.linear(1.0),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    message,
+                    style: AppText.bodySmall.copyWith(
+                      color: AppColors.textGray,
+                      fontWeight: isRead ? FontWeight.normal : FontWeight.w500,
+                    ),
+                    textScaler: TextScaler.linear(1.0),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    time,
+                    style: AppText.bodySmall.copyWith(
+                      color: AppColors.textGray,
+                      fontSize: 12,
+                    ),
+                    textScaler: TextScaler.linear(1.0),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

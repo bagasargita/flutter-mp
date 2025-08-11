@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import '../../constants/app_colors.dart';
+import '../../widgets/common/app_top_bar.dart';
 import 'transaction_detail_screen.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class SearchScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(),
+              const AppTopBar(title: 'Search'),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -69,54 +70,6 @@ class SearchScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.primaryRed,
-            child: const Icon(Icons.person, color: Colors.white, size: 24),
-          ),
-          const Expanded(
-            child: Text(
-              'Search',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications,
-                size: 24,
-                color: AppColors.textBlack,
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

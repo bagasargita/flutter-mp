@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/password_success_screen.dart';
+import 'package:smart_mob/screens/auth/password_success_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});

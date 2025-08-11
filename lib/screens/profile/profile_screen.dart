@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_text.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text.dart';
+import '../../widgets/common/app_top_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -34,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(),
+              const AppTopBar(title: 'Profile', showBack: true),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
@@ -59,57 +60,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              size: 24,
-              color: AppColors.textBlack,
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'Profile',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications,
-                size: 24,
-                color: AppColors.textBlack,
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildProfileSection() {
     return Column(
       children: [
@@ -118,9 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             CircleAvatar(
               radius: 50,
               backgroundImage: const AssetImage('assets/images/profile.png'),
-              onBackgroundImageError: (exception, stackTrace) {
-                // Handle error if image fails to load
-              },
+              onBackgroundImageError: (exception, stackTrace) {},
             ),
             Positioned(
               bottom: 0,
@@ -213,7 +161,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: ElevatedButton(
         onPressed: () {
           if (_formKey.currentState!.validate()) {
-            // Handle save logic
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Profile updated successfully'),

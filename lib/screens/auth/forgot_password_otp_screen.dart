@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/change_password_screen.dart';
+import 'package:smart_mob/screens/auth/change_password_screen.dart';
 import 'dart:async';
 
 class ForgotPasswordOTPScreen extends StatefulWidget {

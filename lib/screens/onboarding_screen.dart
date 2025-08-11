@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/login_screen.dart';
+import 'package:smart_mob/screens/auth/login_screen.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:smart_mob/features/onboarding/presentation/bloc/onboarding_bloc.dart';
 

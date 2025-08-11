@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'constants/app_colors.dart';
 import 'screens/splash_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/search_screen.dart';
-import 'screens/statistics_screen.dart';
+import 'screens/search/search_screen.dart';
+import 'screens/statistics/statistics_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/report_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/report/report_screen.dart';
 import 'screens/contact_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'features/app/presentation/bloc/app_bloc.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
+import 'features/notifications/presentation/bloc/notifications_bloc.dart';
+// import removed; AppBottomNav encapsulates items
+import 'widgets/common/app_bottom_nav.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,6 +49,7 @@ class MyApp extends StatelessWidget {
           child: child!,
         );
       },
+      routes: {'/notifications': (context) => const NotificationsScreen()},
       home: const AppEntry(),
     );
   }
@@ -55,8 +60,11 @@ class AppEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => AppBloc()),
+        BlocProvider(create: (context) => NotificationsBloc()),
+      ],
       child: BlocBuilder<AppBloc, AppState>(
         builder: (context, state) {
           if (state.showSplash) {
@@ -382,69 +390,24 @@ class _RootScreenState extends State<RootScreen> {
         create: (context) => HomeBloc(),
         child: Scaffold(
           body: _screens[_selectedIndex],
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              color: AppColors.backgroundWhite,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+          bottomNavigationBar: AppBottomNav(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            items: const [
+              BottomNavItemData(icon: Icons.home, label: 'Home'),
+              BottomNavItemData(icon: Icons.search, label: 'Search'),
+              BottomNavItemData(
+                icon: Icons.account_balance_wallet,
+                label: 'Wallet',
               ),
-              border: Border(
-                top: BorderSide(color: Colors.grey[300]!, width: 1),
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(Icons.home, 'Home', 0),
-                    _buildNavItem(Icons.search, 'Search', 1),
-                    _buildNavItem(Icons.account_balance_wallet, 'Wallet', 2),
-                    _buildNavItem(Icons.bar_chart, 'Stats', 3),
-                    _buildNavItem(Icons.grid_view, 'More', 4),
-                  ],
-                ),
-              ),
-            ),
+              BottomNavItemData(icon: Icons.bar_chart, label: 'Stats'),
+              BottomNavItemData(icon: Icons.grid_view, label: 'More'),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
-    final isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () {
-        _onItemTapped(index);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primaryRed : Colors.grey,
-              size: 24,
-            ),
-            if (isSelected)
-              Container(
-                margin: const EdgeInsets.only(top: 4),
-                width: 4,
-                height: 4,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryRed,
-                  shape: BoxShape.circle,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  // removed: replaced by AppBottomNav
 }

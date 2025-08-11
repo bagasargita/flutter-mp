@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import '../../constants/app_colors.dart';
+import '../../widgets/common/app_top_bar.dart';
 
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});
@@ -13,7 +14,7 @@ class StatisticsScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(),
+              const AppTopBar(title: 'SMARTMobs'),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
@@ -31,54 +32,6 @@ class StatisticsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.primaryRed,
-            child: const Icon(Icons.person, color: Colors.white, size: 24),
-          ),
-          const Expanded(
-            child: Text(
-              'SMARTMobs',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications,
-                size: 24,
-                color: AppColors.textBlack,
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -218,14 +171,13 @@ class StatisticsScreen extends StatelessWidget {
   Widget _buildChart() {
     return Stack(
       children: [
-        // Y-axis labels
         Positioned(
           right: 0,
           top: 0,
           bottom: 0,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+            children: const [
               Text(
                 '50000',
                 style: TextStyle(fontSize: 10, color: AppColors.textGray),
@@ -254,7 +206,6 @@ class StatisticsScreen extends StatelessWidget {
             ],
           ),
         ),
-        // Chart area
         Positioned(
           left: 0,
           right: 50,
@@ -267,8 +218,8 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   Widget _buildChartLabels() {
-    return Padding(
-      padding: const EdgeInsets.only(right: 50),
+    return const Padding(
+      padding: EdgeInsets.only(right: 50),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -327,7 +278,6 @@ class ChartPainter extends CustomPainter {
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
-    // Sample data points (normalized to chart size)
     final points = [
       Offset(0, size.height * 0.8),
       Offset(size.width * 0.1, size.height * 0.6),
@@ -342,31 +292,22 @@ class ChartPainter extends CustomPainter {
       Offset(size.width, size.height * 0.1),
     ];
 
-    // Create path for line
-    final path = Path();
-    path.moveTo(points[0].dx, points[0].dy);
-
+    final path = Path()..moveTo(points[0].dx, points[0].dy);
     for (int i = 1; i < points.length; i++) {
       path.lineTo(points[i].dx, points[i].dy);
     }
 
-    // Create path for fill area
-    final fillPath = Path.from(path);
-    fillPath.lineTo(size.width, size.height);
-    fillPath.lineTo(0, size.height);
-    fillPath.close();
+    final fillPath = Path.from(path)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
 
-    // Draw fill
     canvas.drawPath(fillPath, fillPaint);
-
-    // Draw line
     canvas.drawPath(path, paint);
 
-    // Draw points
     final pointPaint = Paint()
       ..color = Colors.green
       ..style = PaintingStyle.fill;
-
     for (final point in points) {
       canvas.drawCircle(point, 4, pointPaint);
     }

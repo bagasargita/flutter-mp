@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_text.dart';
-import '../features/auth/presentation/bloc/auth_bloc.dart';
-import '../features/home/presentation/bloc/home_bloc.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/home/presentation/bloc/home_bloc.dart';
 import 'forgot_password_screen.dart';
-import 'home_screen.dart';
-import 'search_screen.dart';
-import 'statistics_screen.dart';
-import 'profile_screen.dart';
-import 'report_screen.dart';
-import 'contact_screen.dart';
-import 'settings_screen.dart';
+import '../home_screen.dart';
+import '../search/search_screen.dart';
+import '../statistics/statistics_screen.dart';
+import '../profile/profile_screen.dart';
+import '../report/report_screen.dart';
+import '../contact_screen.dart';
+import '../settings_screen.dart';
+// import removed; AppBottomNav encapsulates items
+import '../../widgets/common/app_bottom_nav.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -376,66 +378,26 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
         create: (context) => HomeBloc(),
         child: Scaffold(
           body: _screens[_selectedIndex],
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              color: AppColors.backgroundWhite,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+          bottomNavigationBar: AppBottomNav(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            items: const [
+              BottomNavItemData(icon: Icons.home, label: 'Home'),
+              BottomNavItemData(icon: Icons.search, label: 'Search'),
+              BottomNavItemData(
+                icon: Icons.account_balance_wallet,
+                label: 'Wallet',
               ),
-              border: Border(
-                top: BorderSide(color: Colors.grey[300]!, width: 1),
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(Icons.home, 'Home', 0),
-                    _buildNavItem(Icons.search, 'Search', 1),
-                    _buildNavItem(Icons.account_balance_wallet, 'Wallet', 2),
-                    _buildNavItem(Icons.bar_chart, 'Stats', 3),
-                    _buildNavItem(Icons.grid_view, 'More', 4),
-                  ],
-                ),
-              ),
-            ),
+              BottomNavItemData(icon: Icons.bar_chart, label: 'Stats'),
+              BottomNavItemData(icon: Icons.grid_view, label: 'More'),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
-    final isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? AppColors.primaryRed : Colors.grey,
-            size: 24,
-          ),
-          if (isSelected)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              width: 4,
-              height: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  // removed: replaced by AppBottomNav
 }
 
 class _LoginForm extends StatelessWidget {
@@ -483,7 +445,7 @@ class _LoginForm extends StatelessWidget {
                     Image.asset('assets/images/MP-Logo.png', height: 140),
                     const SizedBox(height: 20),
                     Text(
-                      'SMARTMobs',
+                      'Merah Putih',
                       style: AppText.kalamBold.copyWith(
                         fontSize: 32,
                         color: AppColors.primaryRed,

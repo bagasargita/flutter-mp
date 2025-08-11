@@ -4,7 +4,8 @@ import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
 import '../features/home/presentation/bloc/home_bloc.dart';
 import 'all_services_screen.dart';
-import 'notifications_screen.dart';
+import 'setor_tunai/setor_tunai_screen.dart';
+import '../widgets/common/app_top_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,89 +36,19 @@ class _HomeScreenState extends State<HomeScreen> {
             body: SafeArea(
               child: Column(
                 children: [
-                  _buildTopBar(),
+                  const AppTopBar(
+                    title: 'Merah Putih',
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: AssetImage('assets/images/profile.png'),
+                    ),
+                  ),
                   Expanded(child: _buildMainContent()),
                 ],
               ),
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: const AssetImage('assets/images/profile.png'),
-                onBackgroundImageError: (exception, stackTrace) {
-                  // Handle error if image fails to load
-                },
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'SMARTMobs',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsScreen(),
-                ),
-              );
-            },
-            child: Stack(
-              children: [
-                const Icon(
-                  Icons.notifications,
-                  size: 24,
-                  color: AppColors.textBlack,
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryRed,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -235,6 +166,11 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AllServicesScreen()),
+          );
+        } else if (service['name'] == 'Setor Tunai') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SetorTunaiScreen()),
           );
         }
       },
