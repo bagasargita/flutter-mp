@@ -36,31 +36,34 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildDetailSection(),
-                      const SizedBox(height: 24),
-                      _buildComplaintSection(),
-                      const SizedBox(height: 32),
-                      _buildSendButton(),
-                    ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildDetailSection(),
+                        const SizedBox(height: 24),
+                        _buildComplaintSection(),
+                        const SizedBox(height: 32),
+                        _buildSendButton(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -88,6 +91,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -127,6 +131,7 @@ class _ReportScreenState extends State<ReportScreen> {
             fontWeight: FontWeight.bold,
             color: AppColors.textBlack,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 16),
         _buildFormField(
@@ -157,6 +162,7 @@ class _ReportScreenState extends State<ReportScreen> {
             fontWeight: FontWeight.bold,
             color: AppColors.textBlack,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 16),
         Container(
@@ -208,7 +214,10 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
       style: const TextStyle(color: AppColors.textBlack, fontSize: 16),
       items: _complaintTypes.map((String type) {
-        return DropdownMenuItem<String>(value: type, child: Text(type));
+        return DropdownMenuItem<String>(
+          value: type,
+          child: Text(type, textScaler: TextScaler.linear(1.0)),
+        );
       }).toList(),
       onChanged: (String? newValue) {
         setState(() {
@@ -240,7 +249,11 @@ class _ReportScreenState extends State<ReportScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text('Kirim', style: AppText.buttonPrimary),
+        child: Text(
+          'Kirim',
+          style: AppText.buttonPrimary,
+          textScaler: TextScaler.linear(1.0),
+        ),
       ),
     );
   }

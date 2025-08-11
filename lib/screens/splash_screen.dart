@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                     const SizedBox(height: 50),
                     Text(
-                      'SMARTMobs',
+                      'Merah Putih',
                       style: AppText.kalamBold.copyWith(
                         fontSize: 32,
                         fontWeight: FontWeight.w900,

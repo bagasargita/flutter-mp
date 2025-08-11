@@ -26,20 +26,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: AppColors.backgroundWhite,
-          body: SafeArea(
-            child: Column(
-              children: [
-                _buildTopBar(),
-                Expanded(child: _buildMainContent()),
-              ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppColors.backgroundWhite,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildTopBar(),
+                  Expanded(child: _buildMainContent()),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -80,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.bold,
                 color: AppColors.textBlack,
               ),
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           GestureDetector(
@@ -281,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
+              textScaler: TextScaler.linear(1.0),
             ),
           ],
         ),

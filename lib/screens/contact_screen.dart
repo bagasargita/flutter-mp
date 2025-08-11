@@ -6,19 +6,22 @@ class ContactScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(children: [_buildContactSection()]),
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(children: [_buildContactSection()]),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -46,6 +49,7 @@ class ContactScreen extends StatelessWidget {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -85,6 +89,7 @@ class ContactScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.textBlack,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 24),
         _buildContactItem(
@@ -102,6 +107,7 @@ class ContactScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.textBlack,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 16),
         _buildContactItem(
@@ -140,6 +146,7 @@ class ContactScreen extends StatelessWidget {
                   fontSize: 16,
                   color: AppColors.textBlack,
                 ),
+                textScaler: TextScaler.linear(1.0),
               ),
             ),
           ],

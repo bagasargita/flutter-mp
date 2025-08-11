@@ -6,27 +6,30 @@ class StatisticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildDatePicker(),
-                    const SizedBox(height: 24),
-                    _buildStatisticsCards(),
-                    const SizedBox(height: 24),
-                    _buildExpensesTrends(),
-                  ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildDatePicker(),
+                      const SizedBox(height: 24),
+                      _buildStatisticsCards(),
+                      const SizedBox(height: 24),
+                      _buildExpensesTrends(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -51,6 +54,7 @@ class StatisticsScreen extends StatelessWidget {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -98,6 +102,7 @@ class StatisticsScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: AppColors.textBlack,
             ),
+            textScaler: TextScaler.linear(1.0),
           ),
           const Spacer(),
           Icon(Icons.keyboard_arrow_down, color: AppColors.textGray, size: 24),
@@ -164,6 +169,7 @@ class StatisticsScreen extends StatelessWidget {
               color: AppColors.textGray,
               fontWeight: FontWeight.w500,
             ),
+            textScaler: TextScaler.linear(1.0),
           ),
           const SizedBox(height: 4),
           Text(
@@ -173,6 +179,7 @@ class StatisticsScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: color,
             ),
+            textScaler: TextScaler.linear(1.0),
           ),
         ],
       ),
@@ -197,6 +204,7 @@ class StatisticsScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: AppColors.textBlack,
             ),
+            textScaler: TextScaler.linear(1.0),
           ),
           const SizedBox(height: 20),
           SizedBox(height: 200, child: _buildChart()),
@@ -208,50 +216,53 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   Widget _buildChart() {
-    return Container(
-      child: Stack(
-        children: [
-          // Y-axis labels
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '50000',
-                  style: TextStyle(fontSize: 10, color: AppColors.textGray),
-                ),
-                Text(
-                  '40000',
-                  style: TextStyle(fontSize: 10, color: AppColors.textGray),
-                ),
-                Text(
-                  '30000',
-                  style: TextStyle(fontSize: 10, color: AppColors.textGray),
-                ),
-                Text(
-                  '20000',
-                  style: TextStyle(fontSize: 10, color: AppColors.textGray),
-                ),
-                Text(
-                  '10000',
-                  style: TextStyle(fontSize: 10, color: AppColors.textGray),
-                ),
-              ],
-            ),
+    return Stack(
+      children: [
+        // Y-axis labels
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '50000',
+                style: TextStyle(fontSize: 10, color: AppColors.textGray),
+                textScaler: TextScaler.linear(1.0),
+              ),
+              Text(
+                '40000',
+                style: TextStyle(fontSize: 10, color: AppColors.textGray),
+                textScaler: TextScaler.linear(1.0),
+              ),
+              Text(
+                '30000',
+                style: TextStyle(fontSize: 10, color: AppColors.textGray),
+                textScaler: TextScaler.linear(1.0),
+              ),
+              Text(
+                '20000',
+                style: TextStyle(fontSize: 10, color: AppColors.textGray),
+                textScaler: TextScaler.linear(1.0),
+              ),
+              Text(
+                '10000',
+                style: TextStyle(fontSize: 10, color: AppColors.textGray),
+                textScaler: TextScaler.linear(1.0),
+              ),
+            ],
           ),
-          // Chart area
-          Positioned(
-            left: 0,
-            right: 50,
-            top: 0,
-            bottom: 0,
-            child: CustomPaint(painter: ChartPainter()),
-          ),
-        ],
-      ),
+        ),
+        // Chart area
+        Positioned(
+          left: 0,
+          right: 50,
+          top: 0,
+          bottom: 0,
+          child: CustomPaint(painter: ChartPainter()),
+        ),
+      ],
     );
   }
 
@@ -261,12 +272,36 @@ class StatisticsScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('26', style: TextStyle(fontSize: 12, color: AppColors.textGray)),
-          Text('27', style: TextStyle(fontSize: 12, color: AppColors.textGray)),
-          Text('28', style: TextStyle(fontSize: 12, color: AppColors.textGray)),
-          Text('29', style: TextStyle(fontSize: 12, color: AppColors.textGray)),
-          Text('30', style: TextStyle(fontSize: 12, color: AppColors.textGray)),
-          Text('31', style: TextStyle(fontSize: 12, color: AppColors.textGray)),
+          Text(
+            '26',
+            style: TextStyle(fontSize: 12, color: AppColors.textGray),
+            textScaler: TextScaler.linear(1.0),
+          ),
+          Text(
+            '27',
+            style: TextStyle(fontSize: 12, color: AppColors.textGray),
+            textScaler: TextScaler.linear(1.0),
+          ),
+          Text(
+            '28',
+            style: TextStyle(fontSize: 12, color: AppColors.textGray),
+            textScaler: TextScaler.linear(1.0),
+          ),
+          Text(
+            '29',
+            style: TextStyle(fontSize: 12, color: AppColors.textGray),
+            textScaler: TextScaler.linear(1.0),
+          ),
+          Text(
+            '30',
+            style: TextStyle(fontSize: 12, color: AppColors.textGray),
+            textScaler: TextScaler.linear(1.0),
+          ),
+          Text(
+            '31',
+            style: TextStyle(fontSize: 12, color: AppColors.textGray),
+            textScaler: TextScaler.linear(1.0),
+          ),
         ],
       ),
     );
@@ -286,8 +321,8 @@ class ChartPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.green.withOpacity(0.3),
-          Colors.green.withOpacity(0.1),
+          Colors.green.withValues(alpha: 0.3),
+          Colors.green.withValues(alpha: 0.1),
           Colors.transparent,
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));

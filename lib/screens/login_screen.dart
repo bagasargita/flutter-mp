@@ -37,39 +37,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(),
-      child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            widget.onLoginSuccess?.call();
-            if (widget.onLoginSuccess == null) {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => const _HomeWithNavigation(),
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: BlocProvider(
+        create: (context) => AuthBloc(),
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthAuthenticated) {
+              widget.onLoginSuccess?.call();
+              if (widget.onLoginSuccess == null) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const _HomeWithNavigation(),
+                  ),
+                  (route) => false,
+                );
+              }
+            } else if (state is AuthFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
                 ),
-                (route) => false,
               );
             }
-          } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        child: _LoginForm(
-          formKey: _formKey,
-          emailController: _emailController,
-          passwordController: _passwordController,
-          isPasswordVisible: _isPasswordVisible,
-          onPasswordVisibilityChanged: (value) {
-            setState(() {
-              _isPasswordVisible = value;
-            });
           },
+          child: _LoginForm(
+            formKey: _formKey,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            isPasswordVisible: _isPasswordVisible,
+            onPasswordVisibilityChanged: (value) {
+              setState(() {
+                _isPasswordVisible = value;
+              });
+            },
+          ),
         ),
       ),
     );
@@ -367,28 +370,38 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HomeBloc(),
-      child: Scaffold(
-        body: _screens[_selectedIndex],
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border(top: BorderSide(color: Colors.grey[300]!, width: 1)),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(Icons.home, 'Home', 0),
-                  _buildNavItem(Icons.search, 'Search', 1),
-                  _buildNavItem(Icons.account_balance_wallet, 'Wallet', 2),
-                  _buildNavItem(Icons.bar_chart, 'Stats', 3),
-                  _buildNavItem(Icons.grid_view, 'More', 4),
-                ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: BlocProvider(
+        create: (context) => HomeBloc(),
+        child: Scaffold(
+          body: _screens[_selectedIndex],
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundWhite,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+              border: Border(
+                top: BorderSide(color: Colors.grey[300]!, width: 1),
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(Icons.home, 'Home', 0),
+                    _buildNavItem(Icons.search, 'Search', 1),
+                    _buildNavItem(Icons.account_balance_wallet, 'Wallet', 2),
+                    _buildNavItem(Icons.bar_chart, 'Stats', 3),
+                    _buildNavItem(Icons.grid_view, 'More', 4),
+                  ],
+                ),
               ),
             ),
           ),
@@ -442,7 +455,7 @@ class _LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void _login() {
+    void login() {
       if (formKey.currentState!.validate()) {
         context.read<AuthBloc>().add(
           AuthLoginRequested(
@@ -545,7 +558,7 @@ class _LoginForm extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: state is AuthLoading ? null : _login,
+                      onPressed: state is AuthLoading ? null : login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryRed,
                         foregroundColor: Colors.white,

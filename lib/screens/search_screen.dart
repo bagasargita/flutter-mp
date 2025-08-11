@@ -7,64 +7,67 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildSearchCard(
-                      context,
-                      'Mesin',
-                      'Cari lokasi Mesin CDM',
-                      Icons.account_balance,
-                      Colors.blue,
-                      () => Navigator.push(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildSearchCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SearchMachineScreen(),
+                        'Mesin',
+                        'Cari lokasi Mesin CDM',
+                        Icons.account_balance,
+                        Colors.blue,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SearchMachineScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSearchCard(
-                      context,
-                      'Warung / Grosir',
-                      'Cari warung atau grosir',
-                      Icons.store,
-                      Colors.green,
-                      () => Navigator.push(
+                      const SizedBox(height: 16),
+                      _buildSearchCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SearchShopScreen(),
+                        'Warung / Grosir',
+                        'Cari warung atau grosir',
+                        Icons.store,
+                        Colors.green,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SearchShopScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSearchCard(
-                      context,
-                      'Riwayat Transaksi',
-                      'Cari Riwayat Transaksi',
-                      Icons.history,
-                      Colors.orange,
-                      () => Navigator.push(
+                      const SizedBox(height: 16),
+                      _buildSearchCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const SearchTransactionHistoryScreen(),
+                        'Riwayat Transaksi',
+                        'Cari Riwayat Transaksi',
+                        Icons.history,
+                        Colors.orange,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const SearchTransactionHistoryScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -89,6 +92,7 @@ class SearchScreen extends StatelessWidget {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -135,7 +139,7 @@ class SearchScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -148,7 +152,7 @@ class SearchScreen extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 30),
@@ -165,6 +169,7 @@ class SearchScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: AppColors.textBlack,
                     ),
+                    textScaler: TextScaler.linear(1.0),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -173,6 +178,7 @@ class SearchScreen extends StatelessWidget {
                       fontSize: 14,
                       color: AppColors.textGray,
                     ),
+                    textScaler: TextScaler.linear(1.0),
                   ),
                 ],
               ),
@@ -194,27 +200,30 @@ class SearchMachineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildMapSection(),
-                    const SizedBox(height: 16),
-                    _buildSearchBar(),
-                    const SizedBox(height: 16),
-                    Expanded(child: _buildLocationList()),
-                  ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(context),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildMapSection(),
+                      const SizedBox(height: 16),
+                      _buildSearchBar(),
+                      const SizedBox(height: 16),
+                      Expanded(child: _buildLocationList()),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -242,6 +251,7 @@ class SearchMachineScreen extends StatelessWidget {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -391,6 +401,7 @@ class SearchMachineScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                         color: AppColors.textBlack,
                       ),
+                      textScaler: TextScaler.linear(1.0),
                     ),
                     Text(
                       location['distance']!,
@@ -398,6 +409,7 @@ class SearchMachineScreen extends StatelessWidget {
                         fontSize: 14,
                         color: AppColors.textGray,
                       ),
+                      textScaler: TextScaler.linear(1.0),
                     ),
                   ],
                 ),
@@ -415,27 +427,30 @@ class SearchShopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildMapSection(),
-                    const SizedBox(height: 16),
-                    _buildSearchBar(),
-                    const SizedBox(height: 16),
-                    Expanded(child: _buildLocationList()),
-                  ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(context),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildMapSection(),
+                      const SizedBox(height: 16),
+                      _buildSearchBar(),
+                      const SizedBox(height: 16),
+                      Expanded(child: _buildLocationList()),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -463,6 +478,7 @@ class SearchShopScreen extends StatelessWidget {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -612,6 +628,7 @@ class SearchShopScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                         color: AppColors.textBlack,
                       ),
+                      textScaler: TextScaler.linear(1.0),
                     ),
                     Text(
                       location['distance']!,
@@ -619,6 +636,7 @@ class SearchShopScreen extends StatelessWidget {
                         fontSize: 14,
                         color: AppColors.textGray,
                       ),
+                      textScaler: TextScaler.linear(1.0),
                     ),
                   ],
                 ),
@@ -645,27 +663,30 @@ class _SearchTransactionHistoryScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildSearchBar(),
-                    const SizedBox(height: 16),
-                    _buildFilterButtons(),
-                    const SizedBox(height: 16),
-                    Expanded(child: _buildTransactionList()),
-                  ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(context),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildSearchBar(),
+                      const SizedBox(height: 16),
+                      _buildFilterButtons(),
+                      const SizedBox(height: 16),
+                      Expanded(child: _buildTransactionList()),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -693,6 +714,7 @@ class _SearchTransactionHistoryScreenState
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -780,6 +802,7 @@ class _SearchTransactionHistoryScreenState
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
+                textScaler: TextScaler.linear(1.0),
               ),
             ),
           ),
@@ -848,76 +871,76 @@ class _SearchTransactionHistoryScreenState
                   fontWeight: FontWeight.bold,
                   color: AppColors.textBlack,
                 ),
+                textScaler: TextScaler.linear(1.0),
               ),
             ),
-            ...(monthData['transactions'] as List<Map<String, String>>)
-                .map(
-                  (transaction) => GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TransactionDetailScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(transaction['status']!),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  transaction['status']!,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: _getStatusColor(
-                                      transaction['status']!,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  transaction['date']!,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textGray,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            transaction['amount']!,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textBlack,
-                            ),
-                          ),
-                        ],
-                      ),
+            ...(monthData['transactions'] as List<Map<String, String>>).map(
+              (transaction) => GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TransactionDetailScreen(),
                     ),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[200]!),
                   ),
-                )
-                .toList(),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(transaction['status']!),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              transaction['status']!,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: _getStatusColor(transaction['status']!),
+                              ),
+                              textScaler: TextScaler.linear(1.0),
+                            ),
+                            Text(
+                              transaction['date']!,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textGray,
+                              ),
+                              textScaler: TextScaler.linear(1.0),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        transaction['amount']!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textBlack,
+                        ),
+                        textScaler: TextScaler.linear(1.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         );
       },

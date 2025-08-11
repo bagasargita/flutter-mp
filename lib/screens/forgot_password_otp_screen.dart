@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/screens/change_password_screen.dart';
 import 'dart:async';
 
-class ForgotPasswordOTPScreen extends ConsumerStatefulWidget {
+class ForgotPasswordOTPScreen extends StatefulWidget {
   final String phoneNumber;
 
   const ForgotPasswordOTPScreen({super.key, required this.phoneNumber});
 
   @override
-  ConsumerState<ForgotPasswordOTPScreen> createState() =>
+  State<ForgotPasswordOTPScreen> createState() =>
       _ForgotPasswordOTPScreenState();
 }
 
-class _ForgotPasswordOTPScreenState
-    extends ConsumerState<ForgotPasswordOTPScreen> {
+class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
   bool _isResendEnabled = true;

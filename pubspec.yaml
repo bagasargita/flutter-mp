@@ -30,7 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.4.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -53,14 +52,11 @@ dependencies:
   json_annotation: ^4.8.1
   
   # State management
-  riverpod_annotation: ^2.3.3
-  
-  # BLoC for state management
   flutter_bloc: ^8.1.4
   bloc: ^8.1.3
   equatable: ^2.0.5
   
-  # Utilities
+  # BLoC for state management
   freezed_annotation: ^2.4.1
   logger: ^2.0.2+1
 
@@ -73,7 +69,6 @@ dev_dependencies:
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
   retrofit_generator: ^8.0.4
-  riverpod_generator: ^2.3.9
   freezed: ^2.4.6
 
 # For information on the generic Dart part of this file, see the

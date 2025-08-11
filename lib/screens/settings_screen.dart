@@ -7,27 +7,30 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildCardSection(),
-                    const SizedBox(height: 24),
-                    _buildSecuritySection(),
-                    const SizedBox(height: 32),
-                    _buildSaveButton(context),
-                  ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildCardSection(),
+                      const SizedBox(height: 24),
+                      _buildSecuritySection(),
+                      const SizedBox(height: 32),
+                      _buildSaveButton(context),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -55,6 +58,7 @@ class SettingsScreen extends StatelessWidget {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -94,6 +98,7 @@ class SettingsScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.textBlack,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 16),
         _buildSettingsItem(
@@ -119,6 +124,7 @@ class SettingsScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.textBlack,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 16),
         _buildSettingsItem(
@@ -163,6 +169,7 @@ class SettingsScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: AppColors.textBlack,
                     ),
+                    textScaler: TextScaler.linear(1.0),
                   ),
                   if (subtitle.isNotEmpty)
                     Text(
@@ -171,6 +178,7 @@ class SettingsScreen extends StatelessWidget {
                         fontSize: 14,
                         color: AppColors.textGray,
                       ),
+                      textScaler: TextScaler.linear(1.0),
                     ),
                 ],
               ),
@@ -205,7 +213,11 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text('Simpan', style: AppText.buttonPrimary),
+        child: Text(
+          'Simpan',
+          style: AppText.buttonPrimary,
+          textScaler: TextScaler.linear(1.0),
+        ),
       ),
     );
   }

@@ -37,6 +37,14 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(1.0)),
+          child: child!,
+        );
+      },
       home: const AppEntry(),
     );
   }
@@ -368,28 +376,38 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HomeBloc(),
-      child: Scaffold(
-        body: _screens[_selectedIndex],
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border(top: BorderSide(color: Colors.grey[300]!, width: 1)),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(Icons.home, 'Home', 0),
-                  _buildNavItem(Icons.search, 'Search', 1),
-                  _buildNavItem(Icons.account_balance_wallet, 'Wallet', 2),
-                  _buildNavItem(Icons.bar_chart, 'Stats', 3),
-                  _buildNavItem(Icons.grid_view, 'More', 4),
-                ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: BlocProvider(
+        create: (context) => HomeBloc(),
+        child: Scaffold(
+          body: _screens[_selectedIndex],
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundWhite,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+              border: Border(
+                top: BorderSide(color: Colors.grey[300]!, width: 1),
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(Icons.home, 'Home', 0),
+                    _buildNavItem(Icons.search, 'Search', 1),
+                    _buildNavItem(Icons.account_balance_wallet, 'Wallet', 2),
+                    _buildNavItem(Icons.bar_chart, 'Stats', 3),
+                    _buildNavItem(Icons.grid_view, 'More', 4),
+                  ],
+                ),
               ),
             ),
           ),

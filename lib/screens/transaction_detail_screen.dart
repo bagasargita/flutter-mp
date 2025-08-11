@@ -6,33 +6,36 @@ class TransactionDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildTransactionDetails(),
-                    const SizedBox(height: 24),
-                    _buildDenominationTable(),
-                    const SizedBox(height: 24),
-                    _buildTotals(),
-                    const SizedBox(height: 24),
-                    _buildStatusSection(),
-                    const SizedBox(height: 24),
-                    _buildDisclaimer(),
-                    const SizedBox(height: 40),
-                    _buildActionButtons(),
-                  ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildTransactionDetails(),
+                      const SizedBox(height: 24),
+                      _buildDenominationTable(),
+                      const SizedBox(height: 24),
+                      _buildTotals(),
+                      const SizedBox(height: 24),
+                      _buildStatusSection(),
+                      const SizedBox(height: 24),
+                      _buildDisclaimer(),
+                      const SizedBox(height: 40),
+                      _buildActionButtons(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -201,48 +204,46 @@ class TransactionDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...denominations
-              .map(
-                (denom) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          denom['denom']!,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textBlack,
-                          ),
-                        ),
+          ...denominations.map(
+            (denom) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      denom['denom']!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textBlack,
                       ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'X ${denom['quantity']}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textBlack,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          '= ${denom['total']}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textBlack,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              )
-              .toList(),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'X ${denom['quantity']}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textBlack,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '= ${denom['total']}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textBlack,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

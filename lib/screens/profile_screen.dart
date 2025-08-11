@@ -27,30 +27,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildProfileSection(),
-                      const SizedBox(height: 32),
-                      _buildFormFields(),
-                      const SizedBox(height: 32),
-                      _buildSaveButton(),
-                    ],
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _buildProfileSection(),
+                        const SizedBox(height: 32),
+                        _buildFormFields(),
+                        const SizedBox(height: 32),
+                        _buildSaveButton(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -78,6 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: AppColors.textBlack,
               ),
               textAlign: TextAlign.center,
+              textScaler: TextScaler.linear(1.0),
             ),
           ),
           Stack(
@@ -141,11 +145,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.bold,
             color: AppColors.primaryRed,
           ),
+          textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 4),
         const Text(
           'WSMM Pondok Pinang',
           style: TextStyle(fontSize: 16, color: AppColors.textGray),
+          textScaler: TextScaler.linear(1.0),
         ),
       ],
     );
@@ -222,7 +228,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text('Simpan', style: AppText.buttonPrimary),
+        child: Text(
+          'Simpan',
+          style: AppText.buttonPrimary,
+          textScaler: TextScaler.linear(1.0),
+        ),
       ),
     );
   }
