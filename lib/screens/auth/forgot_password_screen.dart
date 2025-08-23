@@ -23,7 +23,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _validatePhone(String value) {
     setState(() {
-      _isPhoneValid = value.length >= 10;
+      _isPhoneValid =
+          value.length >= 10 &&
+          (value.startsWith('+62') || value.startsWith('08'));
     });
   }
 
@@ -91,7 +93,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onChanged: _validatePhone,
                     decoration: InputDecoration(
                       labelText: 'Type your phone number',
-                      hintText: '(+42)',
+                      hintText: '(+62)',
                       border: const OutlineInputBorder(),
                     ),
                   ),

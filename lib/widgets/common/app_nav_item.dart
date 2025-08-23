@@ -22,21 +22,29 @@ class AppNavItem extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isSelected ? AppColors.primaryRed : Colors.grey,
-            size: 24,
-          ),
-          if (isSelected)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              width: 4,
-              height: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primaryRed.withValues(alpha: 0.1)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(
+              icon,
+              color: isSelected ? AppColors.primaryRed : Colors.grey,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? AppColors.primaryRed : Colors.grey,
+            ),
+          ),
         ],
       ),
     );

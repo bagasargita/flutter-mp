@@ -24,7 +24,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         'name': 'John Doe',
         'email': 'john.doe@example.com',
         'phone': '+6281234567890',
-        'avatar': 'assets/images/profile_avatar.png',
+        'avatar': 'assets/images/profile.png',
         'balance': 'Rp 1,250,000',
         'memberSince': 'January 2024',
       };

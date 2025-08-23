@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../constants/app_colors.dart';
@@ -15,12 +16,44 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<HomeBloc>().add(const HomeDataRequested());
+        _startAutoScroll();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_pageController.hasClients) {
+        if (_currentPage < 2) {
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          _pageController.animateToPage(
+            0,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
       }
     });
   }
@@ -58,38 +91,95 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          _buildTopImage(),
           const SizedBox(height: 24),
+          Text(
+            'Layanan',
+            style: AppText.bodyMedium.copyWith(fontSize: 16),
+            textAlign: TextAlign.left,
+          ),
+          const SizedBox(height: 16),
           _buildServicesGrid(),
-          const SizedBox(height: 24),
-          _buildBottomImage(),
           const SizedBox(height: 20),
+          _buildImageCarousel(),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildTopImage() {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.asset(
-          'assets/images/Easy-Fast.png',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[200],
-              child: const Icon(Icons.image, size: 64, color: Colors.grey),
-            );
-          },
+  Widget _buildImageCarousel() {
+    final List<String> carouselImages = [
+      'assets/images/Easy-Fast.png',
+      'assets/images/Flexible-Transaction.png',
+      'assets/images/MP-Logo.png',
+    ];
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 200,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemCount: carouselImages.length,
+            itemBuilder: (context, index) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    carouselImages[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[200],
+                        child: const Icon(
+                          Icons.image,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: carouselImages.asMap().entries.map((entry) {
+            return Container(
+              width: 8.0,
+              height: 8.0,
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: entry.key == _currentPage
+                    ? AppColors.primaryRed
+                    : Colors.grey.withValues(alpha: 0.3),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -102,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'name': 'Non Tunai',
-        'image': 'assets/images/Flexible-Transaction.png',
+        'image': 'assets/images/NonTunai.png',
         'color': Colors.red,
       },
       {
@@ -112,27 +202,27 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'name': 'Bayar Tagihan',
-        'image': 'assets/images/ListrikPln.png',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Kirim Barang',
-        'image': 'assets/images/WarungGrosir.png',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Isi ulang',
-        'image': 'assets/images/Easy-Fast.png',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Bayar Tagihan',
         'image': 'assets/images/RiwayatTransaksi.png',
         'color': Colors.red,
       },
       {
         'name': 'Kirim Barang',
-        'image': 'assets/images/Savings-Money.png',
+        'image': 'assets/images/KirimBarang.png',
+        'color': Colors.red,
+      },
+      {
+        'name': 'Isi ulang',
+        'image': 'assets/images/IsiUlang.png',
+        'color': Colors.red,
+      },
+      {
+        'name': 'Pinjaman',
+        'image': 'assets/images/Pinjaman.png',
+        'color': Colors.red,
+      },
+      {
+        'name': 'Kirim Barang',
+        'image': 'assets/images/KirimBarang2.png',
         'color': Colors.red,
       },
       {
@@ -143,6 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return GridView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -178,7 +269,6 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: const Color.fromRGBO(243, 239, 239, 1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withValues(alpha: 0.1),
@@ -194,10 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               width: 53,
               height: 53,
-              decoration: BoxDecoration(
-                color: service['color'].withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: Image.asset(
@@ -224,30 +311,6 @@ class _HomeScreenState extends State<HomeScreen> {
               textScaler: TextScaler.linear(1.0),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomImage() {
-    return Container(
-      width: double.infinity,
-      height: 150,
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.asset(
-          'assets/images/Flexible-Transaction.png',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[200],
-              child: const Icon(Icons.image, size: 64, color: Colors.grey),
-            );
-          },
         ),
       ),
     );

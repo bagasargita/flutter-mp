@@ -95,7 +95,7 @@ class SearchScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withAlpha(26),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -108,7 +108,7 @@ class SearchScreen extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withAlpha(26),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 30),

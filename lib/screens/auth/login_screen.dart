@@ -6,8 +6,7 @@ import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/home/presentation/bloc/home_bloc.dart';
 import 'forgot_password_screen.dart';
 import '../home_screen.dart';
-import '../search/search_screen.dart';
-import '../statistics/statistics_screen.dart';
+
 import '../profile/profile_screen.dart';
 import '../report/report_screen.dart';
 import '../profile/contact_screen.dart';
@@ -93,14 +92,14 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const SearchScreen(),
-    const Center(child: Text('Wallet', style: TextStyle(fontSize: 24))),
-    const StatisticsScreen(),
-    const Center(child: Text('More', style: TextStyle(fontSize: 24))),
+    const Center(
+      child: Text('Riwayat Transaksi', style: TextStyle(fontSize: 24)),
+    ),
+    const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
   ];
 
   void _onItemTapped(int index) {
-    if (index == 4) {
+    if (index == 2) {
       _showMoreMenu();
     } else {
       setState(() {
@@ -382,14 +381,12 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
             items: const [
-              BottomNavItemData(icon: Icons.home, label: 'Home'),
-              BottomNavItemData(icon: Icons.search, label: 'Search'),
+              BottomNavItemData(icon: Icons.home, label: 'Beranda'),
               BottomNavItemData(
-                icon: Icons.account_balance_wallet,
-                label: 'Wallet',
+                icon: Icons.history,
+                label: 'Riwayat Transaksi',
               ),
-              BottomNavItemData(icon: Icons.bar_chart, label: 'Stats'),
-              BottomNavItemData(icon: Icons.grid_view, label: 'More'),
+              BottomNavItemData(icon: Icons.person, label: 'Akun'),
             ],
           ),
         ),
@@ -442,10 +439,7 @@ class _LoginForm extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 40),
-                    Image.asset(
-                      'assets/images/MerahPutihLogo.svg',
-                      height: 140,
-                    ),
+                    Image.asset('assets/images/MP-Logo.png', height: 140),
                     const SizedBox(height: 20),
                     Text(
                       'Merah Putih',
@@ -461,8 +455,16 @@ class _LoginForm extends StatelessWidget {
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'Phone Number or Username',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone),
+                        border: UnderlineInputBorder(),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.primaryRed,
+                            width: 2,
+                          ),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -477,8 +479,16 @@ class _LoginForm extends StatelessWidget {
                       obscureText: !isPasswordVisible,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock),
+                        border: const UnderlineInputBorder(),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.primaryRed,
+                            width: 2,
+                          ),
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             isPasswordVisible

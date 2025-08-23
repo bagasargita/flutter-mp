@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   children: [
                     // Logo
                     Image.asset(
-                      'assets/images/Logo.png',
+                      'assets/images/MP-Logo.png',
                       width: 120,
                       height: 120,
                       fit: BoxFit.contain,

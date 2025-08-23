@@ -33,87 +33,86 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [AppColors.primaryRed, AppColors.primaryBlue],
-            ),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.primaryBlue, width: 2),
           ),
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                  const SizedBox(height: 40),
+
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/ForgotPassword.png',
+                          height: 280,
+                          fit: BoxFit.contain,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        Text(
+                          'Change password successfully!',
+                          style: AppText.heading2.copyWith(
+                            color: AppColors.primaryRed,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                          textScaler: TextScaler.linear(1.0),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        Text(
+                          'You have successfully change password. Please use the new password when Sign in.',
+                          style: AppText.bodyMedium.copyWith(
+                            color: AppColors.textBlack,
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                          textScaler: TextScaler.linear(1.0),
+                        ),
+
+                        const SizedBox(height: 48),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _goToLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryRed,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Ok',
+                              style: AppText.buttonPrimary.copyWith(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              textScaler: TextScaler.linear(1.0),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.check,
-                      size: 60,
-                      color: AppColors.primaryRed,
-                    ),
                   ),
-                  const SizedBox(height: 32),
 
-                  Text(
-                    'Password Changed!',
-                    style: AppText.heading2.copyWith(color: Colors.white),
-                    textAlign: TextAlign.center,
-                    textScaler: TextScaler.linear(1.0),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'Your password has been successfully changed. You can now log in with your new password.',
-                    style: AppText.description.copyWith(color: Colors.white),
-                    textAlign: TextAlign.center,
-                    textScaler: TextScaler.linear(1.0),
-                  ),
-                  const SizedBox(height: 48),
-
-                  SizedBox(
+                  Container(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _goToLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.primaryRed,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Continue to Login',
-                        style: AppText.buttonPrimary.copyWith(
-                          color: AppColors.primaryRed,
-                        ),
-                        textScaler: TextScaler.linear(1.0),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'You will be automatically redirected in a few seconds...',
-                    style: AppText.bodySmall.copyWith(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                    textScaler: TextScaler.linear(1.0),
+                    height: 1,
+                    color: Colors.grey[300],
                   ),
                 ],
               ),

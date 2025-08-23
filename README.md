@@ -100,7 +100,7 @@ flutter build apk --release
 | `dio` | ^5.4.0 | HTTP client |
 | `shared_preferences` | ^2.2.2 | Local storage |
 | `google_fonts` | ^6.1.0 | Typography |
-| `introduction_screen` | ^3.1.12 | Onboarding |
+| Custom Implementation | - | Onboarding |
 
 ### Development Dependencies
 

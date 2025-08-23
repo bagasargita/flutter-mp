@@ -33,14 +33,16 @@ class AppBottomNav extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(items.length, (index) {
               final item = items[index];
-              return AppNavItem(
-                icon: item.icon,
-                label: item.label,
-                isSelected: currentIndex == index,
-                onTap: () => onTap(index),
+              return Expanded(
+                child: AppNavItem(
+                  icon: item.icon,
+                  label: item.label,
+                  isSelected: currentIndex == index,
+                  onTap: () => onTap(index),
+                ),
               );
             }),
           ),

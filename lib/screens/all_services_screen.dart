@@ -16,8 +16,15 @@ class AllServicesScreen extends StatelessWidget {
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
             child: CircleAvatar(
-              backgroundImage: AssetImage('assets/images/MerahPutihLogo.svg'),
+              backgroundColor: AppColors.primaryRed,
               radius: 20,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  'assets/images/MP-Logo.png',
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
           title: const Text(

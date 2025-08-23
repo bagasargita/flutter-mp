@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
 
 class MapSection extends StatelessWidget {
   final double height;
@@ -12,12 +11,12 @@ class MapSection extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Stack(
         children: [
-          Center(child: Icon(Icons.map, size: 80, color: Colors.grey[400])),
+          Center(child: Icon(Icons.map, size: 80, color: Colors.grey.shade400)),
           ...pins.map((pin) => _buildPin(pin)),
         ],
       ),
