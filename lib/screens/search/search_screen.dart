@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/common/app_top_bar.dart';
+import '../../widgets/search/search_top_bar.dart';
+import '../../widgets/search/search_bar.dart';
+import '../../widgets/search/map_section.dart';
 import 'transaction_detail_screen.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -92,7 +95,7 @@ class SearchScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.grey.withOpacity(0.1),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -105,7 +108,7 @@ class SearchScreen extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 30),
@@ -153,6 +156,13 @@ class SearchMachineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const locations = <Location>[
+      Location(name: 'Grosir Pondok Pinang', distance: '56 m'),
+      Location(name: 'WSMM Pondok Indah', distance: '1.2 km'),
+      Location(name: 'Warung Madura Deplu', distance: '5.3 km'),
+      Location(name: 'LPI Kartika Utama', distance: '7km'),
+      Location(name: 'Grosir Ciputat', distance: '20m'),
+    ];
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
@@ -160,17 +170,46 @@ class SearchMachineScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(context),
+              SearchTopBar(
+                title: 'Search',
+                onBackPressed: () => Navigator.pop(context),
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildMapSection(),
+                      const MapSection(
+                        pins: [
+                          MapPin(
+                            top: 50,
+                            left: 50,
+                            size: 12,
+                            color: AppColors.primaryRed,
+                          ),
+                          MapPin(
+                            top: 80,
+                            left: 200,
+                            size: 8,
+                            color: Colors.blue,
+                          ),
+                          MapPin(
+                            top: 140,
+                            left: 120,
+                            size: 8,
+                            color: Colors.blue,
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
-                      _buildSearchBar(),
+                      const SearchInputBar(),
                       const SizedBox(height: 16),
-                      Expanded(child: _buildLocationList()),
+                      const Expanded(
+                        child: LocationList(
+                          items: locations,
+                          dotColor: Colors.blue,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -179,198 +218,6 @@ class SearchMachineScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              size: 24,
-              color: AppColors.textBlack,
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'Search',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications,
-                size: 24,
-                color: AppColors.textBlack,
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMapSection() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        children: [
-          Center(child: Icon(Icons.map, size: 80, color: Colors.grey[400])),
-          Positioned(
-            top: 50,
-            left: 50,
-            child: Container(
-              width: 12,
-              height: 12,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 80,
-            right: 80,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 60,
-            left: 100,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: AppColors.textGray),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: AppColors.textGray),
-              ),
-            ),
-          ),
-          Icon(Icons.close, color: AppColors.textGray),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationList() {
-    final locations = [
-      {'name': 'Grosir Pondok Pinang', 'distance': '56 m'},
-      {'name': 'WSMM Pondok Indah', 'distance': '1.2 km'},
-      {'name': 'Warung Madura Deplu', 'distance': '5.3 km'},
-      {'name': 'LPI Kartika Utama', 'distance': '7km'},
-      {'name': 'Grosir Ciputat', 'distance': '20m'},
-    ];
-
-    return ListView.builder(
-      itemCount: locations.length,
-      itemBuilder: (context, index) {
-        final location = locations[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      location['name']!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textBlack,
-                      ),
-                      textScaler: TextScaler.linear(1.0),
-                    ),
-                    Text(
-                      location['distance']!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textGray,
-                      ),
-                      textScaler: TextScaler.linear(1.0),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
@@ -380,6 +227,13 @@ class SearchShopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const locations = <Location>[
+      Location(name: 'Grosir Pondok Pinang 1', distance: '56 m'),
+      Location(name: 'Grosir Pondok Pinang 2', distance: '1.2 km'),
+      Location(name: 'Warung Madura Deplu 1', distance: '5.3 km'),
+      Location(name: 'Warung Madura Deplu 2', distance: '7km'),
+      Location(name: 'Grosir Ciputat', distance: '20m'),
+    ];
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
@@ -387,17 +241,46 @@ class SearchShopScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(context),
+              SearchTopBar(
+                title: 'Search',
+                onBackPressed: () => Navigator.pop(context),
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildMapSection(),
+                      const MapSection(
+                        pins: [
+                          MapPin(
+                            top: 50,
+                            left: 50,
+                            size: 8,
+                            color: AppColors.primaryRed,
+                          ),
+                          MapPin(
+                            top: 80,
+                            left: 200,
+                            size: 8,
+                            color: AppColors.primaryRed,
+                          ),
+                          MapPin(
+                            top: 140,
+                            left: 120,
+                            size: 8,
+                            color: AppColors.primaryRed,
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
-                      _buildSearchBar(),
+                      const SearchInputBar(),
                       const SizedBox(height: 16),
-                      Expanded(child: _buildLocationList()),
+                      const Expanded(
+                        child: LocationList(
+                          items: locations,
+                          dotColor: AppColors.primaryRed,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -406,198 +289,6 @@ class SearchShopScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              size: 24,
-              color: AppColors.textBlack,
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'Search',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications,
-                size: 24,
-                color: AppColors.textBlack,
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMapSection() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        children: [
-          Center(child: Icon(Icons.map, size: 80, color: Colors.grey[400])),
-          Positioned(
-            top: 50,
-            left: 50,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 80,
-            right: 80,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 60,
-            left: 100,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryRed,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: AppColors.textGray),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: AppColors.textGray),
-              ),
-            ),
-          ),
-          Icon(Icons.close, color: AppColors.textGray),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationList() {
-    final locations = [
-      {'name': 'Grosir Pondok Pinang 1', 'distance': '56 m'},
-      {'name': 'Grosir Pondok Pinang 2', 'distance': '1.2 km'},
-      {'name': 'Warung Madura Deplu 1', 'distance': '5.3 km'},
-      {'name': 'Warung Madura Deplu 2', 'distance': '7km'},
-      {'name': 'Grosir Ciputat', 'distance': '20m'},
-    ];
-
-    return ListView.builder(
-      itemCount: locations.length,
-      itemBuilder: (context, index) {
-        final location = locations[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryRed,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      location['name']!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textBlack,
-                      ),
-                      textScaler: TextScaler.linear(1.0),
-                    ),
-                    Text(
-                      location['distance']!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textGray,
-                      ),
-                      textScaler: TextScaler.linear(1.0),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
@@ -623,13 +314,16 @@ class _SearchTransactionHistoryScreenState
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(context),
+              SearchTopBar(
+                title: 'Search',
+                onBackPressed: () => Navigator.pop(context),
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildSearchBar(),
+                      const SearchInputBar(),
                       const SizedBox(height: 16),
                       _buildFilterButtons(),
                       const SizedBox(height: 16),
@@ -641,83 +335,6 @@ class _SearchTransactionHistoryScreenState
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              size: 24,
-              color: AppColors.textBlack,
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'Search',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textBlack,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications,
-                size: 24,
-                color: AppColors.textBlack,
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: AppColors.textGray),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: AppColors.textGray),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -911,5 +528,73 @@ class _SearchTransactionHistoryScreenState
       default:
         return Colors.grey;
     }
+  }
+}
+
+class Location {
+  final String name;
+  final String distance;
+  const Location({required this.name, required this.distance});
+}
+
+class LocationList extends StatelessWidget {
+  final List<Location> items;
+  final Color dotColor;
+  const LocationList({super.key, required this.items, required this.dotColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: items.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textBlack,
+                      ),
+                      textScaler: const TextScaler.linear(1.0),
+                    ),
+                    Text(
+                      item.distance,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textGray,
+                      ),
+                      textScaler: const TextScaler.linear(1.0),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

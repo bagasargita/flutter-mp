@@ -25,7 +25,7 @@ class SetorTunaiMachineDetailsScreen extends StatefulWidget {
 
 class _SetorTunaiMachineDetailsScreenState
     extends State<SetorTunaiMachineDetailsScreen> {
-  bool _hasOutstandingTransaction = false;
+  final bool _hasOutstandingTransaction = false;
 
   @override
   Widget build(BuildContext context) {

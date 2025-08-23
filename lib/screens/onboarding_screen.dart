@@ -72,7 +72,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 100),
-                    Image.asset('assets/images/MP-Logo.png', height: 160),
+                    Image.asset(
+                      'assets/images/MerahPutihLogo.svg',
+                      height: 160,
+                    ),
                     const SizedBox(height: 40),
                     _buildCustomTitle(
                       "Welcome to",

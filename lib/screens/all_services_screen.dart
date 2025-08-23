@@ -16,7 +16,7 @@ class AllServicesScreen extends StatelessWidget {
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
             child: CircleAvatar(
-              backgroundImage: AssetImage('assets/images/MP-Logo.png'),
+              backgroundImage: AssetImage('assets/images/MerahPutihLogo.svg'),
               radius: 20,
             ),
           ),

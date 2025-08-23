@@ -9,13 +9,12 @@ import 'screens/statistics/statistics_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/report/report_screen.dart';
-import 'screens/contact_screen.dart';
-import 'screens/settings_screen.dart';
+import 'screens/profile/contact_screen.dart';
+import 'screens/profile/settings_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'features/app/presentation/bloc/app_bloc.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/notifications/presentation/bloc/notifications_bloc.dart';
-// import removed; AppBottomNav encapsulates items
 import 'widgets/common/app_bottom_nav.dart';
 
 void main() {

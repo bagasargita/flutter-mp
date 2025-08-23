@@ -10,8 +10,8 @@ import '../search/search_screen.dart';
 import '../statistics/statistics_screen.dart';
 import '../profile/profile_screen.dart';
 import '../report/report_screen.dart';
-import '../contact_screen.dart';
-import '../settings_screen.dart';
+import '../profile/contact_screen.dart';
+import '../profile/settings_screen.dart';
 // import removed; AppBottomNav encapsulates items
 import '../../widgets/common/app_bottom_nav.dart';
 
@@ -442,7 +442,10 @@ class _LoginForm extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 40),
-                    Image.asset('assets/images/MP-Logo.png', height: 140),
+                    Image.asset(
+                      'assets/images/MerahPutihLogo.svg',
+                      height: 140,
+                    ),
                     const SizedBox(height: 20),
                     Text(
                       'Merah Putih',
