@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 
 class AllServicesScreen extends StatelessWidget {
@@ -20,9 +21,12 @@ class AllServicesScreen extends StatelessWidget {
               radius: 20,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset(
-                  'assets/images/MP-Logo.png',
-                  color: Colors.white,
+                child: SvgPicture.asset(
+                  'assets/images/LOGO-SVG.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),

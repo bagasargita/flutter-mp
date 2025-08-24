@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
@@ -439,7 +440,7 @@ class _LoginForm extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 40),
-                    Image.asset('assets/images/MP-Logo.png', height: 140),
+                    SvgPicture.asset('assets/images/LOGO-SVG.svg', height: 140),
                     const SizedBox(height: 20),
                     Text(
                       'Merah Putih',

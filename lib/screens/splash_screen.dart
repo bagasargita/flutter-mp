@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
 import 'onboarding_screen.dart';
@@ -41,12 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    Image.asset(
-                      'assets/images/MP-Logo.png',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
+                    SvgPicture.asset('assets/images/LOGO-SVG.svg', height: 160),
                     const SizedBox(height: 50),
                     Text(
                       'Merah Putih',

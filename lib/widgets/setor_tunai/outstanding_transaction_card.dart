@@ -3,13 +3,24 @@ import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 
 class OutstandingTransactionCard extends StatefulWidget {
-  const OutstandingTransactionCard({super.key});
+  final Map<String, dynamic> machine;
+  final VoidCallback? onClear;
+  final VoidCallback? onStartDeposit;
+
+  const OutstandingTransactionCard({
+    super.key,
+    required this.machine,
+    this.onClear,
+    this.onStartDeposit,
+  });
 
   @override
-  State<OutstandingTransactionCard> createState() => _OutstandingTransactionCardState();
+  State<OutstandingTransactionCard> createState() =>
+      _OutstandingTransactionCardState();
 }
 
-class _OutstandingTransactionCardState extends State<OutstandingTransactionCard> {
+class _OutstandingTransactionCardState
+    extends State<OutstandingTransactionCard> {
   int _remainingSeconds = 34 * 60 + 55; // 34:55 in seconds
 
   @override
@@ -41,7 +52,9 @@ class _OutstandingTransactionCardState extends State<OutstandingTransactionCard>
       return const SizedBox.shrink();
     }
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -78,14 +91,24 @@ class _OutstandingTransactionCardState extends State<OutstandingTransactionCard>
                 ),
                 textScaler: TextScaler.linear(1.0),
               ),
+              const Spacer(),
+              // Clear button
+              if (widget.onClear != null)
+                GestureDetector(
+                  onTap: widget.onClear,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.close, size: 16, color: Colors.grey[600]),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            height: 1,
-            color: Colors.grey[300],
-          ),
+          Container(width: double.infinity, height: 1, color: Colors.grey[300]),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -94,7 +117,7 @@ class _OutstandingTransactionCardState extends State<OutstandingTransactionCard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Mesin K5001',
+                      widget.machine['name'] ?? 'Mesin KS001',
                       style: AppText.bodyMedium.copyWith(
                         color: AppColors.textBlack,
                         fontWeight: FontWeight.w600,
@@ -103,7 +126,7 @@ class _OutstandingTransactionCardState extends State<OutstandingTransactionCard>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Toko Mamang',
+                      widget.machine['location'] ?? 'Toko Mamang',
                       style: AppText.bodySmall.copyWith(
                         color: AppColors.textGray,
                       ),
@@ -111,7 +134,7 @@ class _OutstandingTransactionCardState extends State<OutstandingTransactionCard>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'JL. SMP 87 Pondok Pinang',
+                      widget.machine['address'] ?? 'JL. SMP 87 Pondok Pinang',
                       style: AppText.bodySmall.copyWith(
                         color: AppColors.textGray,
                       ),
@@ -120,21 +143,56 @@ class _OutstandingTransactionCardState extends State<OutstandingTransactionCard>
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                ),
-                child: Text(
-                  _formatTime(_remainingSeconds),
-                  style: AppText.bodyMedium.copyWith(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
+              Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      _formatTime(_remainingSeconds),
+                      style: AppText.bodyMedium.copyWith(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textScaler: TextScaler.linear(1.0),
+                    ),
                   ),
-                  textScaler: TextScaler.linear(1.0),
-                ),
+                  const SizedBox(height: 8),
+                  // Mulai Setor button
+                  if (widget.onStartDeposit != null)
+                    SizedBox(
+                      width: 100,
+                      height: 32,
+                      child: ElevatedButton(
+                        onPressed: widget.onStartDeposit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryRed,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          'Mulai Setor',
+                          style: AppText.bodySmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

@@ -52,7 +52,6 @@ class AppTopBar extends StatelessWidget {
             leading!
           else
             const SizedBox(width: 36),
-          const SizedBox(width: 16),
           Expanded(
             child: Text(
               title,
@@ -60,6 +59,7 @@ class AppTopBar extends StatelessWidget {
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
               textScaler: TextScaler.linear(1.0),
             ),
           ),

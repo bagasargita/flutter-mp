@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/screens/auth/login_screen.dart';
@@ -133,23 +134,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildWelcomePage() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 20),
         SizedBox(
           width: 160,
           height: 160,
-          child: Image.asset('assets/images/MP-Logo.png', height: 160),
+          child: SvgPicture.asset('assets/images/LOGO-SVG.svg'),
         ),
-        const SizedBox(height: 100),
+        const SizedBox(height: 20),
         Text(
           'Welcome to',
           style: AppText.heading1.copyWith(
             color: AppColors.textBlack,
-            fontSize: 28,
+            fontSize: 34,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 20),
         Text(
           'MerahPutih',
           style: AppText.kalamBold.copyWith(
@@ -165,11 +167,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildSavingPage() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 80),
-        Image.asset('assets/images/Savings-Money.png', height: 280),
-        const SizedBox(height: 40),
+        SizedBox(
+          width: 280,
+          height: 280,
+          child: SvgPicture.asset('assets/images/Savings-Money.svg'),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Column(
@@ -217,11 +223,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildEasyFastPage() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 80),
-        Image.asset('assets/images/Easy-Fast.png', height: 280),
-        const SizedBox(height: 40),
+        SizedBox(
+          width: 280,
+          height: 280,
+          child: SvgPicture.asset('assets/images/Easy-Fast.svg'),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Column(
@@ -254,11 +264,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildFlexiblePage() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 80),
-        Image.asset('assets/images/Flexible-Transaction.png', height: 280),
-        const SizedBox(height: 40),
+        SizedBox(
+          width: 280,
+          height: 280,
+          child: SvgPicture.asset('assets/images/Flexible-Transaction.svg'),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Column(

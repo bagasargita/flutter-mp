@@ -9,6 +9,7 @@ class SetorTunaiMachineDetailsScreen extends StatefulWidget {
   final String maxAmount;
   final String distance;
   final String address;
+  final bool isFromOutstanding;
 
   const SetorTunaiMachineDetailsScreen({
     super.key,
@@ -16,6 +17,7 @@ class SetorTunaiMachineDetailsScreen extends StatefulWidget {
     required this.maxAmount,
     required this.distance,
     required this.address,
+    this.isFromOutstanding = false,
   });
 
   @override
@@ -25,7 +27,7 @@ class SetorTunaiMachineDetailsScreen extends StatefulWidget {
 
 class _SetorTunaiMachineDetailsScreenState
     extends State<SetorTunaiMachineDetailsScreen> {
-  final bool _hasOutstandingTransaction = false;
+  bool get _hasOutstandingTransaction => widget.isFromOutstanding;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +95,7 @@ class _SetorTunaiMachineDetailsScreenState
           ),
           const SizedBox(height: 12),
           Text(
-            'Mesin K5001',
+            widget.machineName,
             style: AppText.bodyMedium.copyWith(
               color: AppColors.textBlack,
               fontWeight: FontWeight.w600,
@@ -102,13 +104,13 @@ class _SetorTunaiMachineDetailsScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            'Toko Mamang',
+            widget.machineName, // Use machine name as location
             style: AppText.bodySmall.copyWith(color: AppColors.textGray),
             textScaler: TextScaler.linear(1.0),
           ),
           const SizedBox(height: 4),
           Text(
-            'JL. SMP 87 Pondok Pinang',
+            widget.address,
             style: AppText.bodySmall.copyWith(color: AppColors.textGray),
             textScaler: TextScaler.linear(1.0),
           ),
@@ -239,10 +241,26 @@ class _SetorTunaiMachineDetailsScreenState
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SetorTunaiQRScreen()),
-          );
+          if (_hasOutstandingTransaction) {
+            // If has outstanding transaction, go to QR screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SetorTunaiQRScreen(),
+              ),
+            );
+          } else {
+            // If first time selecting, return to Setor Tunai screen with machine data
+            final machineData = {
+              'name': widget.machineName,
+              'location': widget.machineName,
+              'address': widget.address,
+              'maxAmount': widget.maxAmount,
+              'distance': widget.distance,
+            };
+            print('Returning machine data: $machineData'); // Debug print
+            Navigator.pop(context, machineData);
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryRed,
