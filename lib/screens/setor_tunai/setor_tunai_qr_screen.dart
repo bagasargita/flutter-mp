@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
+import 'package:smart_mob/screens/setor_tunai/setor_tunai_success_screen.dart';
 
 class SetorTunaiQRScreen extends StatefulWidget {
   const SetorTunaiQRScreen({super.key});
@@ -12,6 +13,8 @@ class SetorTunaiQRScreen extends StatefulWidget {
 
 class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   int _remainingSeconds = 59 * 60 + 58; // 59:58 in seconds
+  bool _isProcessing = false;
+  bool _isSuccess = false;
 
   @override
   void initState() {
@@ -34,6 +37,40 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  void _simulateDeposit() async {
+    setState(() {
+      _isProcessing = true;
+    });
+
+    // Simulate processing time
+    await Future.delayed(const Duration(seconds: 3));
+
+    setState(() {
+      _isProcessing = false;
+      _isSuccess = true;
+    });
+
+    // Navigate to success screen after a short delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SetorTunaiSuccessScreen(
+            transactionData: {
+              'name': 'Mesin KS001',
+              'location': 'Toko Mamang',
+              'address': 'JL. SMP 87 Pondok Pinang',
+              'maxAmount': 'Rp. 5.000.000,-',
+              'distance': '1.0 km',
+            },
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -93,38 +130,54 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   }
 
   Widget _buildQRCode() {
-    return Container(
-      width: 250,
-      height: 250,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.qr_code, size: 120, color: AppColors.primaryRed),
-            const SizedBox(height: 16),
-            Text(
-              'SMARTMobs\nDeposit QR',
-              style: AppText.bodyMedium.copyWith(
-                color: AppColors.textBlack,
-                fontWeight: FontWeight.w600,
-              ),
-              textScaler: TextScaler.linear(1.0),
-              textAlign: TextAlign.center,
+    return GestureDetector(
+      onTap: _isProcessing ? null : _simulateDeposit,
+      child: Container(
+        width: 250,
+        height: 250,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[300]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              spreadRadius: 1,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_isProcessing)
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.primaryRed,
+                  ),
+                )
+              else if (_isSuccess)
+                const Icon(Icons.check_circle, size: 120, color: Colors.green)
+              else
+                Icon(Icons.qr_code, size: 120, color: AppColors.primaryRed),
+              const SizedBox(height: 16),
+              Text(
+                _isProcessing
+                    ? 'Memproses Deposit...'
+                    : _isSuccess
+                    ? 'Deposit Berhasil!'
+                    : 'SMARTMobs\nDeposit QR\n\nTap untuk simulasi',
+                style: AppText.bodyMedium.copyWith(
+                  color: AppColors.textBlack,
+                  fontWeight: FontWeight.w600,
+                ),
+                textScaler: TextScaler.linear(1.0),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -161,25 +214,29 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   }
 
   Widget _buildActionButton() {
+    if (_isProcessing) {
+      return const SizedBox.shrink(); // Hide button while processing
+    }
+
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.popUntil(context, (route) => route.isFirst);
-        },
+        onPressed: _isSuccess
+            ? () => Navigator.popUntil(context, (route) => route.isFirst)
+            : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryRed,
-          foregroundColor: Colors.white,
+          backgroundColor: _isSuccess ? AppColors.primaryRed : Colors.grey[300],
+          foregroundColor: _isSuccess ? Colors.white : Colors.grey[600],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),
         child: Text(
-          'Selesai',
+          _isSuccess ? 'Selesai' : 'Tunggu...',
           style: AppText.bodyLarge.copyWith(
-            color: Colors.white,
+            color: _isSuccess ? Colors.white : Colors.grey[600],
             fontWeight: FontWeight.w600,
           ),
           textScaler: TextScaler.linear(1.0),

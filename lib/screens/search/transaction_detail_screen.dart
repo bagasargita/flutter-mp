@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/common/app_top_bar.dart';
+import '../../widgets/common/watermark_widget.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   const TransactionDetailScreen({super.key});
@@ -50,15 +51,30 @@ class TransactionDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          _buildDetailRow('Date', '10/07/2025'),
-          _buildDetailRow('Time', '21:36:54'),
-          _buildDetailRow('Location', 'PT Warung Sejahtera Maju Makmur'),
-          _buildDetailRow('Ref', 'KSM001250710211500178'),
-          _buildDetailRow('TID', 'KSM001'),
-          _buildDetailRow('Name', 'Wahid'),
-          _buildDetailRow('Trx', 'Setoran'),
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: const WatermarkWidget(
+                opacity: 0.06,
+                spacing: 120.0,
+                rotation: -45.0,
+                logoSize: 35.0,
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              _buildDetailRow('Date', '10/07/2025'),
+              _buildDetailRow('Time', '21:36:54'),
+              _buildDetailRow('Location', 'PT Warung Sejahtera Maju Makmur'),
+              _buildDetailRow('Ref', 'KSM001250710211500178'),
+              _buildDetailRow('TID', 'KSM001'),
+              _buildDetailRow('Name', 'Wahid'),
+              _buildDetailRow('Trx', 'Setoran'),
+            ],
+          ),
         ],
       ),
     );
@@ -101,8 +117,8 @@ class TransactionDetailScreen extends StatelessWidget {
     final denominations = [
       {'denom': '1.000', 'quantity': '87', 'total': '87.000'},
       {'denom': '2.000', 'quantity': '533', 'total': '1.066.000'},
-      {'denom': '5.000', 'quantity': '96', 'total': '48.000'},
-      {'denom': '10.000', 'quantity': '64', 'total': '64.000'},
+      {'denom': '5.000', 'quantity': '96', 'total': '480.000'},
+      {'denom': '10.000', 'quantity': '64', 'total': '640.000'},
       {'denom': '20.000', 'quantity': '53', 'total': '1.060.000'},
       {'denom': '50.000', 'quantity': '331', 'total': '16.550.000'},
       {'denom': '100.000', 'quantity': '367', 'total': '36.700.000'},
@@ -115,57 +131,30 @@ class TransactionDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Denom',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textBlack,
-                  ),
-                ),
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: const WatermarkWidget(
+                opacity: 0.06,
+                spacing: 120.0,
+                rotation: -45.0,
+                logoSize: 35.0,
               ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Lembar',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textBlack,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Total',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textBlack,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 12),
-          ...denominations.map(
-            (denom) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
+          Column(
+            children: [
+              Row(
                 children: [
                   Expanded(
                     flex: 2,
                     child: Text(
-                      denom['denom']!,
-                      style: const TextStyle(
+                      'Denom',
+                      style: TextStyle(
                         fontSize: 14,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.textBlack,
                       ),
                     ),
@@ -173,9 +162,10 @@ class TransactionDetailScreen extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'X ${denom['quantity']}',
-                      style: const TextStyle(
+                      'Lembar',
+                      style: TextStyle(
                         fontSize: 14,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.textBlack,
                       ),
                     ),
@@ -183,17 +173,58 @@ class TransactionDetailScreen extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '= ${denom['total']}',
-                      style: const TextStyle(
+                      'Total',
+                      style: TextStyle(
                         fontSize: 14,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.textBlack,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 12),
+              ...denominations.map(
+                (denom) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          denom['denom']!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textBlack,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'X ${denom['quantity']}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textBlack,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          '= ${denom['total']}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textBlack,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -208,16 +239,31 @@ class TransactionDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          _buildTotalRow('Total (Lembar)', '1.531'),
-          _buildTotalRow('Total (Amount)', '55.503.000'),
-          const SizedBox(height: 12),
-          _buildTotalRow('Biaya Layanan', 'Rp. 28.000'),
-          _buildTotalRow(
-            'Total Transfer',
-            'Rp. 56.555.000',
-            isHighlighted: true,
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: const WatermarkWidget(
+                opacity: 0.06,
+                spacing: 120.0,
+                rotation: -45.0,
+                logoSize: 35.0,
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              _buildTotalRow('Total (Lembar)', '1.531'),
+              _buildTotalRow('Total (Amount)', '55.503.000'),
+              const SizedBox(height: 12),
+              _buildTotalRow('Biaya Layanan', 'Rp. 28.000'),
+              _buildTotalRow(
+                'Total Transfer',
+                'Rp. 56.555.000',
+                isHighlighted: true,
+              ),
+            ],
           ),
         ],
       ),

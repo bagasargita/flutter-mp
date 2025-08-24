@@ -68,6 +68,10 @@ dependencies:
   geolocator: ^10.1.0
   permission_handler: ^11.0.1
 
+  # File operations and sharing
+  path_provider: ^2.1.2
+  share_plus: ^7.2.1
+
 
 dev_dependencies:
   flutter_test:
