@@ -3,6 +3,8 @@ import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
 import 'package:smart_mob/widgets/common/watermark_widget.dart';
+import 'package:smart_mob/widgets/common/custom_share_sheet.dart';
+import 'package:smart_mob/core/services/receipt_service.dart';
 
 class SetorTunaiSuccessScreen extends StatefulWidget {
   final Map<String, dynamic> transactionData;
@@ -79,7 +81,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.1),
               spreadRadius: 1,
               blurRadius: 10,
               offset: const Offset(0, 4),
@@ -154,7 +156,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -492,62 +494,199 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
   }
 
   Widget _buildActionButtons() {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: SizedBox(
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Implement download functionality
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _downloadReceipt,
+                  icon: const Icon(Icons.download, size: 12),
+                  label: Text(
+                    'Unduh Bukti Setor',
+                    style: AppText.bodyLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                    textScaler: TextScaler.linear(1.0),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Unduh Bukti Setor',
-                style: AppText.bodyLarge.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-                textScaler: TextScaler.linear(1.0),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: SizedBox(
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Implement share functionality
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Bagikan',
-                style: AppText.bodyLarge.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-                textScaler: TextScaler.linear(1.0),
               ),
             ),
-          ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: SizedBox(
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _shareReceipt,
+                  onLongPress: _shareReceipt,
+                  icon: const Icon(Icons.share, size: 12),
+                  label: Text(
+                    'Bagikan',
+                    style: AppText.bodyLarge.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                    textScaler: TextScaler.linear(1.0),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Future<void> _downloadReceipt() async {
+    try {
+      final denominations = [
+        {'denom': '1.000', 'quantity': '87', 'total': '87.000'},
+        {'denom': '2.000', 'quantity': '533', 'total': '1.066.000'},
+        {'denom': '5.000', 'quantity': '96', 'total': '480.000'},
+        {'denom': '10.000', 'quantity': '64', 'total': '640.000'},
+        {'denom': '20.000', 'quantity': '53', 'total': '1.060.000'},
+        {'denom': '50.000', 'quantity': '331', 'total': '16.550.000'},
+        {'denom': '100.000', 'quantity': '367', 'total': '36.700.000'},
+      ];
+
+      final pdfFile = await ReceiptService.generateReceiptPDF(
+        reference: 'KSN001250710211500176',
+        total: 'Rp 56.583.000',
+        date: '10/07/2025',
+        time: '21:39:54',
+        location: 'PT Warung Sejahtera Maju Makmur',
+        name: 'Wahid',
+        transactionType: 'Setoran',
+        denominations: denominations,
+      );
+
+      if (pdfFile != null && await pdfFile.exists()) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Receipt PDF generated successfully!'),
+              backgroundColor: AppColors.successGreen,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              action: SnackBarAction(
+                label: 'Share',
+                textColor: Colors.white,
+                onPressed: () => _shareReceipt(),
+              ),
+            ),
+          );
+        }
+      } else {
+        throw Exception('Failed to generate PDF');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengunduh bukti setor: ${e.toString()}'),
+            backgroundColor: AppColors.errorRed,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareReceipt() async {
+    try {
+      final denominations = [
+        {'denom': '1.000', 'quantity': '87', 'total': '87.000'},
+        {'denom': '2.000', 'quantity': '533', 'total': '1.066.000'},
+        {'denom': '5.000', 'quantity': '96', 'total': '480.000'},
+        {'denom': '10.000', 'quantity': '64', 'total': '640.000'},
+        {'denom': '20.000', 'quantity': '53', 'total': '1.060.000'},
+        {'denom': '50.000', 'quantity': '331', 'total': '16.550.000'},
+        {'denom': '100.000', 'quantity': '367', 'total': '36.700.000'},
+      ];
+
+      await ReceiptService.shareReceiptSimple(
+        reference: 'KSN001250710211500176',
+        total: 'Rp 56.583.000',
+        date: '10/07/2025',
+        time: '21:39:54',
+        location: 'PT Warung Sejahtera Maju Makmur',
+        name: 'Wahid',
+        transactionType: 'Setoran',
+        denominations: denominations,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Receipt shared successfully!'),
+            backgroundColor: AppColors.successGreen,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share receipt: ${e.toString()}'),
+            backgroundColor: AppColors.errorRed,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showCustomShareSheet() {
+    final receiptData = {
+      'reference': 'KSN001250710211500176',
+      'total': 'Rp 56.583.000',
+      'date': '10/07/2025',
+      'time': '21:39:54',
+      'location': 'PT Warung Sejahtera Maju Makmur',
+      'name': 'Wahid',
+      'transactionType': 'Setoran',
+    };
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CustomShareSheet(
+        onClose: () => Navigator.pop(context),
+        onNativeShare: _shareReceipt,
+        receiptData: receiptData,
+      ),
     );
   }
 }

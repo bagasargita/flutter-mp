@@ -69,21 +69,6 @@ class _SetorTunaiScreenState extends State<SetorTunaiScreen> {
                         onMachineSelected: _onMachineSelected,
                       ),
                       const SizedBox(height: 24),
-                      // Test button to manually show outstanding section
-                      ElevatedButton(
-                        onPressed: () {
-                          _onMachineSelected({
-                            'name': 'Test Machine',
-                            'location': 'Test Location',
-                            'address': 'Test Address',
-                            'maxAmount': 'Rp. 5.000.000,-',
-                            'distance': '1.0 km',
-                          });
-                        },
-                        child: const Text('Test Outstanding Section'),
-                      ),
-                      const SizedBox(height: 24),
-                      // Show outstanding section only when machine is selected
                       if (_outstandingTransactions.isNotEmpty)
                         Column(
                           children: _outstandingTransactions

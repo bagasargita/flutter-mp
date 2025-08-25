@@ -44,8 +44,6 @@ class _SetorTunaiMachineDetailsScreenState
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      if (_hasOutstandingTransaction)
-                        _buildOutstandingSection(),
                       _buildMachineInfo(),
                       const SizedBox(height: 32),
                       _buildActionButton(),
@@ -60,81 +58,81 @@ class _SetorTunaiMachineDetailsScreenState
     );
   }
 
-  Widget _buildOutstandingSection() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.orange,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Outstanding',
-                style: AppText.bodyMedium.copyWith(
-                  color: AppColors.textBlack,
-                  fontWeight: FontWeight.w600,
-                ),
-                textScaler: TextScaler.linear(1.0),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            widget.machineName,
-            style: AppText.bodyMedium.copyWith(
-              color: AppColors.textBlack,
-              fontWeight: FontWeight.w600,
-            ),
-            textScaler: TextScaler.linear(1.0),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.machineName, // Use machine name as location
-            style: AppText.bodySmall.copyWith(color: AppColors.textGray),
-            textScaler: TextScaler.linear(1.0),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.address,
-            style: AppText.bodySmall.copyWith(color: AppColors.textGray),
-            textScaler: TextScaler.linear(1.0),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              '00:34:55',
-              style: AppText.bodySmall.copyWith(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildOutstandingSection() {
+  //   return Container(
+  //     margin: const EdgeInsets.only(bottom: 20),
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: Colors.orange.withValues(alpha: 0.1),
+  //       borderRadius: BorderRadius.circular(12),
+  //       border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Container(
+  //               width: 8,
+  //               height: 8,
+  //               decoration: const BoxDecoration(
+  //                 color: Colors.orange,
+  //                 shape: BoxShape.circle,
+  //               ),
+  //             ),
+  //             const SizedBox(width: 8),
+  //             Text(
+  //               'Outstanding',
+  //               style: AppText.bodyMedium.copyWith(
+  //                 color: AppColors.textBlack,
+  //                 fontWeight: FontWeight.w600,
+  //               ),
+  //               textScaler: TextScaler.linear(1.0),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 12),
+  //         Text(
+  //           widget.machineName,
+  //           style: AppText.bodyMedium.copyWith(
+  //             color: AppColors.textBlack,
+  //             fontWeight: FontWeight.w600,
+  //           ),
+  //           textScaler: TextScaler.linear(1.0),
+  //         ),
+  //         const SizedBox(height: 4),
+  //         Text(
+  //           widget.machineName, // Use machine name as location
+  //           style: AppText.bodySmall.copyWith(color: AppColors.textGray),
+  //           textScaler: TextScaler.linear(1.0),
+  //         ),
+  //         const SizedBox(height: 4),
+  //         Text(
+  //           widget.address,
+  //           style: AppText.bodySmall.copyWith(color: AppColors.textGray),
+  //           textScaler: TextScaler.linear(1.0),
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Container(
+  //           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //           decoration: BoxDecoration(
+  //             color: Colors.red.withValues(alpha: 0.1),
+  //             borderRadius: BorderRadius.circular(20),
+  //             border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+  //           ),
+  //           child: Text(
+  //             '00:34:55',
+  //             style: AppText.bodySmall.copyWith(
+  //               color: Colors.red,
+  //               fontWeight: FontWeight.w600,
+  //             ),
+  //             textScaler: TextScaler.linear(1.0),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildMachineInfo() {
     return Column(
