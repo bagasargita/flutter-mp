@@ -26,7 +26,7 @@ class AppNavItem extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primaryRed.withValues(alpha: 0.1)
+                  ? AppColors.primaryRed.withOpacity(0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),

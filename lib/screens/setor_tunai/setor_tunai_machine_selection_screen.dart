@@ -20,10 +20,8 @@ class _SetorTunaiMachineSelectionScreenState
   final TextEditingController _searchController = TextEditingController();
   final MapController _mapController = MapController();
 
-  // Current user location
   LatLng? _currentLocation;
 
-  // Dummy data for ATMs/machines in Jakarta with real coordinates
   final List<Map<String, dynamic>> _machines = [
     {
       'name': 'Grosir Pondok Pinang',
@@ -115,7 +113,6 @@ class _SetorTunaiMachineSelectionScreenState
 
   Future<void> _getCurrentLocation() async {
     try {
-      // Check location permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -128,7 +125,6 @@ class _SetorTunaiMachineSelectionScreenState
         return;
       }
 
-      // Get current position
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
@@ -137,11 +133,9 @@ class _SetorTunaiMachineSelectionScreenState
         _currentLocation = LatLng(position.latitude, position.longitude);
       });
 
-      // Center map on current location
       _mapController.move(_currentLocation!, 15.0);
     } catch (e) {
       print('Error getting location: $e');
-      // Set default location to Jakarta center if location fails
       setState(() {
         _currentLocation = const LatLng(-6.2088, 106.8456);
       });
@@ -189,7 +183,7 @@ class _SetorTunaiMachineSelectionScreenState
     }
 
     return Container(
-      height: 200,
+      height: 380,
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -206,13 +200,10 @@ class _SetorTunaiMachineSelectionScreenState
             maxZoom: 18.0,
           ),
           children: [
-            // OpenStreetMap tiles
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.smartmob.app',
             ),
-
-            // Current location marker
             MarkerLayer(
               markers: [
                 Marker(
@@ -233,8 +224,6 @@ class _SetorTunaiMachineSelectionScreenState
                 ),
               ],
             ),
-
-            // Machine/ATM markers
             MarkerLayer(
               markers: _machines.map((machine) {
                 return Marker(
@@ -358,12 +347,8 @@ class _SetorTunaiMachineSelectionScreenState
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  print(
-                    'Pilih Mesin Ini button tapped for: ${machine['name']}',
-                  ); // Debug print
-                  Navigator.pop(context); // Close bottom sheet
+                  Navigator.pop(context);
 
-                  // Navigate to machine details screen and wait for result
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -376,14 +361,7 @@ class _SetorTunaiMachineSelectionScreenState
                     ),
                   );
 
-                  print(
-                    'Returned from machine details (bottom sheet): $result',
-                  ); // Debug print
-                  // If machine was selected, return the data to Setor Tunai screen
                   if (result != null && result is Map<String, dynamic>) {
-                    print(
-                      'Returning machine data to Setor Tunai (bottom sheet): $result',
-                    ); // Debug print
                     Navigator.pop(context, result);
                   }
                 },
@@ -439,7 +417,7 @@ class _SetorTunaiMachineSelectionScreenState
   Widget _buildSearchBar() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
@@ -486,8 +464,6 @@ class _SetorTunaiMachineSelectionScreenState
   Widget _buildMachineItem(Map<String, dynamic> machine) {
     return GestureDetector(
       onTap: () async {
-        print('Machine item tapped: ${machine['name']}'); // Debug print
-        // Navigate to machine details screen and wait for result
         final result = await Navigator.push(
           context,
           MaterialPageRoute(
@@ -500,12 +476,7 @@ class _SetorTunaiMachineSelectionScreenState
           ),
         );
 
-        print('Returned from machine details: $result'); // Debug print
-        // If machine was selected, return the data to Setor Tunai screen
         if (result != null && result is Map<String, dynamic>) {
-          print(
-            'Returning machine data to Setor Tunai: $result',
-          ); // Debug print
           Navigator.pop(context, result);
         }
       },

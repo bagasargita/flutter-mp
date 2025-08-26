@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _preloadCarouselImages() {
     final carouselImages = [
       'assets/images/promo1.svg',
-      'assets/images/ForgotPassword.png',
+      'assets/images/ForgotPassword.svg',
     ];
 
     for (final imagePath in carouselImages) {
@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildImageCarousel() {
     final List<String> carouselImages = [
       'assets/images/promo1.svg',
-      'assets/images/ForgotPassword.png',
+      'assets/images/ForgotPassword.svg',
     ];
 
     return RepaintBoundary(
@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.3),
+                        color: Colors.grey.withOpacity(0.3),
                         spreadRadius: 2,
                         blurRadius: 5,
                         offset: const Offset(0, 3),
@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: BoxShape.circle,
                   color: entry.key == _currentPage
                       ? AppColors.primaryRed
-                      : Colors.grey.withValues(alpha: 0.3),
+                      : Colors.grey.withOpacity(0.3),
                 ),
               );
             }).toList(),
@@ -548,7 +548,7 @@ class _ServicesSectionState extends State<ServicesSection>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.1),
+                color: Colors.grey.withOpacity(0.1),
                 spreadRadius: 1,
                 blurRadius: 4,
                 offset: const Offset(0, 2),

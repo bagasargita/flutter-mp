@@ -50,7 +50,7 @@ class CardDetailsScreen extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryRed.withValues(alpha: 0.15),
+                      color: AppColors.primaryRed.withOpacity(0.15),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -62,7 +62,7 @@ class CardDetailsScreen extends StatelessWidget {
                     Text(
                       'Saldo yang tersedia',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: Colors.white.withOpacity(0.8),
                         fontSize: 14,
                       ),
                     ),
@@ -112,7 +112,7 @@ class CardDetailsScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.errorRed.withValues(alpha: 0.08),
+                  color: AppColors.errorRed.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Center(
@@ -214,7 +214,7 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -253,7 +253,7 @@ class _SettingsTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textGray.withValues(alpha: 0.06),
+              color: AppColors.textGray.withOpacity(0.06),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
