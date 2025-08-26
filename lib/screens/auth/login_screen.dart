@@ -13,6 +13,7 @@ import '../profile/contact_screen.dart';
 import '../profile/settings_screen.dart';
 // import removed; AppBottomNav encapsulates items
 import '../../widgets/common/app_bottom_nav.dart';
+import '../setor_tunai/setor_tunai_history_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -92,9 +93,7 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const Center(
-      child: Text('Riwayat Transaksi', style: TextStyle(fontSize: 24)),
-    ),
+    const SetorTunaiHistoryScreen(),
     const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
   ];
 

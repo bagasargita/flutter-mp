@@ -376,10 +376,6 @@ class _RootScreenState extends State<RootScreen> {
             onTap: _onItemTapped,
             items: const [
               BottomNavItemData(icon: Icons.home, label: 'Home'),
-              BottomNavItemData(
-                icon: Icons.account_balance_wallet,
-                label: 'Wallet',
-              ),
               BottomNavItemData(icon: Icons.grid_view, label: 'More'),
             ],
           ),
