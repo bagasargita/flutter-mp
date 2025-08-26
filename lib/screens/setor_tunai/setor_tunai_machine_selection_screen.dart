@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
 import 'package:smart_mob/screens/setor_tunai/setor_tunai_machine_details_screen.dart';
+import 'package:smart_mob/core/services/location_service.dart';
 
 class SetorTunaiMachineSelectionScreen extends StatefulWidget {
   const SetorTunaiMachineSelectionScreen({super.key});
@@ -112,33 +112,13 @@ class _SetorTunaiMachineSelectionScreenState
   }
 
   Future<void> _getCurrentLocation() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return;
-        }
-      }
+    final location = await LocationService.getCurrentLocation();
+    setState(() {
+      _currentLocation = location ?? const LatLng(-6.2088, 106.8456);
+    });
 
-      if (permission == LocationPermission.deniedForever) {
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      setState(() {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-      });
-
+    if (_currentLocation != null) {
       _mapController.move(_currentLocation!, 15.0);
-    } catch (e) {
-      print('Error getting location: $e');
-      setState(() {
-        _currentLocation = const LatLng(-6.2088, 106.8456);
-      });
     }
   }
 
