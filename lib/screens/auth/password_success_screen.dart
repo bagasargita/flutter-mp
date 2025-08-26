@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/screens/auth/login_screen.dart';
@@ -49,10 +50,10 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/images/ForgotPassword.png',
-                          height: 280,
-                          fit: BoxFit.contain,
+                        SvgPicture.asset(
+                          'assets/images/ForgotPassword.svg',
+                          width: 200,
+                          height: 200,
                         ),
 
                         const SizedBox(height: 32),

@@ -9,7 +9,6 @@ import 'forgot_password_screen.dart';
 import '../home_screen.dart';
 
 import '../profile/profile_screen.dart';
-import '../report/report_screen.dart';
 import '../profile/contact_screen.dart';
 import '../profile/settings_screen.dart';
 // import removed; AppBottomNav encapsulates items
@@ -155,18 +154,6 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const ProfileScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Lapor',
-                    Icons.report,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ReportScreen(),
                         ),
                       );
                     },

@@ -4,11 +4,8 @@ import 'constants/app_colors.dart';
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/search/search_screen.dart';
-import 'screens/statistics/statistics_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/profile/profile_screen.dart';
-import 'screens/report/report_screen.dart';
 import 'screens/profile/contact_screen.dart';
 import 'screens/profile/settings_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -104,9 +101,7 @@ class _RootScreenState extends State<RootScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const SearchScreen(),
     const Center(child: Text('Wallet', style: TextStyle(fontSize: 24))),
-    const StatisticsScreen(),
     const Center(child: Text('More', style: TextStyle(fontSize: 24))),
   ];
 
@@ -167,19 +162,6 @@ class _RootScreenState extends State<RootScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ProfileScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Lapor',
-                    Icons.report,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ReportScreen(),
                         ),
                       );
                     },
@@ -394,12 +376,10 @@ class _RootScreenState extends State<RootScreen> {
             onTap: _onItemTapped,
             items: const [
               BottomNavItemData(icon: Icons.home, label: 'Home'),
-              BottomNavItemData(icon: Icons.search, label: 'Search'),
               BottomNavItemData(
                 icon: Icons.account_balance_wallet,
                 label: 'Wallet',
               ),
-              BottomNavItemData(icon: Icons.bar_chart, label: 'Stats'),
               BottomNavItemData(icon: Icons.grid_view, label: 'More'),
             ],
           ),
