@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:smart_mob/core/api/interceptors/auth_interceptor.dart';
-import 'package:smart_mob/core/api/interceptors/logging_interceptor.dart';
+import 'package:smart_mob/core/api/api_config.dart';
+import 'package:smart_mob/core/api/api_endpoints.dart';
 
 class ApiClient {
   final Dio _dio;
@@ -8,17 +8,16 @@ class ApiClient {
   ApiClient(this._dio);
 
   static ApiClient create() {
-    final dio = Dio();
-    dio.interceptors.addAll([LoggingInterceptor(), AuthInterceptor()]);
-    return ApiClient(dio);
+    return ApiClient(ApiConfig.createDio());
   }
 
   Future<Response<Map<String, dynamic>>> login({
-    required Map<String, dynamic> credentials,
+    required String identifier,
+    required String password,
   }) async {
     return await _dio.post<Map<String, dynamic>>(
-      '/auth/login',
-      data: credentials,
+      ApiEndpoints.login,
+      data: {'identifier': identifier, 'password': password},
     );
   }
 
@@ -26,42 +25,59 @@ class ApiClient {
     required Map<String, dynamic> userData,
   }) async {
     return await _dio.post<Map<String, dynamic>>(
-      '/auth/register',
+      ApiEndpoints.register,
       data: userData,
     );
   }
 
   Future<Response<Map<String, dynamic>>> logout() async {
-    return await _dio.post<Map<String, dynamic>>('/auth/logout');
+    return await _dio.post<Map<String, dynamic>>(ApiEndpoints.logout);
   }
 
   Future<Response<Map<String, dynamic>>> getProfile() async {
-    return await _dio.get<Map<String, dynamic>>('/user/profile');
+    return await _dio.get<Map<String, dynamic>>(ApiEndpoints.profile);
   }
 
   Future<Response<Map<String, dynamic>>> updateProfile({
     required Map<String, dynamic> profileData,
   }) async {
     return await _dio.put<Map<String, dynamic>>(
-      '/user/profile',
+      ApiEndpoints.updateProfile,
       data: profileData,
     );
   }
 
   Future<Response<List<dynamic>>> getNotifications() async {
-    return await _dio.get<List<dynamic>>('/notifications');
+    return await _dio.get<List<dynamic>>(ApiEndpoints.notifications);
   }
 
   Future<Response<List<dynamic>>> getServices() async {
-    return await _dio.get<List<dynamic>>('/services');
+    return await _dio.get<List<dynamic>>(ApiEndpoints.services);
   }
 
   Future<Response<Map<String, dynamic>>> createTransaction({
     required Map<String, dynamic> transactionData,
   }) async {
     return await _dio.post<Map<String, dynamic>>(
-      '/transactions',
+      ApiEndpoints.transactions,
       data: transactionData,
+    );
+  }
+
+  Future<Response<List<dynamic>>> getTransactionHistory() async {
+    return await _dio.get<List<dynamic>>(ApiEndpoints.transactionHistory);
+  }
+
+  Future<Response<Map<String, dynamic>>> getServiceCategories() async {
+    return await _dio.get<Map<String, dynamic>>(ApiEndpoints.serviceCategories);
+  }
+
+  Future<Response<Map<String, dynamic>>> markNotificationAsRead({
+    required String notificationId,
+  }) async {
+    return await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.markAsRead,
+      data: {'notification_id': notificationId},
     );
   }
 }

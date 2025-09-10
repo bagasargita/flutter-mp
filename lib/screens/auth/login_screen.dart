@@ -5,6 +5,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/home/presentation/bloc/home_bloc.dart';
+import '../../core/di/service_locator.dart';
 import 'forgot_password_screen.dart';
 import '../home_screen.dart';
 
@@ -14,6 +15,7 @@ import '../profile/settings_screen.dart';
 // import removed; AppBottomNav encapsulates items
 import '../../widgets/common/app_bottom_nav.dart';
 import '../setor_tunai/setor_tunai_history_screen.dart';
+import 'role_selection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -26,13 +28,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -42,18 +44,40 @@ class _LoginScreenState extends State<LoginScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: BlocProvider(
-        create: (context) => AuthBloc(),
+        create: (context) => AuthBloc(ServiceLocator().authRepository),
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthAuthenticated) {
               widget.onLoginSuccess?.call();
               if (widget.onLoginSuccess == null) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => const _HomeWithNavigation(),
-                  ),
-                  (route) => false,
-                );
+                if (state.user.roleMobile == 'CUSTOMER') {
+                  // Customer - go directly to home with navigation
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => BlocProvider(
+                        create: (context) => HomeBloc(),
+                        child: _HomeWithNavigation(
+                          userRoleMobile: state.user.roleMobile,
+                          userEmail: state.user.email,
+                          userName: state.user.name,
+                        ),
+                      ),
+                    ),
+                    (route) => false,
+                  );
+                } else {
+                  // Service provider or other roles - show role selection
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => RoleSelectionScreen(
+                        userEmail: state.user.email,
+                        userName: state.user.name,
+                        userRoleMobile: state.user.roleMobile,
+                      ),
+                    ),
+                    (route) => false,
+                  );
+                }
               }
             } else if (state is AuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           child: _LoginForm(
             formKey: _formKey,
-            emailController: _emailController,
+            identifierController: _identifierController,
             passwordController: _passwordController,
             isPasswordVisible: _isPasswordVisible,
             onPasswordVisibilityChanged: (value) {
@@ -82,7 +106,15 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 class _HomeWithNavigation extends StatefulWidget {
-  const _HomeWithNavigation();
+  final String userRoleMobile;
+  final String userEmail;
+  final String userName;
+
+  const _HomeWithNavigation({
+    required this.userRoleMobile,
+    required this.userEmail,
+    required this.userName,
+  });
 
   @override
   State<_HomeWithNavigation> createState() => _HomeWithNavigationState();
@@ -91,11 +123,21 @@ class _HomeWithNavigation extends StatefulWidget {
 class _HomeWithNavigationState extends State<_HomeWithNavigation> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const SetorTunaiHistoryScreen(),
-    const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(
+        userRoleMobile: widget.userRoleMobile,
+        userEmail: widget.userEmail,
+        userName: widget.userName,
+      ),
+      const SetorTunaiHistoryScreen(),
+      const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
+    ];
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
@@ -386,14 +428,14 @@ class _HomeWithNavigationState extends State<_HomeWithNavigation> {
 
 class _LoginForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
-  final TextEditingController emailController;
+  final TextEditingController identifierController;
   final TextEditingController passwordController;
   final bool isPasswordVisible;
   final Function(bool) onPasswordVisibilityChanged;
 
   const _LoginForm({
     required this.formKey,
-    required this.emailController,
+    required this.identifierController,
     required this.passwordController,
     required this.isPasswordVisible,
     required this.onPasswordVisibilityChanged,
@@ -405,7 +447,7 @@ class _LoginForm extends StatelessWidget {
       if (formKey.currentState!.validate()) {
         context.read<AuthBloc>().add(
           AuthLoginRequested(
-            email: emailController.text.trim(),
+            identifier: identifierController.text.trim(),
             password: passwordController.text,
           ),
         );
@@ -438,8 +480,8 @@ class _LoginForm extends StatelessWidget {
                     ),
                     const SizedBox(height: 48),
                     TextFormField(
-                      controller: emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      controller: identifierController,
+                      keyboardType: TextInputType.text,
                       decoration: const InputDecoration(
                         labelText: 'Phone Number or Username',
                         border: UnderlineInputBorder(),

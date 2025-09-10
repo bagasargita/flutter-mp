@@ -11,7 +11,16 @@ import 'setor_tunai/setor_tunai_screen.dart';
 import '../widgets/common/app_top_bar.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String userRoleMobile;
+  final String userEmail;
+  final String userName;
+
+  const HomeScreen({
+    super.key,
+    required this.userRoleMobile,
+    required this.userEmail,
+    required this.userName,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -124,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 16),
           // Use a separate widget that won't rebuild with carousel changes
-          const ServicesSection(),
+          ServicesSection(userRoleMobile: widget.userRoleMobile),
           const SizedBox(height: 20),
           // Promo Section Title
           Row(
@@ -364,7 +373,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // Separate widget for services that won't rebuild with carousel changes
 class ServicesSection extends StatefulWidget {
-  const ServicesSection({super.key});
+  final String userRoleMobile;
+
+  const ServicesSection({super.key, required this.userRoleMobile});
 
   @override
   State<ServicesSection> createState() => _ServicesSectionState();
@@ -400,6 +411,108 @@ class _ServicesSectionState extends State<ServicesSection>
 
     for (final imagePath in serviceImages) {
       _loadSvgContent(imagePath);
+    }
+  }
+
+  List<Map<String, dynamic>> _getServicesForRole(String role) {
+    if (role == 'MESIN') {
+      // Services for Penyedia Layanan (Service Provider)
+      return [
+        {
+          'name': 'Kelola Mesin',
+          'image': 'assets/images/SetorTunai.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Status Mesin',
+          'image': 'assets/images/NonTunai.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Laporan',
+          'image': 'assets/images/KirimUang.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Pendapatan',
+          'image': 'assets/images/BayarTagihan.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Maintenance',
+          'image': 'assets/images/KirimBarang.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Pengaturan',
+          'image': 'assets/images/IsiUlang.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Notifikasi',
+          'image': 'assets/images/Pinjaman.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Profil',
+          'image': 'assets/images/KirimBarang2.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Lainnya',
+          'image': 'assets/images/Lainnya.svg',
+          'color': Colors.red,
+        },
+      ];
+    } else {
+      // Services for Pelanggan (Customer) - NON_MESIN
+      return [
+        {
+          'name': 'Setor Tunai',
+          'image': 'assets/images/SetorTunai.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Non Tunai',
+          'image': 'assets/images/NonTunai.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Kirim Uang',
+          'image': 'assets/images/KirimUang.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Bayar Tagihan',
+          'image': 'assets/images/BayarTagihan.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Kirim Barang',
+          'image': 'assets/images/KirimBarang.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Isi ulang',
+          'image': 'assets/images/IsiUlang.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Pinjaman',
+          'image': 'assets/images/Pinjaman.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Kirim Barang',
+          'image': 'assets/images/KirimBarang2.svg',
+          'color': Colors.red,
+        },
+        {
+          'name': 'Lainnya',
+          'image': 'assets/images/Lainnya.svg',
+          'color': Colors.red,
+        },
+      ];
     }
   }
 
@@ -458,53 +571,7 @@ class _ServicesSectionState extends State<ServicesSection>
   }
 
   Widget _buildServicesContent() {
-    final services = [
-      {
-        'name': 'Setor Tunai',
-        'image': 'assets/images/SetorTunai.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Non Tunai',
-        'image': 'assets/images/NonTunai.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Kirim Uang',
-        'image': 'assets/images/KirimUang.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Bayar Tagihan',
-        'image': 'assets/images/BayarTagihan.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Kirim Barang',
-        'image': 'assets/images/KirimBarang.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Isi ulang',
-        'image': 'assets/images/IsiUlang.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Pinjaman',
-        'image': 'assets/images/Pinjaman.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Kirim Barang',
-        'image': 'assets/images/KirimBarang2.svg',
-        'color': Colors.red,
-      },
-      {
-        'name': 'Lainnya',
-        'image': 'assets/images/Lainnya.svg',
-        'color': Colors.red,
-      },
-    ];
+    final services = _getServicesForRole(widget.userRoleMobile);
 
     return GridView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16),

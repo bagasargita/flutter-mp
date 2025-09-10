@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../api_endpoints.dart';
 
 class AuthInterceptor extends Interceptor {
   static const String _tokenKey = 'auth_token';
@@ -29,7 +30,7 @@ class AuthInterceptor extends Interceptor {
       if (refreshToken != null) {
         try {
           final response = await Dio().post(
-            'https://api.smartmob.com/v1/auth/refresh',
+            '${ApiEndpoints.baseUrl}${ApiEndpoints.refreshToken}',
             data: {'refresh_token': refreshToken},
           );
 

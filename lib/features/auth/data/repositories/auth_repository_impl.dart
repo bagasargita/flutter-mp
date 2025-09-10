@@ -16,19 +16,34 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> login({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
     try {
       final response = await _apiClient.login(
-        credentials: {'email': email, 'password': password},
+        identifier: identifier,
+        password: password,
       );
 
-      final userData = response.data!['user'] as Map<String, dynamic>;
+      if (response.data == null) {
+        return Left(ServerFailure(message: 'No data received from server'));
+      }
+
+      final responseData = response.data!['data'] as Map<String, dynamic>?;
+      if (responseData == null) {
+        return Left(
+          ServerFailure(message: 'Invalid response format from server'),
+        );
+      }
+
+      final userData = responseData['user'] as Map<String, dynamic>?;
+      if (userData == null) {
+        return Left(ServerFailure(message: 'User data not found in response'));
+      }
       final user = User.fromJson(userData);
 
       await _saveUserData(user);
-      await _saveToken(response.data!['access_token'] as String);
+      await _saveToken(responseData['accessToken'] as String);
 
       return Right(user);
     } on DioException catch (e) {
@@ -42,7 +57,16 @@ class AuthRepositoryImpl implements AuthRepository {
         ),
       );
     } catch (e) {
-      return Left(NetworkFailure(message: 'Network error occurred'));
+      if (e is TypeError) {
+        return Left(
+          ServerFailure(
+            message: 'Failed to parse server response: ${e.toString()}',
+          ),
+        );
+      }
+      return Left(
+        NetworkFailure(message: 'Network error occurred: ${e.toString()}'),
+      );
     }
   }
 
@@ -63,11 +87,12 @@ class AuthRepositoryImpl implements AuthRepository {
         },
       );
 
-      final userData = response.data!['user'] as Map<String, dynamic>;
+      final responseData = response.data!['data'] as Map<String, dynamic>;
+      final userData = responseData['user'] as Map<String, dynamic>;
       final user = User.fromJson(userData);
 
       await _saveUserData(user);
-      await _saveToken(response.data!['access_token'] as String);
+      await _saveToken(responseData['accessToken'] as String);
 
       return Right(user);
     } on DioException catch (e) {

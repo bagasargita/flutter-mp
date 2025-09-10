@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const String baseUrl = 'https://api.smartmob.com/v1';
+  static const String baseUrl = 'http://103.23.199.26:8085/mobile/api';
 
   // Auth endpoints
   static const String login = '/auth/login';

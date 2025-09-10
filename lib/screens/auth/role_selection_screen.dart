@@ -1,118 +1,260 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'constants/app_colors.dart';
-import 'screens/splash_screen.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/onboarding_screen.dart';
-import 'screens/profile/profile_screen.dart';
-import 'screens/profile/contact_screen.dart';
-import 'screens/profile/settings_screen.dart';
-import 'screens/notifications_screen.dart';
-import 'features/app/presentation/bloc/app_bloc.dart';
-import 'features/home/presentation/bloc/home_bloc.dart';
-import 'features/notifications/presentation/bloc/notifications_bloc.dart';
-import 'widgets/common/app_bottom_nav.dart';
-import 'core/di/service_locator.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text.dart';
+import '../../features/home/presentation/bloc/home_bloc.dart';
+import '../home_screen.dart';
+import '../../widgets/common/app_bottom_nav.dart';
+import '../setor_tunai/setor_tunai_history_screen.dart';
+import '../profile/profile_screen.dart';
+import '../profile/contact_screen.dart';
+import '../profile/settings_screen.dart';
+import 'login_screen.dart';
 
-void main() {
-  ServiceLocator().init();
-  runApp(const MyApp());
+class RoleSelectionScreen extends StatefulWidget {
+  final String userEmail;
+  final String userName;
+  final String userRoleMobile;
+
+  const RoleSelectionScreen({
+    super.key,
+    required this.userEmail,
+    required this.userName,
+    required this.userRoleMobile,
+  });
+
+  @override
+  State<RoleSelectionScreen> createState() => _RoleSelectionScreenState();
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
+  String? _selectedRole;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-select the role based on user's roleMobile from API
+    _selectedRole = widget.userRoleMobile;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SMARTMobs',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryRed,
-          brightness: Brightness.light,
+    return Scaffold(
+      backgroundColor: AppColors.backgroundWhite,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(
+                    Icons.arrow_back_ios,
+                    color: AppColors.textBlack,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              SvgPicture.asset('assets/images/LOGO-SVG.svg', height: 120),
+              const SizedBox(height: 20),
+              Text(
+                'MerahPutih',
+                style: AppText.kalamBold.copyWith(
+                  fontSize: 32,
+                  color: AppColors.primaryRed,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 60),
+              _buildRoleCard(
+                title: 'Pelanggan',
+                subtitle: 'Masuk sebagai Pelanggan',
+                icon: Icons.person,
+                role: 'NON_MESIN',
+                isSelected: _selectedRole == 'NON_MESIN',
+                onTap: () => _selectRole('NON_MESIN'),
+              ),
+              const SizedBox(height: 16),
+              _buildRoleCard(
+                title: 'Penyedia Layanan',
+                subtitle: 'Masuk sebagai Penyedia Jasa Mesin',
+                icon: Icons.camera_alt,
+                role: 'MESIN',
+                isSelected: _selectedRole == 'MESIN',
+                onTap: () => _selectRole('MESIN'),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _selectedRole != null ? _continue : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Lanjut',
+                    style: AppText.buttonPrimary.copyWith(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
-        textTheme: Theme.of(context).textTheme.apply(
-          bodyColor: AppColors.textBlack,
-          displayColor: AppColors.textBlack,
-        ),
-        useMaterial3: true,
       ),
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(1.0)),
-          child: child!,
-        );
-      },
-      routes: {'/notifications': (context) => const NotificationsScreen()},
-      home: const AppEntry(),
     );
+  }
+
+  Widget _buildRoleCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String role,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryRed.withOpacity(0.1)
+              : Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryRed : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryRed : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : AppColors.textGray,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppText.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? AppColors.primaryRed
+                          : AppColors.textBlack,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: AppText.bodyMedium.copyWith(
+                      color: isSelected
+                          ? AppColors.primaryRed
+                          : AppColors.textGray,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle,
+                color: AppColors.primaryRed,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _selectRole(String role) {
+    setState(() {
+      _selectedRole = role;
+    });
+  }
+
+  void _continue() {
+    if (_selectedRole != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => HomeBloc(),
+            child: _HomeWithNavigation(
+              userRoleMobile: _selectedRole!,
+              userEmail: widget.userEmail,
+              userName: widget.userName,
+            ),
+          ),
+        ),
+      );
+    }
   }
 }
 
-class AppEntry extends StatelessWidget {
-  const AppEntry({super.key});
+class _HomeWithNavigation extends StatefulWidget {
+  final String userRoleMobile;
+  final String userEmail;
+  final String userName;
+
+  const _HomeWithNavigation({
+    required this.userRoleMobile,
+    required this.userEmail,
+    required this.userName,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => AppBloc()),
-        BlocProvider(create: (context) => NotificationsBloc()),
-      ],
-      child: BlocBuilder<AppBloc, AppState>(
-        builder: (context, state) {
-          if (state.showSplash) {
-            final blocContext = context;
-            Future.delayed(const Duration(seconds: 2), () {
-              if (blocContext.mounted) {
-                blocContext.read<AppBloc>().add(const AppSplashFinished());
-              }
-            });
-            return const SplashScreen();
-          }
-          if (!state.hasSeenOnboarding) {
-            return const OnboardingScreen();
-          }
-          if (!state.isAuthenticated) {
-            return LoginScreen(
-              onLoginSuccess: () {
-                context.read<AppBloc>().add(const AppLoginRequested());
-              },
-            );
-          }
-          return const RootScreen();
-        },
-      ),
-    );
-  }
+  State<_HomeWithNavigation> createState() => _HomeWithNavigationState();
 }
 
-class RootScreen extends StatefulWidget {
-  const RootScreen({super.key});
-
-  @override
-  State<RootScreen> createState() => _RootScreenState();
-}
-
-class _RootScreenState extends State<RootScreen> {
+class _HomeWithNavigationState extends State<_HomeWithNavigation> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(
-      userRoleMobile: 'CUSTOMER',
-      userEmail: 'default@example.com',
-      userName: 'Default User',
-    ),
-    const Center(child: Text('Wallet', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('More', style: TextStyle(fontSize: 24))),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(
+        userRoleMobile: widget.userRoleMobile,
+        userEmail: widget.userEmail,
+        userName: widget.userName,
+      ),
+      const SetorTunaiHistoryScreen(),
+      const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
+    ];
+  }
 
   void _onItemTapped(int index) {
-    if (index == 4) {
+    if (index == 2) {
       _showMoreMenu();
     } else {
       setState(() {
@@ -164,8 +306,7 @@ class _RootScreenState extends State<RootScreen> {
                     isHighlighted: true,
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
+                      Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const ProfileScreen(),
                         ),
@@ -177,8 +318,7 @@ class _RootScreenState extends State<RootScreen> {
                     Icons.contact_support,
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
+                      Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const ContactScreen(),
                         ),
@@ -190,8 +330,7 @@ class _RootScreenState extends State<RootScreen> {
                     Icons.settings,
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
+                      Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const SettingsScreen(),
                         ),
@@ -316,8 +455,12 @@ class _RootScreenState extends State<RootScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<AppBloc>().add(const AppLogoutRequested());
-                      Navigator.pop(context);
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryRed,
@@ -373,22 +516,18 @@ class _RootScreenState extends State<RootScreen> {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: BlocProvider(
-        create: (context) => HomeBloc(),
-        child: Scaffold(
-          body: _screens[_selectedIndex],
-          bottomNavigationBar: AppBottomNav(
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            items: const [
-              BottomNavItemData(icon: Icons.home, label: 'Home'),
-              BottomNavItemData(icon: Icons.grid_view, label: 'More'),
-            ],
-          ),
+      child: Scaffold(
+        body: _screens[_selectedIndex],
+        bottomNavigationBar: AppBottomNav(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavItemData(icon: Icons.home, label: 'Beranda'),
+            BottomNavItemData(icon: Icons.history, label: 'Riwayat Transaksi'),
+            BottomNavItemData(icon: Icons.person, label: 'Akun'),
+          ],
         ),
       ),
     );
   }
-
-  // removed: replaced by AppBottomNav
 }
