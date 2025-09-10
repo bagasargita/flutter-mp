@@ -4,21 +4,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/home/presentation/bloc/home_bloc.dart';
-import '../../core/di/service_locator.dart';
+import '../../features/app/presentation/bloc/app_bloc.dart';
 import 'forgot_password_screen.dart';
-import '../home_screen.dart';
-
-import '../profile/profile_screen.dart';
-import '../profile/contact_screen.dart';
-import '../profile/settings_screen.dart';
-// import removed; AppBottomNav encapsulates items
-import '../../widgets/common/app_bottom_nav.dart';
-import '../setor_tunai/setor_tunai_history_screen.dart';
-import 'role_selection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  final VoidCallback? onLoginSuccess;
+  final void Function(
+    String userRoleMobile,
+    String userEmail,
+    String userName,
+    String selectedRole,
+  )?
+  onLoginSuccess;
 
   const LoginScreen({super.key, this.onLoginSuccess});
 
@@ -43,387 +39,63 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: BlocProvider(
-        create: (context) => AuthBloc(ServiceLocator().authRepository),
-        child: BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is AuthAuthenticated) {
-              widget.onLoginSuccess?.call();
-              if (widget.onLoginSuccess == null) {
-                if (state.user.roleMobile == 'CUSTOMER') {
-                  // Customer - go directly to home with navigation
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => BlocProvider(
-                        create: (context) => HomeBloc(),
-                        child: _HomeWithNavigation(
-                          userRoleMobile: state.user.roleMobile,
-                          userEmail: state.user.email,
-                          userName: state.user.name,
-                        ),
-                      ),
-                    ),
-                    (route) => false,
-                  );
-                } else {
-                  // Service provider or other roles - show role selection
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => RoleSelectionScreen(
-                        userEmail: state.user.email,
-                        userName: state.user.name,
-                        userRoleMobile: state.user.roleMobile,
-                      ),
-                    ),
-                    (route) => false,
-                  );
-                }
-              }
-            } else if (state is AuthFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthAuthenticated) {
+            // Determine the appropriate selectedRole based on user role
+            String selectedRole = '';
+            if (state.user.roleMobile == 'CUSTOMER') {
+              selectedRole = 'CUSTOMER'; // CUSTOMER goes directly to home
+            } else if (state.user.roleMobile == 'NON_MESIN' ||
+                state.user.roleMobile == 'MESIN') {
+              selectedRole = ''; // Empty for role selection
+            }
+
+            // Trigger the login success callback with proper data
+            if (widget.onLoginSuccess != null) {
+              widget.onLoginSuccess!(
+                state.user.roleMobile,
+                state.user.email,
+                state.user.name,
+                selectedRole,
+              );
+            }
+
+            // If no callback provided, trigger the main app flow
+            if (widget.onLoginSuccess == null) {
+              // Use the same logic as the main app flow
+              context.read<AppBloc>().add(
+                AppLoginSuccess(
+                  userRoleMobile: state.user.roleMobile,
+                  userEmail: state.user.email,
+                  userName: state.user.name,
+                  selectedRole: selectedRole,
                 ),
               );
             }
+          } else if (state is AuthFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: _LoginForm(
+          formKey: _formKey,
+          identifierController: _identifierController,
+          passwordController: _passwordController,
+          isPasswordVisible: _isPasswordVisible,
+          onPasswordVisibilityChanged: (value) {
+            setState(() {
+              _isPasswordVisible = value;
+            });
           },
-          child: _LoginForm(
-            formKey: _formKey,
-            identifierController: _identifierController,
-            passwordController: _passwordController,
-            isPasswordVisible: _isPasswordVisible,
-            onPasswordVisibilityChanged: (value) {
-              setState(() {
-                _isPasswordVisible = value;
-              });
-            },
-          ),
         ),
       ),
     );
   }
-}
-
-class _HomeWithNavigation extends StatefulWidget {
-  final String userRoleMobile;
-  final String userEmail;
-  final String userName;
-
-  const _HomeWithNavigation({
-    required this.userRoleMobile,
-    required this.userEmail,
-    required this.userName,
-  });
-
-  @override
-  State<_HomeWithNavigation> createState() => _HomeWithNavigationState();
-}
-
-class _HomeWithNavigationState extends State<_HomeWithNavigation> {
-  int _selectedIndex = 0;
-
-  late final List<Widget> _screens;
-
-  @override
-  void initState() {
-    super.initState();
-    _screens = [
-      HomeScreen(
-        userRoleMobile: widget.userRoleMobile,
-        userEmail: widget.userEmail,
-        userName: widget.userName,
-      ),
-      const SetorTunaiHistoryScreen(),
-      const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    if (index == 2) {
-      _showMoreMenu();
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
-  void _showMoreMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      enableDrag: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) => _buildMoreMenu(),
-    );
-  }
-
-  Widget _buildMoreMenu() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    'Kelola Profil',
-                    Icons.person,
-                    isHighlighted: true,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ProfileScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Kontak',
-                    Icons.contact_support,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ContactScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Pengaturan',
-                    Icons.settings,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Keluar',
-                    Icons.logout,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showLogoutConfirmation(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(
-    String title,
-    IconData icon, {
-    bool isHighlighted = false,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isHighlighted ? AppColors.primaryRed : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  color: isHighlighted ? Colors.white : AppColors.textBlack,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: isHighlighted ? Colors.white : AppColors.textBlack,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: isHighlighted ? Colors.white : AppColors.textGray,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      enableDrag: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const Text(
-                  'Apakah anda yakin?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryRed,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Apakah Anda yakin ingin keluar?',
-                  style: TextStyle(fontSize: 16, color: AppColors.textGray),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryRed,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Keluar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[200],
-                      foregroundColor: AppColors.textGray,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Batal',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: BlocProvider(
-        create: (context) => HomeBloc(),
-        child: Scaffold(
-          body: _screens[_selectedIndex],
-          bottomNavigationBar: AppBottomNav(
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            items: const [
-              BottomNavItemData(icon: Icons.home, label: 'Beranda'),
-              BottomNavItemData(
-                icon: Icons.history,
-                label: 'Riwayat Transaksi',
-              ),
-              BottomNavItemData(icon: Icons.person, label: 'Akun'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // removed: replaced by AppBottomNav
 }
 
 class _LoginForm extends StatelessWidget {

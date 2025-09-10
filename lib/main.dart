@@ -3,21 +3,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'constants/app_colors.dart';
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/role_selection_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/profile/profile_screen.dart';
-import 'screens/profile/contact_screen.dart';
-import 'screens/profile/settings_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/setor_tunai/setor_tunai_history_screen.dart';
 import 'features/app/presentation/bloc/app_bloc.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'widgets/common/app_bottom_nav.dart';
 import 'core/di/service_locator.dart';
+import 'shared/widgets/account_menu_widget.dart';
+import 'shared/widgets/bottom_nav_mapper.dart';
 
 void main() {
   ServiceLocator().init();
   runApp(const MyApp());
+}
+
+// Global function to clear authentication state
+void clearAuthState(BuildContext context) {
+  // Clear AuthBloc state
+  context.read<AuthBloc>().add(const AuthLogoutRequested());
+
+  // Clear AppBloc state
+  context.read<AppBloc>().add(const AppLogoutRequested());
 }
 
 class MyApp extends StatelessWidget {
@@ -25,74 +36,134 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SMARTMobs',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryRed,
-          brightness: Brightness.light,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => AppBloc()),
+        BlocProvider(
+          create: (context) => AuthBloc(ServiceLocator().authRepository),
         ),
-        textTheme: Theme.of(context).textTheme.apply(
-          bodyColor: AppColors.textBlack,
-          displayColor: AppColors.textBlack,
+        BlocProvider(create: (context) => NotificationsBloc()),
+      ],
+      child: MaterialApp(
+        title: 'SMARTMobs',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primaryRed,
+            brightness: Brightness.light,
+          ),
+          textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: AppColors.textBlack,
+            displayColor: AppColors.textBlack,
+          ),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(1.0)),
+            child: child!,
+          );
+        },
+        routes: {'/notifications': (context) => const NotificationsScreen()},
+        home: const AppEntry(),
       ),
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(1.0)),
-          child: child!,
-        );
-      },
-      routes: {'/notifications': (context) => const NotificationsScreen()},
-      home: const AppEntry(),
     );
   }
 }
 
-class AppEntry extends StatelessWidget {
+class AppEntry extends StatefulWidget {
   const AppEntry({super.key});
 
   @override
+  State<AppEntry> createState() => _AppEntryState();
+}
+
+class _AppEntryState extends State<AppEntry> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the app and check for saved authentication
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AppBloc>().add(const AppInitialized());
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => AppBloc()),
-        BlocProvider(create: (context) => NotificationsBloc()),
-      ],
-      child: BlocBuilder<AppBloc, AppState>(
-        builder: (context, state) {
-          if (state.showSplash) {
-            final blocContext = context;
-            Future.delayed(const Duration(seconds: 2), () {
-              if (blocContext.mounted) {
-                blocContext.read<AppBloc>().add(const AppSplashFinished());
-              }
-            });
-            return const SplashScreen();
-          }
-          if (!state.hasSeenOnboarding) {
-            return const OnboardingScreen();
-          }
-          if (!state.isAuthenticated) {
-            return LoginScreen(
-              onLoginSuccess: () {
-                context.read<AppBloc>().add(const AppLoginRequested());
-              },
-            );
-          }
-          return const RootScreen();
-        },
-      ),
+    return BlocBuilder<AppBloc, AppState>(
+      builder: (context, state) {
+        if (state.showSplash) {
+          final blocContext = context;
+          Future.delayed(const Duration(seconds: 2), () {
+            if (blocContext.mounted) {
+              blocContext.read<AppBloc>().add(const AppSplashFinished());
+            }
+          });
+          return const SplashScreen();
+        }
+        if (!state.hasSeenOnboarding) {
+          return const OnboardingScreen();
+        }
+        if (!state.isAuthenticated) {
+          return LoginScreen(
+            onLoginSuccess:
+                (
+                  String userRoleMobile,
+                  String userEmail,
+                  String userName,
+                  String selectedRole,
+                ) {
+                  context.read<AppBloc>().add(
+                    AppLoginSuccess(
+                      userRoleMobile: userRoleMobile,
+                      userEmail: userEmail,
+                      userName: userName,
+                      selectedRole: selectedRole,
+                    ),
+                  );
+                },
+          );
+        }
+
+        // For MESIN/NON_MESIN users without selectedRole, go to role selection
+        if ((state.userRoleMobile == 'MESIN' ||
+                state.userRoleMobile == 'NON_MESIN') &&
+            state.selectedRole.isEmpty) {
+          return RoleSelectionScreen(
+            userEmail: state.userEmail,
+            userName: state.userName,
+            userRoleMobile: state.userRoleMobile,
+            selectedRole: state.selectedRole,
+          );
+        }
+
+        return RootScreen(
+          userRoleMobile: state.userRoleMobile,
+          userEmail: state.userEmail,
+          userName: state.userName,
+          selectedRole: state.selectedRole,
+        );
+      },
     );
   }
 }
 
 class RootScreen extends StatefulWidget {
-  const RootScreen({super.key});
+  final String userRoleMobile;
+  final String userEmail;
+  final String userName;
+  final String selectedRole;
+  const RootScreen({
+    super.key,
+    required this.userRoleMobile,
+    required this.userEmail,
+    required this.userName,
+    required this.selectedRole,
+  });
 
   @override
   State<RootScreen> createState() => _RootScreenState();
@@ -101,19 +172,27 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(
-      userRoleMobile: 'CUSTOMER',
-      userEmail: 'default@example.com',
-      userName: 'Default User',
-    ),
-    const Center(child: Text('Wallet', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('More', style: TextStyle(fontSize: 24))),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(
+        userRoleMobile: widget.userRoleMobile,
+        userEmail: widget.userEmail,
+        userName: widget.userName,
+        selectedRole: widget.selectedRole,
+      ),
+      const SetorTunaiHistoryScreen(),
+      const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
+    ];
+  }
 
   void _onItemTapped(int index) {
-    if (index == 4) {
-      _showMoreMenu();
+    if (index == 2) {
+      // Index 2 is the "Akun" tab
+      AccountMenuWidget.showMoreMenu(context);
     } else {
       setState(() {
         _selectedIndex = index;
@@ -121,251 +200,10 @@ class _RootScreenState extends State<RootScreen> {
     }
   }
 
-  void _showMoreMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      enableDrag: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) => _buildMoreMenu(),
-    );
-  }
-
-  Widget _buildMoreMenu() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    'Kelola Profil',
-                    Icons.person,
-                    isHighlighted: true,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfileScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Kontak',
-                    Icons.contact_support,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ContactScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Pengaturan',
-                    Icons.settings,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    'Keluar',
-                    Icons.logout,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showLogoutConfirmation(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(
-    String title,
-    IconData icon, {
-    bool isHighlighted = false,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isHighlighted ? AppColors.primaryRed : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  color: isHighlighted ? Colors.white : AppColors.textBlack,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: isHighlighted ? Colors.white : AppColors.textBlack,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: isHighlighted ? Colors.white : AppColors.textGray,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      enableDrag: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const Text(
-                  'Apakah anda yakin?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryRed,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Apakah Anda yakin ingin keluar?',
-                  style: TextStyle(fontSize: 16, color: AppColors.textGray),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<AppBloc>().add(const AppLogoutRequested());
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryRed,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Keluar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[200],
-                      foregroundColor: AppColors.textGray,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Batal',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
+  List<BottomNavItemData> _getBottomNavItems() {
+    return BottomNavMapper.getBottomNavItems(
+      selectedRole: widget.selectedRole,
+      userRoleMobile: widget.userRoleMobile,
     );
   }
 
@@ -380,10 +218,7 @@ class _RootScreenState extends State<RootScreen> {
           bottomNavigationBar: AppBottomNav(
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
-            items: const [
-              BottomNavItemData(icon: Icons.home, label: 'Home'),
-              BottomNavItemData(icon: Icons.grid_view, label: 'More'),
-            ],
+            items: _getBottomNavItems(),
           ),
         ),
       ),

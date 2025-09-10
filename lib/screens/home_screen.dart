@@ -9,17 +9,20 @@ import '../features/home/presentation/bloc/home_bloc.dart';
 import 'all_services_screen.dart';
 import 'setor_tunai/setor_tunai_screen.dart';
 import '../widgets/common/app_top_bar.dart';
+import 'auth/role_selection_screen.dart';
+import '../main.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userRoleMobile;
   final String userEmail;
   final String userName;
-
+  final String selectedRole;
   const HomeScreen({
     super.key,
     required this.userRoleMobile,
     required this.userEmail,
     required this.userName,
+    required this.selectedRole,
   });
 
   @override
@@ -27,61 +30,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late PageController _pageController;
-  int _currentPage = 0;
-  Timer? _timer;
-
-  // Cache for SVG content to prevent reloading
-  final Map<String, String> _svgCache = {};
-
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<HomeBloc>().add(const HomeDataRequested());
-        _startAutoScroll();
-        _preloadCarouselImages();
-      }
-    });
-  }
-
-  void _preloadCarouselImages() {
-    final carouselImages = [
-      'assets/images/promo1.svg',
-      'assets/images/ForgotPassword.svg',
-    ];
-
-    for (final imagePath in carouselImages) {
-      if (imagePath.endsWith('.svg')) {
-        _loadSvgContent(imagePath);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _startAutoScroll() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_pageController.hasClients) {
-        if (_currentPage < 2) {
-          _pageController.nextPage(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        } else {
-          _pageController.animateToPage(
-            0,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
       }
     });
   }
@@ -90,28 +44,75 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: BlocBuilder<HomeBloc, HomeState>(
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: AppColors.backgroundWhite,
-            body: SafeArea(
-              child: Column(
-                children: [
-                  const AppTopBar(
-                    title: 'Merah Putih',
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundImage: AssetImage('assets/images/profile.png'),
-                    ),
-                  ),
-                  Expanded(child: _buildMainContent()),
-                ],
-              ),
-            ),
-          );
+      child: PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            if (widget.userRoleMobile == 'CUSTOMER') {
+              Navigator.of(context).pop();
+            } else if (widget.selectedRole == 'PELANGGAN') {
+              _navigateToRoleSelection();
+            } else {
+              _navigateToRoleSelection();
+            }
+          }
         },
+        child: BlocBuilder<HomeBloc, HomeState>(
+          builder: (context, state) {
+            return Scaffold(
+              backgroundColor: AppColors.backgroundWhite,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    AppTopBar(
+                      title: _getTitleForRole(widget.userRoleMobile),
+                      leading: const CircleAvatar(
+                        radius: 20,
+                        backgroundImage: AssetImage(
+                          'assets/images/profile.png',
+                        ),
+                      ),
+                    ),
+                    Expanded(child: _buildMainContent()),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
+  }
+
+  void _navigateToRoleSelection() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => RoleSelectionScreen(
+          userEmail: widget.userEmail,
+          userName: widget.userName,
+          userRoleMobile: widget.userRoleMobile,
+          selectedRole: widget
+              .selectedRole, // Pass current selectedRole to maintain selection
+        ),
+      ),
+    );
+  }
+
+  String _getTitleForRole(String role) {
+    if (widget.selectedRole == 'PELANGGAN') {
+      return 'Merah Putih';
+    }
+
+    switch (role) {
+      case 'CUSTOMER':
+        return 'Merah Putih';
+      case 'NON_MESIN':
+        return 'Penyedia Layanan';
+      case 'MESIN':
+        return 'Penyedia Layanan';
+      default:
+        return 'Merah Putih';
+    }
   }
 
   Widget _buildMainContent() {
@@ -120,20 +121,61 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           const SizedBox(height: 24),
-          // Layanan Section Title
-          Row(
-            children: [
-              Text(
-                'Transaksi',
-                style: AppText.bodyMedium.copyWith(fontSize: 16),
-                textAlign: TextAlign.left,
+
+          // Back button for PELANGGAN selection
+          if (widget.selectedRole == 'PELANGGAN' ||
+              widget.userRoleMobile == 'NON_MESIN' ||
+              widget.userRoleMobile == 'MESIN')
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: _navigateToRoleSelection,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.arrow_back,
+                            color: AppColors.textBlack,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.selectedRole == 'PELANGGAN'
+                                ? 'Pelanggan'
+                                : widget.userRoleMobile == 'NON_MESIN'
+                                ? 'Penyedia Layanan'
+                                : 'Penyedia Layanan',
+                            style: AppText.bodySmall.copyWith(
+                              color: AppColors.textBlack,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
 
           const SizedBox(height: 16),
           // Use a separate widget that won't rebuild with carousel changes
-          ServicesSection(userRoleMobile: widget.userRoleMobile),
+          ServicesSection(
+            userRoleMobile: widget.userRoleMobile,
+            selectedRole: widget.selectedRole,
+          ),
           const SizedBox(height: 20),
           // Promo Section Title
           Row(
@@ -163,210 +205,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildImageCarousel(),
+          RepaintBoundary(child: ImageCarouselWidget()),
           const SizedBox(height: 24),
         ],
       ),
-    );
-  }
-
-  Widget _buildImageCarousel() {
-    final List<String> carouselImages = [
-      'assets/images/promo1.svg',
-      'assets/images/ForgotPassword.svg',
-    ];
-
-    return RepaintBoundary(
-      child: Column(
-        children: [
-          SizedBox(
-            height: 200,
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (index) {
-                // Only update the current page, don't rebuild entire screen
-                if (mounted && _currentPage != index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                }
-              },
-              itemCount: carouselImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: _buildImageWidget(carouselImages[index]),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: carouselImages.asMap().entries.map((entry) {
-              return Container(
-                width: 8.0,
-                height: 8.0,
-                margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: entry.key == _currentPage
-                      ? AppColors.primaryRed
-                      : Colors.grey.withOpacity(0.3),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageWidget(String imagePath) {
-    if (imagePath.endsWith('.svg')) {
-      // Check if content is already cached
-      if (_svgCache.containsKey(imagePath)) {
-        final svgContent = _svgCache[imagePath]!;
-        if (svgContent.contains('data:image/png;base64,')) {
-          return RepaintBoundary(child: _buildBase64Image(svgContent));
-        } else {
-          return RepaintBoundary(
-            child: SvgPicture.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                print('SVG Error for $imagePath: $error');
-                return Container(
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.image, size: 64, color: Colors.grey),
-                );
-              },
-            ),
-          );
-        }
-      }
-
-      // If not cached, use FutureBuilder
-      return FutureBuilder<String>(
-        future: _loadSvgContent(imagePath),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
-              color: Colors.grey[200],
-              child: const Icon(Icons.image, size: 64, color: Colors.grey),
-            );
-          }
-
-          if (snapshot.hasError || !snapshot.hasData) {
-            return Container(
-              color: Colors.grey[200],
-              child: const Icon(Icons.image, size: 64, color: Colors.grey),
-            );
-          }
-
-          final svgContent = snapshot.data!;
-          if (svgContent.contains('data:image/png;base64,')) {
-            return RepaintBoundary(child: _buildBase64Image(svgContent));
-          } else {
-            return RepaintBoundary(
-              child: SvgPicture.asset(
-                imagePath,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  print('SVG Error for $imagePath: $error');
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.image,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
-              ),
-            );
-          }
-        },
-      );
-    } else {
-      return RepaintBoundary(
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[200],
-              child: const Icon(Icons.image, size: 64, color: Colors.grey),
-            );
-          },
-        ),
-      );
-    }
-  }
-
-  Future<String> _loadSvgContent(String imagePath) async {
-    // Check cache first
-    if (_svgCache.containsKey(imagePath)) {
-      return _svgCache[imagePath]!;
-    }
-
-    try {
-      final assetBundle = DefaultAssetBundle.of(context);
-      final content = await assetBundle.loadString(imagePath);
-
-      // Cache the content
-      _svgCache[imagePath] = content;
-
-      return content;
-    } catch (e) {
-      print('Error loading SVG content: $e');
-      return '';
-    }
-  }
-
-  Widget _buildBase64Image(String svgContent) {
-    try {
-      final base64Match = RegExp(
-        r'data:image/png;base64,([^"]+)',
-      ).firstMatch(svgContent);
-      if (base64Match != null) {
-        final base64Data = base64Match.group(1);
-        if (base64Data != null) {
-          return Image.memory(
-            base64Decode(base64Data),
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              print('Base64 image error: $error');
-              return Container(
-                color: Colors.grey[200],
-                child: const Icon(Icons.image, size: 64, color: Colors.grey),
-              );
-            },
-          );
-        }
-      }
-    } catch (e) {
-      print('Error parsing base64 image: $e');
-    }
-
-    return Container(
-      color: Colors.grey[200],
-      child: const Icon(Icons.image, size: 64, color: Colors.grey),
     );
   }
 }
@@ -374,8 +216,12 @@ class _HomeScreenState extends State<HomeScreen> {
 // Separate widget for services that won't rebuild with carousel changes
 class ServicesSection extends StatefulWidget {
   final String userRoleMobile;
-
-  const ServicesSection({super.key, required this.userRoleMobile});
+  final String selectedRole;
+  const ServicesSection({
+    super.key,
+    required this.userRoleMobile,
+    required this.selectedRole,
+  });
 
   @override
   State<ServicesSection> createState() => _ServicesSectionState();
@@ -414,58 +260,11 @@ class _ServicesSectionState extends State<ServicesSection>
     }
   }
 
-  List<Map<String, dynamic>> _getServicesForRole(String role) {
-    if (role == 'MESIN') {
-      // Services for Penyedia Layanan (Service Provider)
-      return [
-        {
-          'name': 'Kelola Mesin',
-          'image': 'assets/images/SetorTunai.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Status Mesin',
-          'image': 'assets/images/NonTunai.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Laporan',
-          'image': 'assets/images/KirimUang.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Pendapatan',
-          'image': 'assets/images/BayarTagihan.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Maintenance',
-          'image': 'assets/images/KirimBarang.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Pengaturan',
-          'image': 'assets/images/IsiUlang.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Notifikasi',
-          'image': 'assets/images/Pinjaman.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Profil',
-          'image': 'assets/images/KirimBarang2.svg',
-          'color': Colors.red,
-        },
-        {
-          'name': 'Lainnya',
-          'image': 'assets/images/Lainnya.svg',
-          'color': Colors.red,
-        },
-      ];
-    } else {
-      // Services for Pelanggan (Customer) - NON_MESIN
+  List<Map<String, dynamic>> _getServicesForRole(
+    String role,
+    String selectedRole,
+  ) {
+    if (role == 'CUSTOMER' || selectedRole == 'PELANGGAN') {
       return [
         {
           'name': 'Setor Tunai',
@@ -513,6 +312,44 @@ class _ServicesSectionState extends State<ServicesSection>
           'color': Colors.red,
         },
       ];
+    } else if (role == 'NON_MESIN' && selectedRole != 'PELANGGAN') {
+      return [
+        {
+          'name': 'Kelola Layanan',
+          'image': 'assets/images/BayarTagihan.svg',
+          'color': Colors.blue,
+        },
+        {
+          'name': 'Riwayat Layanan',
+          'image': 'assets/images/Riwayat.svg',
+          'color': Colors.blue,
+        },
+        {
+          'name': 'Laporan',
+          'image': 'assets/images/Lainnya.svg',
+          'color': Colors.blue,
+        },
+      ];
+    } else if (role == 'MESIN' && selectedRole != 'PELANGGAN') {
+      return [
+        {
+          'name': 'Kelola Mesin',
+          'image': 'assets/images/BayarTagihan.svg',
+          'color': Colors.green,
+        },
+        {
+          'name': 'Riwayat Mesin',
+          'image': 'assets/images/Riwayat.svg',
+          'color': Colors.green,
+        },
+        {
+          'name': 'Laporan',
+          'image': 'assets/images/Lainnya.svg',
+          'color': Colors.green,
+        },
+      ];
+    } else {
+      return [];
     }
   }
 
@@ -571,7 +408,10 @@ class _ServicesSectionState extends State<ServicesSection>
   }
 
   Widget _buildServicesContent() {
-    final services = _getServicesForRole(widget.userRoleMobile);
+    final services = _getServicesForRole(
+      widget.userRoleMobile,
+      widget.selectedRole,
+    );
 
     return GridView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -727,6 +567,261 @@ class _ServicesSectionState extends State<ServicesSection>
           );
         }
       },
+    );
+  }
+}
+
+class ImageCarouselWidget extends StatefulWidget {
+  const ImageCarouselWidget({super.key});
+
+  @override
+  State<ImageCarouselWidget> createState() => _ImageCarouselWidgetState();
+}
+
+class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  Timer? _timer;
+  final Map<String, String> _svgCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoScroll();
+    _preloadCarouselImages();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _preloadCarouselImages() {
+    final carouselImages = [
+      'assets/images/promo1.svg',
+      'assets/images/ForgotPassword.svg',
+    ];
+
+    for (final imagePath in carouselImages) {
+      if (imagePath.endsWith('.svg')) {
+        _loadSvgContent(imagePath);
+      }
+    }
+  }
+
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_pageController.hasClients) {
+        if (_currentPage < 1) {
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          _pageController.animateToPage(
+            0,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<String> carouselImages = [
+      'assets/images/promo1.svg',
+      'assets/images/ForgotPassword.svg',
+    ];
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 200,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              if (mounted) {
+                setState(() {
+                  _currentPage = index;
+                });
+              }
+            },
+            itemCount: carouselImages.length,
+            itemBuilder: (context, index) {
+              return RepaintBoundary(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _buildImageWidget(carouselImages[index]),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: carouselImages.asMap().entries.map((entry) {
+            return Container(
+              width: 8.0,
+              height: 8.0,
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: entry.key == _currentPage
+                    ? AppColors.primaryRed
+                    : Colors.grey.withOpacity(0.3),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageWidget(String imagePath) {
+    if (imagePath.endsWith('.svg')) {
+      if (_svgCache.containsKey(imagePath)) {
+        final svgContent = _svgCache[imagePath]!;
+        if (svgContent.contains('data:image/png;base64,')) {
+          return RepaintBoundary(child: _buildBase64Image(svgContent));
+        } else {
+          return RepaintBoundary(
+            child: SvgPicture.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                print('SVG Error for $imagePath: $error');
+                return Container(
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.image, size: 64, color: Colors.grey),
+                );
+              },
+            ),
+          );
+        }
+      }
+
+      return FutureBuilder<String>(
+        future: _loadSvgContent(imagePath),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+              color: Colors.grey[200],
+              child: const Icon(Icons.image, size: 64, color: Colors.grey),
+            );
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Container(
+              color: Colors.grey[200],
+              child: const Icon(Icons.image, size: 64, color: Colors.grey),
+            );
+          }
+
+          final svgContent = snapshot.data!;
+          if (svgContent.contains('data:image/png;base64,')) {
+            return RepaintBoundary(child: _buildBase64Image(svgContent));
+          } else {
+            return RepaintBoundary(
+              child: SvgPicture.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('SVG Error for $imagePath: $error');
+                  return Container(
+                    color: Colors.grey[200],
+                    child: const Icon(
+                      Icons.image,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+        },
+      );
+    } else {
+      return RepaintBoundary(
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey[200],
+              child: const Icon(Icons.image, size: 64, color: Colors.grey),
+            );
+          },
+        ),
+      );
+    }
+  }
+
+  Future<String> _loadSvgContent(String imagePath) async {
+    if (_svgCache.containsKey(imagePath)) {
+      return _svgCache[imagePath]!;
+    }
+
+    try {
+      final assetBundle = DefaultAssetBundle.of(context);
+      final content = await assetBundle.loadString(imagePath);
+      _svgCache[imagePath] = content;
+      return content;
+    } catch (e) {
+      print('Error loading SVG content: $e');
+      return '';
+    }
+  }
+
+  Widget _buildBase64Image(String svgContent) {
+    try {
+      final base64Match = RegExp(
+        r'data:image/png;base64,([^"]+)',
+      ).firstMatch(svgContent);
+      if (base64Match != null) {
+        final base64Data = base64Match.group(1);
+        if (base64Data != null) {
+          return Image.memory(
+            base64Decode(base64Data),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              print('Base64 image error: $error');
+              return Container(
+                color: Colors.grey[200],
+                child: const Icon(Icons.image, size: 64, color: Colors.grey),
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      print('Error parsing base64 image: $e');
+    }
+
+    return Container(
+      color: Colors.grey[200],
+      child: const Icon(Icons.image, size: 64, color: Colors.grey),
     );
   }
 }

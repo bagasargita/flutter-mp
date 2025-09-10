@@ -35,16 +35,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onAuthLogoutRequested(
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
-  ) {
+  ) async {
+    // Clear saved user data
+    await _authRepository.clearUser();
     emit(AuthUnauthenticated());
   }
 
   void _onAuthCheckRequested(
     AuthCheckRequested event,
     Emitter<AuthState> emit,
-  ) {
+  ) async {
     // Check if user is already authenticated
-    // For now, we'll emit unauthenticated
-    emit(AuthUnauthenticated());
+    final result = await _authRepository.getCurrentUser();
+
+    result.fold((failure) => emit(AuthUnauthenticated()), (user) {
+      if (user != null) {
+        emit(AuthAuthenticated(user: user));
+      } else {
+        emit(AuthUnauthenticated());
+      }
+    });
   }
 }
