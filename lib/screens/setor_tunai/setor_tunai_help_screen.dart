@@ -63,7 +63,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
       children: [
         Text(
           'Ajukan Keluhan',
-          style: AppText.heading3.copyWith(
+          style: AppText.kaiseiBold.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w700,
           ),
@@ -89,7 +89,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
 
         Text(
           'Deskripsi Keluhan Anda',
-          style: AppText.bodyMedium.copyWith(
+          style: AppText.kaiseiRegular.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w600,
           ),
@@ -247,7 +247,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
         ),
         child: Text(
           'Kirim',
-          style: AppText.bodyMedium.copyWith(
+          style: AppText.kaiseiRegular.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w600,
             fontSize: 16,
@@ -263,7 +263,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
       children: [
         Text(
           'Hubungi Kami',
-          style: AppText.heading3.copyWith(
+          style: AppText.kaiseiBold.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w700,
           ),
@@ -348,7 +348,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
                   children: [
                     Text(
                       'Pilih Jenis Keluhan',
-                      style: AppText.bodyLarge.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.textBlack,
                       ),
@@ -387,7 +387,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
         ),
         child: Text(
           type,
-          style: AppText.bodyMedium.copyWith(
+          style: AppText.kaiseiRegular.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w500,
           ),

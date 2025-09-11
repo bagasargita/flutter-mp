@@ -228,7 +228,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                 children: [
                   Text(
                     'Filters',
-                    style: AppText.bodyLarge.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.textBlack,
                     ),
@@ -247,7 +247,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     },
                     child: Text(
                       'Clear',
-                      style: AppText.bodyMedium.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.primaryRed,
                         fontWeight: FontWeight.w500,
                       ),
@@ -259,7 +259,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
 
               Text(
                 'Type Transaction:',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textBlack,
                 ),
@@ -325,7 +325,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
 
               Text(
                 'Select period:',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textBlack,
                 ),
@@ -341,7 +341,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text('-', style: AppText.bodyMedium),
+                  Text('-', style: AppText.kaiseiRegular),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildDateField(
@@ -356,7 +356,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
 
               Text(
                 'Status:',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textBlack,
                 ),
@@ -410,7 +410,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                   ),
                   child: Text(
                     'Tampilkan hasil (${_filteredTransactions.length})',
-                    style: AppText.bodyMedium.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
@@ -443,7 +443,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
         ),
         child: Text(
           label,
-          style: AppText.bodySmall.copyWith(
+          style: AppText.kaiseiRegular.copyWith(
             color: isSelected ? AppColors.textBlack : AppColors.textGray,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -468,7 +468,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
             const SizedBox(width: 8),
             Text(
               date,
-              style: AppText.bodySmall.copyWith(color: AppColors.textBlack),
+              style: AppText.kaiseiRegular.copyWith(color: AppColors.textBlack),
             ),
           ],
         ),

@@ -55,7 +55,7 @@ class AppTopBar extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppText.heading2.copyWith(
+              style: AppText.kaiseiBold.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.bold,
               ),

@@ -177,7 +177,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Text(
           'Simpan',
-          style: AppText.buttonPrimary,
+          style: AppText.kaiseiRegular.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
           textScaler: TextScaler.linear(1.0),
         ),
       ),

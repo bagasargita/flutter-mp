@@ -143,8 +143,8 @@ class _LoginForm extends StatelessWidget {
                     SvgPicture.asset('assets/images/LOGO-SVG.svg', height: 140),
                     const SizedBox(height: 20),
                     Text(
-                      'Merah Putih',
-                      style: AppText.kalamBold.copyWith(
+                      'MerahPutih',
+                      style: AppText.kaiseiBold.copyWith(
                         fontSize: 32,
                         color: AppColors.primaryRed,
                       ),
@@ -226,7 +226,7 @@ class _LoginForm extends StatelessWidget {
                         },
                         child: Text(
                           'Forgot Password?',
-                          style: AppText.bodyMedium.copyWith(
+                          style: AppText.kaiseiRegular.copyWith(
                             color: AppColors.primaryBlue,
                           ),
                         ),
@@ -254,7 +254,7 @@ class _LoginForm extends StatelessWidget {
                                 ),
                               ),
                             )
-                          : Text('Login', style: AppText.buttonPrimary),
+                          : Text('Login', style: AppText.kaiseiRegular),
                     ),
                     const SizedBox(height: 16),
                   ],

@@ -182,7 +182,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       Expanded(
                         child: Text(
                           title,
-                          style: AppText.bodyMedium.copyWith(
+                          style: AppText.kaiseiRegular.copyWith(
                             color: AppColors.textBlack,
                             fontWeight: isRead
                                 ? FontWeight.normal
@@ -205,7 +205,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     message,
-                    style: AppText.bodySmall.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: AppColors.textGray,
                       fontWeight: isRead ? FontWeight.normal : FontWeight.w500,
                     ),
@@ -214,7 +214,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   const SizedBox(height: 8),
                   Text(
                     time,
-                    style: AppText.bodySmall.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: AppColors.textGray,
                       fontSize: 12,
                     ),

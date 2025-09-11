@@ -302,14 +302,14 @@ class _SetorTunaiMachineSelectionScreenState
                     children: [
                       Text(
                         machine['name'],
-                        style: AppText.bodyMedium.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       Text(
                         machine['type'],
-                        style: AppText.bodySmall.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           color: AppColors.textGray,
                         ),
                       ),
@@ -354,7 +354,7 @@ class _SetorTunaiMachineSelectionScreenState
                 ),
                 child: Text(
                   'Pilih Mesin Ini',
-                  style: AppText.bodyMedium.copyWith(
+                  style: AppText.kaiseiRegular.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -377,7 +377,7 @@ class _SetorTunaiMachineSelectionScreenState
             width: 80,
             child: Text(
               label,
-              style: AppText.bodySmall.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textGray,
                 fontWeight: FontWeight.w500,
               ),
@@ -386,7 +386,7 @@ class _SetorTunaiMachineSelectionScreenState
           Expanded(
             child: Text(
               value,
-              style: AppText.bodySmall.copyWith(color: AppColors.textBlack),
+              style: AppText.kaiseiRegular.copyWith(color: AppColors.textBlack),
             ),
           ),
         ],
@@ -498,7 +498,7 @@ class _SetorTunaiMachineSelectionScreenState
                 children: [
                   Text(
                     machine['name'],
-                    style: AppText.bodyMedium.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: AppColors.textBlack,
                       fontWeight: FontWeight.w600,
                     ),
@@ -507,7 +507,7 @@ class _SetorTunaiMachineSelectionScreenState
                   const SizedBox(height: 4),
                   Text(
                     'Available Max ${machine['maxAmount']}',
-                    style: AppText.bodySmall.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: AppColors.textGray,
                     ),
                     textScaler: TextScaler.linear(1.0),
@@ -515,7 +515,7 @@ class _SetorTunaiMachineSelectionScreenState
                   const SizedBox(height: 4),
                   Text(
                     machine['address'],
-                    style: AppText.bodySmall.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: AppColors.textGray,
                     ),
                     textScaler: TextScaler.linear(1.0),
@@ -532,7 +532,7 @@ class _SetorTunaiMachineSelectionScreenState
               ),
               child: Text(
                 machine['distance'],
-                style: AppText.bodySmall.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: Colors.green,
                   fontWeight: FontWeight.w600,
                 ),

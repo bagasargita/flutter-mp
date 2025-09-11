@@ -85,7 +85,7 @@ class _OutstandingTransactionCardState
               const SizedBox(width: 8),
               Text(
                 'Outstanding',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w600,
                 ),
@@ -118,7 +118,7 @@ class _OutstandingTransactionCardState
                   children: [
                     Text(
                       widget.machine['name'] ?? 'Mesin KS001',
-                      style: AppText.bodyMedium.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.textBlack,
                         fontWeight: FontWeight.w600,
                       ),
@@ -127,7 +127,7 @@ class _OutstandingTransactionCardState
                     const SizedBox(height: 4),
                     Text(
                       widget.machine['location'] ?? 'Toko Mamang',
-                      style: AppText.bodySmall.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.textGray,
                       ),
                       textScaler: TextScaler.linear(1.0),
@@ -135,7 +135,7 @@ class _OutstandingTransactionCardState
                     const SizedBox(height: 4),
                     Text(
                       widget.machine['address'] ?? 'JL. SMP 87 Pondok Pinang',
-                      style: AppText.bodySmall.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.textGray,
                       ),
                       textScaler: TextScaler.linear(1.0),
@@ -157,7 +157,7 @@ class _OutstandingTransactionCardState
                     ),
                     child: Text(
                       _formatTime(_remainingSeconds),
-                      style: AppText.bodyMedium.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: Colors.red,
                         fontWeight: FontWeight.w600,
                       ),
@@ -182,7 +182,7 @@ class _OutstandingTransactionCardState
                         ),
                         child: Text(
                           'Mulai Setor',
-                          style: AppText.bodySmall.copyWith(
+                          style: AppText.kaiseiRegular.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
                             fontSize: 10,

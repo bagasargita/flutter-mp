@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/screens/auth/change_password_screen.dart';
+import 'package:smart_mob/core/di/service_locator.dart';
 import 'dart:async';
 
 class ForgotPasswordOTPScreen extends StatefulWidget {
-  final String phoneNumber;
+  final String email;
 
-  const ForgotPasswordOTPScreen({super.key, required this.phoneNumber});
+  const ForgotPasswordOTPScreen({super.key, required this.email});
 
   @override
   State<ForgotPasswordOTPScreen> createState() =>
@@ -72,22 +73,46 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (navigatorContext.mounted) {
-        Navigator.pop(navigatorContext);
-      }
-
-      if (navigatorContext.mounted) {
-        Navigator.push(
-          navigatorContext,
-          MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+      try {
+        final apiClient = ServiceLocator().apiClient;
+        await apiClient.verifyOtp(
+          email: widget.email,
+          otp: _otpController.text.trim(),
         );
+
+        if (navigatorContext.mounted) {
+          Navigator.pop(navigatorContext);
+        }
+
+        if (navigatorContext.mounted) {
+          Navigator.push(
+            navigatorContext,
+            MaterialPageRoute(
+              builder: (context) => ChangePasswordScreen(
+                email: widget.email,
+                otp: _otpController.text.trim(),
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (navigatorContext.mounted) {
+          Navigator.pop(navigatorContext);
+        }
+
+        if (navigatorContext.mounted) {
+          ScaffoldMessenger.of(navigatorContext).showSnackBar(
+            SnackBar(
+              content: Text('Failed to verify OTP: ${e.toString()}'),
+              backgroundColor: AppColors.primaryRed,
+            ),
+          );
+        }
       }
     }
   }
 
-  void _resendOtp() {
+  void _resendOtp() async {
     if (_isResendEnabled) {
       final scaffoldContext = context;
 
@@ -98,7 +123,10 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
         ),
       );
 
-      Future.delayed(const Duration(seconds: 1), () {
+      try {
+        final apiClient = ServiceLocator().apiClient;
+        await apiClient.forgotPassword(email: widget.email);
+
         if (scaffoldContext.mounted) {
           ScaffoldMessenger.of(scaffoldContext).showSnackBar(
             const SnackBar(
@@ -108,7 +136,16 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
           );
         }
         _startResendCountdown();
-      });
+      } catch (e) {
+        if (scaffoldContext.mounted) {
+          ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+            SnackBar(
+              content: Text('Failed to resend OTP: ${e.toString()}'),
+              backgroundColor: AppColors.primaryRed,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -127,7 +164,7 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
           ),
           title: Text(
             'Forgot password',
-            style: AppText.heading3.copyWith(color: AppColors.textBlack),
+            style: AppText.kaiseiBold.copyWith(color: AppColors.textBlack),
           ),
         ),
         body: SafeArea(
@@ -164,7 +201,7 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
                               children: [
                                 Text(
                                   'Type a code',
-                                  style: AppText.bodyMedium.copyWith(
+                                  style: AppText.kaiseiRegular.copyWith(
                                     color: AppColors.textBlack,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -218,8 +255,8 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
                       const SizedBox(height: 24),
 
                       Text(
-                        'We texted you a code to verify your phone number ${widget.phoneNumber}',
-                        style: AppText.bodyMedium.copyWith(
+                        'We sent you a code to verify your email ${widget.email}',
+                        style: AppText.kaiseiRegular.copyWith(
                           color: AppColors.textGray,
                           height: 1.4,
                         ),
@@ -229,7 +266,7 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
 
                       Text(
                         'This code will expired 10 minutes after this message. If you don\'t get a message.',
-                        style: AppText.bodyMedium.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           color: AppColors.textGray,
                           height: 1.4,
                         ),
@@ -256,7 +293,7 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
                           ),
                           child: Text(
                             'Change password',
-                            style: TextStyle(
+                            style: AppText.kaiseiRegular.copyWith(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: _isOtpValid
@@ -275,8 +312,8 @@ class _ForgotPasswordOTPScreenState extends State<ForgotPasswordOTPScreen> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Change your phone number',
-                    style: AppText.bodyMedium.copyWith(
+                    'Change your email address',
+                    style: AppText.kaiseiRegular.copyWith(
                       color: AppColors.primaryBlue,
                       fontWeight: FontWeight.w600,
                     ),

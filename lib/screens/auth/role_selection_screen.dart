@@ -77,7 +77,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               const SizedBox(height: 20),
               Text(
                 'MerahPutih',
-                style: AppText.kalamBold.copyWith(
+                style: AppText.kaiseiBold.copyWith(
                   fontSize: 32,
                   color: AppColors.primaryRed,
                 ),
@@ -127,7 +127,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   ),
                   child: Text(
                     'Lanjut',
-                    style: AppText.buttonPrimary.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -187,7 +187,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 children: [
                   Text(
                     title,
-                    style: AppText.bodyLarge.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       fontWeight: FontWeight.w600,
                       color: isSelected
                           ? AppColors.primaryRed
@@ -197,7 +197,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: AppText.bodyMedium.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: isSelected
                           ? AppColors.primaryRed
                           : AppColors.textGray,

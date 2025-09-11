@@ -46,9 +46,8 @@ class _SplashScreenState extends State<SplashScreen> {
                     const SizedBox(height: 50),
                     Text(
                       'Merah Putih',
-                      style: AppText.kalamBold.copyWith(
+                      style: AppText.kaiseiBold.copyWith(
                         fontSize: 32,
-                        fontWeight: FontWeight.w900,
                         color: AppColors.primaryRed,
                       ),
                       textAlign: TextAlign.center,
@@ -58,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     // Tagline
                     Text(
                       'Your Best Cash Partner',
-                      style: AppText.description.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.textGray,
                       ),
                       textAlign: TextAlign.center,
@@ -77,14 +76,14 @@ class _SplashScreenState extends State<SplashScreen> {
                   children: [
                     Text(
                       'Powered by ',
-                      style: AppText.bodySmall.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.textLightGray,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     Text(
                       'Merah Putih',
-                      style: AppText.bodySmall.copyWith(
+                      style: AppText.kaiseiBold.copyWith(
                         color: AppColors.primaryRed,
                         fontWeight: FontWeight.w700,
                       ),

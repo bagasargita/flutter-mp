@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 : widget.userRoleMobile == 'NON_MESIN'
                                 ? 'Penyedia Layanan'
                                 : 'Penyedia Layanan',
-                            style: AppText.bodySmall.copyWith(
+                            style: AppText.kaiseiRegular.copyWith(
                               color: AppColors.textBlack,
                               fontSize: 12,
                             ),
@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'Promo',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Text(
                   'Selengkapnya',
-                  style: AppText.bodyMedium.copyWith(
+                  style: AppText.kaiseiRegular.copyWith(
                     fontSize: 14,
                     color: AppColors.primaryRed,
                     fontWeight: FontWeight.w500,
@@ -479,7 +479,7 @@ class _ServicesSectionState extends State<ServicesSection>
               const SizedBox(height: 8),
               Text(
                 service['name'],
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

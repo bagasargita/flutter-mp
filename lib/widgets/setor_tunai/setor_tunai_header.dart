@@ -23,8 +23,8 @@ class SetorTunaiHeader extends StatelessWidget {
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'SMARTMobs',
-              style: AppText.heading2.copyWith(
+              'MerahPutih',
+              style: AppText.kaiseiBold.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.bold,
               ),

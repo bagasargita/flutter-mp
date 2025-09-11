@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_machine_selection_screen.dart';
 import 'package:smart_mob/screens/setor_tunai/setor_tunai_history_screen.dart';
 import 'package:smart_mob/screens/setor_tunai/setor_tunai_location_screen.dart';
 import 'package:smart_mob/screens/setor_tunai/setor_tunai_help_screen.dart';
+import 'package:smart_mob/screens/setor_tunai/setor_tunai_qr_screen.dart';
 
 class SetorTunaiServicesGrid extends StatefulWidget {
   final Function(Map<String, dynamic>)? onMachineSelected;
@@ -174,9 +174,7 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
           // Navigate to machine selection screen
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const SetorTunaiMachineSelectionScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const SetorTunaiQRScreen()),
           );
 
           print('Returned from machine selection: $result'); // Debug print
@@ -271,7 +269,7 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
             const SizedBox(height: 12),
             Text(
               service['name'],
-              style: AppText.bodyMedium.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.w600,
               ),

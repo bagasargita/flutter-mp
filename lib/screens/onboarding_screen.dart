@@ -146,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 20),
         Text(
           'Welcome to',
-          style: AppText.heading1.copyWith(
+          style: AppText.kaiseiBold.copyWith(
             color: AppColors.textBlack,
             fontSize: 34,
           ),
@@ -154,11 +154,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 20),
         Text(
           'MerahPutih',
-          style: AppText.kalamBold.copyWith(
+          style: AppText.kaiseiBold.copyWith(
             fontSize: 36,
-            fontWeight: FontWeight.w900,
             color: AppColors.primaryRed,
-            fontStyle: FontStyle.italic,
           ),
         ),
       ],
@@ -194,7 +192,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: AppText.bodyLarge.copyWith(
+                  style: AppText.kaiseiRegular.copyWith(
                     color: AppColors.textGray,
                     fontSize: 16,
                   ),
@@ -249,7 +247,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 20),
               Text(
                 'Money transfer and guaranteed safe transactions with others.',
-                style: AppText.bodyLarge.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textGray,
                   fontSize: 16,
                 ),
@@ -291,7 +289,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: AppText.bodyLarge.copyWith(
+                  style: AppText.kaiseiRegular.copyWith(
                     color: AppColors.textGray,
                     fontSize: 16,
                   ),

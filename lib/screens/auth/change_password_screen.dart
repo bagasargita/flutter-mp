@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/screens/auth/password_success_screen.dart';
+import 'package:smart_mob/core/di/service_locator.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  const ChangePasswordScreen({super.key});
+  final String email;
+  final String otp;
+
+  const ChangePasswordScreen({
+    super.key,
+    required this.email,
+    required this.otp,
+  });
 
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -26,32 +34,47 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   void _changePassword() async {
     if (_formKey.currentState!.validate()) {
-      // Store context before async operation
       final navigatorContext = context;
 
-      // Show loading dialog
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Close loading dialog
-      if (navigatorContext.mounted) {
-        Navigator.pop(navigatorContext);
-      }
-
-      // Navigate to success screen
-      if (navigatorContext.mounted) {
-        Navigator.pushReplacement(
-          navigatorContext,
-          MaterialPageRoute(
-            builder: (context) => const PasswordSuccessScreen(),
-          ),
+      try {
+        final apiClient = ServiceLocator().apiClient;
+        await apiClient.resetPassword(
+          email: widget.email,
+          otp: widget.otp,
+          newPassword: _newPasswordController.text.trim(),
         );
+
+        if (navigatorContext.mounted) {
+          Navigator.pop(navigatorContext);
+        }
+
+        if (navigatorContext.mounted) {
+          Navigator.pushReplacement(
+            navigatorContext,
+            MaterialPageRoute(
+              builder: (context) => const PasswordSuccessScreen(),
+            ),
+          );
+        }
+      } catch (e) {
+        if (navigatorContext.mounted) {
+          Navigator.pop(navigatorContext);
+        }
+
+        if (navigatorContext.mounted) {
+          ScaffoldMessenger.of(navigatorContext).showSnackBar(
+            SnackBar(
+              content: Text('Failed to reset password: ${e.toString()}'),
+              backgroundColor: AppColors.primaryRed,
+            ),
+          );
+        }
       }
     }
   }
@@ -69,7 +92,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         title: Text(
           'Change password',
-          style: AppText.heading3.copyWith(color: AppColors.textBlack),
+          style: AppText.kaiseiBold.copyWith(color: AppColors.textBlack),
         ),
       ),
       body: SafeArea(
@@ -165,7 +188,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     child: Text(
                       'Change password',
-                      style: AppText.buttonPrimary,
+                      style: AppText.kaiseiRegular.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),

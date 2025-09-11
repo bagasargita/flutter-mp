@@ -113,7 +113,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
                     children: [
                       Text(
                         'Deposit Berhasil!',
-                        style: AppText.bodyLarge.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           fontWeight: FontWeight.w700,
                           color: AppColors.textBlack,
                         ),
@@ -121,7 +121,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
                       ),
                       Text(
                         'now',
-                        style: AppText.bodyMedium.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           color: AppColors.textGray,
                           fontSize: 12,
                         ),
@@ -135,7 +135,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
             const SizedBox(height: 12),
             Text(
               'Deposit berhasil! Dana sudah masuk ke rekening tujuan. Ref: #123456 | 19 Aug 2025, 22:45',
-              style: AppText.bodyMedium.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textGray,
                 fontSize: 14,
               ),
@@ -214,7 +214,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
         const SizedBox(height: 16),
         Text(
           'MerahPutih',
-          style: AppText.heading2.copyWith(
+          style: AppText.kaiseiBold.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.5,
@@ -253,7 +253,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
           width: 80,
           child: Text(
             label,
-            style: AppText.bodyMedium.copyWith(
+            style: AppText.kaiseiRegular.copyWith(
               color: AppColors.textBlack,
               fontWeight: FontWeight.w600,
             ),
@@ -264,7 +264,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
         Expanded(
           child: Text(
             value,
-            style: AppText.bodyMedium.copyWith(
+            style: AppText.kaiseiRegular.copyWith(
               color: AppColors.textBlack,
               fontWeight: FontWeight.w500,
               height: 1.3,
@@ -300,7 +300,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
               flex: 3,
               child: Text(
                 'Denom',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
                 ),
@@ -312,7 +312,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
               flex: 2,
               child: Text(
                 'Lembar',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
                 ),
@@ -324,7 +324,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
               flex: 3,
               child: Text(
                 'Total',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
                 ),
@@ -355,7 +355,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
             flex: 3,
             child: Text(
               denom,
-              style: AppText.bodyMedium.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.w500,
               ),
@@ -367,7 +367,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
             flex: 2,
             child: Text(
               quantity,
-              style: AppText.bodyMedium.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.w500,
               ),
@@ -379,7 +379,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
             flex: 3,
             child: Text(
               total,
-              style: AppText.bodyMedium.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.w600,
               ),
@@ -415,7 +415,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
               flex: 3,
               child: Text(
                 'Total:',
-                style: AppText.bodyLarge.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
                 ),
@@ -427,7 +427,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
               flex: 2,
               child: Text(
                 '1.531',
-                style: AppText.bodyLarge.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
                 ),
@@ -439,7 +439,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
               flex: 3,
               child: Text(
                 '56.583.000',
-                style: AppText.bodyLarge.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
                 ),
@@ -460,7 +460,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
         children: [
           Text(
             'Struk transaksi ini digunakan',
-            style: AppText.bodyMedium.copyWith(
+            style: AppText.kaiseiRegular.copyWith(
               color: AppColors.textBlack,
               fontWeight: FontWeight.w500,
               height: 1.4,
@@ -470,7 +470,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
           ),
           Text(
             'sebagai tanda bukti transaksi',
-            style: AppText.bodyMedium.copyWith(
+            style: AppText.kaiseiRegular.copyWith(
               color: AppColors.textBlack,
               fontWeight: FontWeight.w500,
               height: 1.4,
@@ -480,7 +480,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
           ),
           Text(
             'yang sah',
-            style: AppText.bodyMedium.copyWith(
+            style: AppText.kaiseiRegular.copyWith(
               color: AppColors.textBlack,
               fontWeight: FontWeight.w500,
               height: 1.4,
@@ -506,7 +506,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
                   icon: const Icon(Icons.download, size: 12),
                   label: Text(
                     'Unduh Bukti Setor',
-                    style: AppText.bodyLarge.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
@@ -533,7 +533,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
                   icon: const Icon(Icons.share, size: 12),
                   label: Text(
                     'Bagikan',
-                    style: AppText.bodyLarge.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                       fontSize: 14,

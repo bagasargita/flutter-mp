@@ -34,6 +34,36 @@ class ApiClient {
     return await _dio.post<Map<String, dynamic>>(ApiEndpoints.logout);
   }
 
+  Future<Response<Map<String, dynamic>>> forgotPassword({
+    required String email,
+  }) async {
+    return await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.forgotPassword,
+      data: {'email': email},
+    );
+  }
+
+  Future<Response<Map<String, dynamic>>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    return await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.verifyOtp,
+      data: {'email': email, 'otp': otp},
+    );
+  }
+
+  Future<Response<Map<String, dynamic>>> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    return await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.resetPassword,
+      data: {'email': email, 'otp': otp, 'newPassword': newPassword},
+    );
+  }
+
   Future<Response<Map<String, dynamic>>> getProfile() async {
     return await _dio.get<Map<String, dynamic>>(ApiEndpoints.profile);
   }
@@ -78,6 +108,15 @@ class ApiClient {
     return await _dio.post<Map<String, dynamic>>(
       ApiEndpoints.markAsRead,
       data: {'notification_id': notificationId},
+    );
+  }
+
+  Future<Response<Map<String, dynamic>>> createQr({
+    required Map<String, dynamic> payload,
+  }) async {
+    return await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.createQr,
+      data: payload,
     );
   }
 }

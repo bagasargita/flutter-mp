@@ -155,7 +155,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
           Expanded(
             child: Text(
               'Lokasi',
-              style: AppText.heading3.copyWith(
+              style: AppText.kaiseiBold.copyWith(
                 color: AppColors.textBlack,
                 fontWeight: FontWeight.w600,
               ),
@@ -321,14 +321,14 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                     children: [
                       Text(
                         location['name'],
-                        style: AppText.bodyMedium.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       Text(
                         location['type'],
-                        style: AppText.bodySmall.copyWith(
+                        style: AppText.kaiseiRegular.copyWith(
                           color: AppColors.textGray,
                         ),
                       ),
@@ -358,7 +358,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 ),
                 child: Text(
                   'Pilih Lokasi Ini',
-                  style: AppText.bodyMedium.copyWith(
+                  style: AppText.kaiseiRegular.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -381,7 +381,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
             width: 80,
             child: Text(
               label,
-              style: AppText.bodySmall.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: AppColors.textGray,
                 fontWeight: FontWeight.w500,
               ),
@@ -390,7 +390,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
           Expanded(
             child: Text(
               value,
-              style: AppText.bodySmall.copyWith(color: AppColors.textBlack),
+              style: AppText.kaiseiRegular.copyWith(color: AppColors.textBlack),
             ),
           ),
         ],
@@ -560,7 +560,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 children: [
                   Text(
                     'Filters',
-                    style: AppText.bodyLarge.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.textBlack,
                     ),
@@ -576,7 +576,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                     },
                     child: Text(
                       'Clear',
-                      style: AppText.bodyMedium.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: AppColors.primaryRed,
                         fontWeight: FontWeight.w500,
                       ),
@@ -588,7 +588,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
 
               Text(
                 'Locations',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textBlack,
                 ),
@@ -628,7 +628,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
 
               Text(
                 'Status',
-                style: AppText.bodyMedium.copyWith(
+                style: AppText.kaiseiRegular.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textBlack,
                 ),
@@ -682,7 +682,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                   ),
                   child: Text(
                     'Show results (${_filteredLocations.length})',
-                    style: AppText.bodyMedium.copyWith(
+                    style: AppText.kaiseiRegular.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
@@ -729,7 +729,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
             ],
             Text(
               label,
-              style: AppText.bodySmall.copyWith(
+              style: AppText.kaiseiRegular.copyWith(
                 color: isSelected ? Colors.white : AppColors.textGray,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/screens/auth/forgot_password_otp_screen.dart';
+import 'package:smart_mob/core/di/service_locator.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -12,20 +13,20 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
-  bool _isPhoneValid = false;
+  final _emailController = TextEditingController();
+  bool _isEmailValid = false;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
-  void _validatePhone(String value) {
+  void _validateEmail(String value) {
     setState(() {
-      _isPhoneValid =
-          value.length >= 10 &&
-          (value.startsWith('+62') || value.startsWith('08'));
+      _isEmailValid = RegExp(
+        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+      ).hasMatch(value);
     });
   }
 
@@ -39,21 +40,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final apiClient = ServiceLocator().apiClient;
+        await apiClient.forgotPassword(email: _emailController.text.trim());
 
-      if (navigatorContext.mounted) {
-        Navigator.pop(navigatorContext);
-      }
+        if (navigatorContext.mounted) {
+          Navigator.pop(navigatorContext);
+        }
 
-      if (navigatorContext.mounted) {
-        Navigator.push(
-          navigatorContext,
-          MaterialPageRoute(
-            builder: (context) => ForgotPasswordOTPScreen(
-              phoneNumber: _phoneController.text.trim(),
+        if (navigatorContext.mounted) {
+          ScaffoldMessenger.of(navigatorContext).showSnackBar(
+            const SnackBar(
+              content: Text('Reset code sent to your email'),
+              backgroundColor: AppColors.successGreen,
             ),
-          ),
-        );
+          );
+
+          Navigator.push(
+            navigatorContext,
+            MaterialPageRoute(
+              builder: (context) =>
+                  ForgotPasswordOTPScreen(email: _emailController.text.trim()),
+            ),
+          );
+        }
+      } catch (e) {
+        if (navigatorContext.mounted) {
+          Navigator.pop(navigatorContext);
+        }
+
+        if (navigatorContext.mounted) {
+          ScaffoldMessenger.of(navigatorContext).showSnackBar(
+            SnackBar(
+              content: Text('Failed to send reset code: ${e.toString()}'),
+              backgroundColor: AppColors.primaryRed,
+            ),
+          );
+        }
       }
     }
   }
@@ -73,7 +96,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           title: Text(
             'Forgot password',
-            style: AppText.heading3.copyWith(color: AppColors.textBlack),
+            style: AppText.kaiseiBold.copyWith(color: AppColors.textBlack),
             textScaler: TextScaler.linear(1.0),
           ),
         ),
@@ -88,19 +111,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 32),
 
                   TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    onChanged: _validatePhone,
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: _validateEmail,
                     decoration: InputDecoration(
-                      labelText: 'Type your phone number',
-                      hintText: '(+62)',
+                      labelText: 'Type your email address',
+                      hintText: 'example@email.com',
                       border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 24),
 
                   ElevatedButton(
-                    onPressed: _isPhoneValid ? _sendResetCode : null,
+                    onPressed: _isEmailValid ? _sendResetCode : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryRed,
                       foregroundColor: Colors.white,
@@ -111,7 +134,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     child: Text(
                       'Send Reset Code',
-                      style: AppText.buttonPrimary.copyWith(
+                      style: AppText.kaiseiRegular.copyWith(
                         color: Colors.white,
                       ),
                       textScaler: TextScaler.linear(1.0),

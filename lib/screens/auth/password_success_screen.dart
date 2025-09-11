@@ -60,7 +60,7 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> {
 
                         Text(
                           'Change password successfully!',
-                          style: AppText.heading2.copyWith(
+                          style: AppText.kaiseiBold.copyWith(
                             color: AppColors.primaryRed,
                             fontWeight: FontWeight.bold,
                           ),
@@ -72,7 +72,7 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> {
 
                         Text(
                           'You have successfully change password. Please use the new password when Sign in.',
-                          style: AppText.bodyMedium.copyWith(
+                          style: AppText.kaiseiRegular.copyWith(
                             color: AppColors.textBlack,
                             height: 1.4,
                           ),
@@ -97,7 +97,7 @@ class _PasswordSuccessScreenState extends State<PasswordSuccessScreen> {
                             ),
                             child: Text(
                               'Ok',
-                              style: AppText.buttonPrimary.copyWith(
+                              style: AppText.kaiseiRegular.copyWith(
                                 color: Colors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,

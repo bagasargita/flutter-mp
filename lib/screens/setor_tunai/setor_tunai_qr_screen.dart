@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_success_screen.dart';
+// removed unused import
+import 'package:qr/qr.dart';
+import 'dart:convert';
+import 'package:smart_mob/core/di/service_locator.dart';
+import 'package:smart_mob/features/auth/domain/entities/user.dart';
 
 class SetorTunaiQRScreen extends StatefulWidget {
   const SetorTunaiQRScreen({super.key});
@@ -12,14 +16,17 @@ class SetorTunaiQRScreen extends StatefulWidget {
 }
 
 class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
-  int _remainingSeconds = 59 * 60 + 58; // 59:58 in seconds
+  int _remainingSeconds = 3 * 60; // 3 minutes
   bool _isProcessing = false;
   bool _isSuccess = false;
+  final TextEditingController _qrDataController = TextEditingController();
+  QrImage? _qrImage;
+  String? _loggedInEmail;
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    _prefillEmailFromLogin();
   }
 
   void _startTimer() {
@@ -39,38 +46,62 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  void _simulateDeposit() async {
+  // removed unused method
+
+  void _generateQr() async {
+    final email = (_loggedInEmail ?? _qrDataController.text).trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email tidak boleh kosong'),
+          backgroundColor: AppColors.primaryRed,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
     });
 
-    // Simulate processing time
-    await Future.delayed(const Duration(seconds: 3));
-
-    setState(() {
-      _isProcessing = false;
-      _isSuccess = true;
-    });
-
-    // Navigate to success screen after a short delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SetorTunaiSuccessScreen(
-            transactionData: {
-              'name': 'Mesin KS001',
-              'location': 'Toko Mamang',
-              'address': 'JL. SMP 87 Pondok Pinang',
-              'maxAmount': 'Rp. 5.000.000,-',
-              'distance': '1.0 km',
-            },
-          ),
+    try {
+      // final api = ServiceLocator().apiClient;
+      // final response = await api.createQr(payload: {'email': email});
+      // final data = response.data ?? {'email': email};
+      // final jsonString = jsonEncode(data);
+      final code = QrCode(4, QrErrorCorrectLevel.M)..addData(email);
+      setState(() {
+        _qrImage = QrImage(code);
+        _isProcessing = false;
+      });
+      _startTimer();
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal membuat QR: ${e.toString()}'),
+          backgroundColor: AppColors.primaryRed,
         ),
       );
     }
+  }
+
+  Future<void> _prefillEmailFromLogin() async {
+    try {
+      final authRepo = ServiceLocator().authRepository;
+      final result = await authRepo.getCurrentUser();
+      result.fold((_) {}, (User? user) {
+        final u = user;
+        final email = u?.email;
+        if (email != null && email.isNotEmpty) {
+          _loggedInEmail = email;
+          _qrDataController.text = email;
+          setState(() {});
+        }
+      });
+    } catch (_) {}
   }
 
   @override
@@ -89,7 +120,11 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
                   child: Column(
                     children: [
                       _buildInstructions(),
-                      const SizedBox(height: 32),
+                      if (_qrImage == null) ...[
+                        const SizedBox(height: 24),
+                        _buildGenerateButton(),
+                      ],
+                      const SizedBox(height: 24),
                       _buildQRCode(),
                       const SizedBox(height: 32),
                       _buildExpiryTimer(),
@@ -110,8 +145,10 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     return Column(
       children: [
         Text(
-          'QR Code siap digunakan',
-          style: AppText.heading3.copyWith(
+          (_qrImage == null
+              ? 'Silakan Generate QR untuk memulai setoran'
+              : 'QR Code siap digunakan'),
+          style: AppText.kaiseiBold.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w600,
           ),
@@ -121,7 +158,7 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
         const SizedBox(height: 8),
         Text(
           'Pindai QR Anda pada Mesin',
-          style: AppText.bodyMedium.copyWith(color: AppColors.textGray),
+          style: AppText.kaiseiRegular.copyWith(color: AppColors.textGray),
           textScaler: TextScaler.linear(1.0),
           textAlign: TextAlign.center,
         ),
@@ -130,55 +167,29 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   }
 
   Widget _buildQRCode() {
-    return GestureDetector(
-      onTap: _isProcessing ? null : _simulateDeposit,
-      child: Container(
-        width: 250,
-        height: 250,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_isProcessing)
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.primaryRed,
-                  ),
-                )
-              else if (_isSuccess)
-                const Icon(Icons.check_circle, size: 120, color: Colors.green)
-              else
-                Icon(Icons.qr_code, size: 120, color: AppColors.primaryRed),
-              const SizedBox(height: 16),
-              Text(
-                _isProcessing
-                    ? 'Memproses Deposit...'
-                    : _isSuccess
-                    ? 'Deposit Berhasil!'
-                    : 'SMARTMobs\nDeposit QR\n\nTap untuk simulasi',
-                style: AppText.bodyMedium.copyWith(
-                  color: AppColors.textBlack,
-                  fontWeight: FontWeight.w600,
-                ),
-                textScaler: TextScaler.linear(1.0),
-                textAlign: TextAlign.center,
-              ),
-            ],
+    return Container(
+      width: 250,
+      height: 250,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
+        ],
+      ),
+      child: Center(
+        child: _qrImage == null
+            ? Icon(Icons.qr_code, size: 150, color: AppColors.primaryRed)
+            : CustomPaint(
+                size: const Size.square(220),
+                painter: _QrPainter(_qrImage!),
+              ),
       ),
     );
   }
@@ -188,7 +199,7 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
       children: [
         Text(
           'QR Code ini akan kadaluarsa dalam',
-          style: AppText.bodyMedium.copyWith(color: AppColors.textGray),
+          style: AppText.kaiseiRegular.copyWith(color: AppColors.textGray),
           textScaler: TextScaler.linear(1.0),
           textAlign: TextAlign.center,
         ),
@@ -202,7 +213,7 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
           ),
           child: Text(
             _formatTime(_remainingSeconds),
-            style: AppText.heading3.copyWith(
+            style: AppText.kaiseiBold.copyWith(
               color: Colors.red,
               fontWeight: FontWeight.w700,
             ),
@@ -235,7 +246,7 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
         ),
         child: Text(
           _isSuccess ? 'Selesai' : 'Tunggu...',
-          style: AppText.bodyLarge.copyWith(
+          style: AppText.kaiseiRegular.copyWith(
             color: _isSuccess ? Colors.white : Colors.grey[600],
             fontWeight: FontWeight.w600,
           ),
@@ -243,5 +254,97 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildInputAndButton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _qrDataController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Email untuk QR',
+            border: OutlineInputBorder(),
+          ),
+          readOnly: _loggedInEmail != null,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: _isProcessing ? null : _generateQr,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              _isProcessing ? 'Memproses...' : 'Generate QR',
+              style: AppText.kaiseiRegular.copyWith(color: Colors.white),
+              textScaler: TextScaler.linear(1.0),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGenerateButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: _isProcessing ? null : _generateQr,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryRed,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          _isProcessing ? 'Memproses...' : 'Generate QR',
+          style: AppText.kaiseiRegular.copyWith(color: Colors.white),
+          textScaler: TextScaler.linear(1.0),
+        ),
+      ),
+    );
+  }
+}
+
+class _QrPainter extends CustomPainter {
+  final QrImage qrImage;
+
+  _QrPainter(this.qrImage);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.black;
+    final moduleCount = qrImage.moduleCount;
+    final pixelSize = size.width / moduleCount;
+    for (var x = 0; x < moduleCount; x++) {
+      for (var y = 0; y < moduleCount; y++) {
+        if (qrImage.isDark(y, x)) {
+          final rect = Rect.fromLTWH(
+            x * pixelSize,
+            y * pixelSize,
+            pixelSize,
+            pixelSize,
+          );
+          canvas.drawRect(rect, paint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _QrPainter oldDelegate) {
+    return oldDelegate.qrImage != qrImage;
   }
 }
