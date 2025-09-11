@@ -23,12 +23,28 @@ void main() {
 }
 
 // Global function to clear authentication state
-void clearAuthState(BuildContext context) {
-  // Clear AuthBloc state
+Future<void> clearAuthState(BuildContext context) async {
+  print('Clearing authentication state...');
+
+  // First, clear AppBloc state to prevent any UI issues
+  context.read<AppBloc>().add(const AppLogoutRequested());
+
+  // Clear AuthBloc state (this also clears SharedPreferences)
   context.read<AuthBloc>().add(const AuthLogoutRequested());
 
-  // Clear AppBloc state
-  context.read<AppBloc>().add(const AppLogoutRequested());
+  // Wait longer for all async operations to complete
+  await Future.delayed(const Duration(milliseconds: 500));
+
+  // Double-check that SharedPreferences are cleared by directly accessing the repository
+  try {
+    final authRepo = ServiceLocator().authRepository;
+    await authRepo.clearUser();
+    print('Additional clearUser call completed');
+  } catch (e) {
+    print('Error in additional clearUser: $e');
+  }
+
+  print('Authentication state cleared successfully');
 }
 
 class MyApp extends StatelessWidget {
@@ -45,7 +61,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => NotificationsBloc()),
       ],
       child: MaterialApp(
-        title: 'SMARTMobs',
+        title: 'MerahPutih',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -95,7 +111,17 @@ class _AppEntryState extends State<AppEntry> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppBloc, AppState>(
+      buildWhen: (previous, current) {
+        // Always rebuild when authentication state changes
+        print(
+          'BlocBuilder buildWhen - Previous: ${previous.isAuthenticated}, Current: ${current.isAuthenticated}',
+        );
+        return true;
+      },
       builder: (context, state) {
+        print(
+          'AppEntry State - Auth: ${state.isAuthenticated}, Role: ${state.userRoleMobile}, SelectedRole: ${state.selectedRole}',
+        );
         if (state.showSplash) {
           final blocContext = context;
           Future.delayed(const Duration(seconds: 2), () {
@@ -134,6 +160,9 @@ class _AppEntryState extends State<AppEntry> {
         if ((state.userRoleMobile == 'MESIN' ||
                 state.userRoleMobile == 'NON_MESIN') &&
             state.selectedRole.isEmpty) {
+          print(
+            'Main: Navigating to role selection for ${state.userRoleMobile}',
+          );
           return RoleSelectionScreen(
             userEmail: state.userEmail,
             userName: state.userName,
@@ -141,6 +170,10 @@ class _AppEntryState extends State<AppEntry> {
             selectedRole: state.selectedRole,
           );
         }
+
+        print(
+          'Main: Navigating to RootScreen - Role: ${state.userRoleMobile}, SelectedRole: ${state.selectedRole}',
+        );
 
         return RootScreen(
           userRoleMobile: state.userRoleMobile,

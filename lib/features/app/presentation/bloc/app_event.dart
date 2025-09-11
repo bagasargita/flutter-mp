@@ -43,3 +43,12 @@ class AppLogoutRequested extends AppEvent {
 class AppInitialized extends AppEvent {
   const AppInitialized();
 }
+
+class AppRoleSelected extends AppEvent {
+  final String selectedRole;
+
+  const AppRoleSelected({required this.selectedRole});
+
+  @override
+  List<Object> get props => [selectedRole];
+}

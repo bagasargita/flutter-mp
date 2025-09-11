@@ -36,8 +36,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
+    print('AuthBloc: Clearing user data...');
     // Clear saved user data
-    await _authRepository.clearUser();
+    final result = await _authRepository.clearUser();
+    result.fold(
+      (failure) =>
+          print('AuthBloc: Failed to clear user data: ${failure.message}'),
+      (_) => print('AuthBloc: User data cleared successfully'),
+    );
     emit(AuthUnauthenticated());
   }
 

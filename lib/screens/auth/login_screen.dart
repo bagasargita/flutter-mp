@@ -5,6 +5,8 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/app/presentation/bloc/app_bloc.dart';
+import '../../core/di/service_locator.dart';
+import '../../main.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,6 +29,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Only clear state if we're actually authenticated (coming from a logout)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted) {
+        final appState = context.read<AppBloc>().state;
+        if (appState.isAuthenticated) {
+          print('LoginScreen: Clearing authenticated state');
+          await clearAuthState(context);
+        } else {
+          print('LoginScreen: Already unauthenticated, no clearing needed');
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -53,12 +72,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Trigger the login success callback with proper data
             if (widget.onLoginSuccess != null) {
-              widget.onLoginSuccess!(
-                state.user.roleMobile,
-                state.user.email,
-                state.user.name,
-                selectedRole,
+              print(
+                'Login success callback - Role: ${state.user.roleMobile}, SelectedRole: $selectedRole',
               );
+              // Add small delay to ensure state propagation
+              Future.delayed(const Duration(milliseconds: 50), () {
+                widget.onLoginSuccess!(
+                  state.user.roleMobile,
+                  state.user.email,
+                  state.user.name,
+                  selectedRole,
+                );
+              });
             }
 
             // If no callback provided, trigger the main app flow

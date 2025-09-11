@@ -11,6 +11,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final ApiClient _apiClient;
   static const String _userKey = 'user_data';
   static const String _tokenKey = 'auth_token';
+  static const String _refreshTokenKey = 'refresh_token';
 
   AuthRepositoryImpl(this._apiClient);
 
@@ -128,15 +129,22 @@ class AuthRepositoryImpl implements AuthRepository {
       final prefs = await SharedPreferences.getInstance();
       final userJson = prefs.getString(_userKey);
 
+      print(
+        'AuthRepository: getCurrentUser - userJson: ${userJson != null ? "found" : "null"}',
+      );
+
       if (userJson == null) {
+        print('AuthRepository: No user data found in SharedPreferences');
         return Right(null);
       }
 
       final userData = Map<String, dynamic>.from(jsonDecode(userJson) as Map);
       final user = User.fromJson(userData);
 
+      print('AuthRepository: Found user data - Role: ${user.roleMobile}');
       return Right(user);
     } catch (e) {
+      print('AuthRepository: Error getting user data: $e');
       return Left(CacheFailure(message: 'Failed to get user data'));
     }
   }
@@ -175,5 +183,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
     await prefs.remove(_tokenKey);
+    await prefs.remove(_refreshTokenKey);
+    print(
+      'AuthRepository: Cleared user_data, auth_token, and refresh_token from SharedPreferences',
+    );
   }
 }

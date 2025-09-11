@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
+import '../features/app/presentation/bloc/app_bloc.dart';
 import '../features/home/presentation/bloc/home_bloc.dart';
 import 'all_services_screen.dart';
 import 'setor_tunai/setor_tunai_screen.dart';
@@ -13,7 +14,6 @@ import 'mesin/riwayat_screen.dart';
 import 'mesin/faq_screen.dart';
 import 'mesin/bantuan_screen.dart';
 import '../widgets/common/app_top_bar.dart';
-import 'auth/role_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userRoleMobile;
@@ -88,17 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToRoleSelection() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => RoleSelectionScreen(
-          userEmail: widget.userEmail,
-          userName: widget.userName,
-          userRoleMobile: widget.userRoleMobile,
-          selectedRole: widget
-              .selectedRole, // Pass current selectedRole to maintain selection
-        ),
-      ),
-    );
+    context.read<AppBloc>().add(const AppRoleSelected(selectedRole: ''));
   }
 
   String _getTitleForRole(String role) {

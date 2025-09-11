@@ -3,10 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
-import '../../features/home/presentation/bloc/home_bloc.dart';
-import '../auth/login_screen.dart';
-import '../home_screen.dart';
-import '../../main.dart';
+import '../../features/app/presentation/bloc/app_bloc.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
   final String userEmail;
@@ -34,11 +31,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     // If selectedRole is provided and not empty, use it
     if (widget.selectedRole.isNotEmpty) {
       _selectedRole = widget.selectedRole;
-    } else if (widget.userRoleMobile == 'NON_MESIN' ||
-        widget.userRoleMobile == 'MESIN') {
-      _selectedRole = widget.userRoleMobile;
     } else {
-      _selectedRole = 'PELANGGAN';
+      // Don't auto-select any role, let user choose
+      _selectedRole = null;
     }
   }
 
@@ -51,27 +46,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              const SizedBox(height: 40),
-              GestureDetector(
-                onTap: () {
-                  // Go back to login screen
-                  clearAuthState(context);
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
-                },
-                child: const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(
-                    Icons.arrow_back_ios,
-                    color: AppColors.textBlack,
-                    size: 20,
-                  ),
-                ),
-              ),
               const SizedBox(height: 40),
               SvgPicture.asset('assets/images/LOGO-SVG.svg', height: 120),
               const SizedBox(height: 20),
@@ -220,19 +194,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
   void _continue() {
     if (_selectedRole != null) {
-      // All roles go to HomeScreen directly (no more _HomeWithNavigation)
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => BlocProvider(
-            create: (context) => HomeBloc(),
-            child: HomeScreen(
-              userRoleMobile: widget.userRoleMobile,
-              userEmail: widget.userEmail,
-              userName: widget.userName,
-              selectedRole: _selectedRole!,
-            ),
-          ),
-        ),
+      context.read<AppBloc>().add(
+        AppRoleSelected(selectedRole: _selectedRole!),
       );
     }
   }

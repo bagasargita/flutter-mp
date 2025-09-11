@@ -202,9 +202,11 @@ class AccountMenuWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      clearAuthState(context);
-                      Navigator.pop(context);
+                    onPressed: () async {
+                      await clearAuthState(context);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryRed,
@@ -227,9 +229,9 @@ class AccountMenuWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context);
-                      clearAuthState(context);
+                      await clearAuthState(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[200],
