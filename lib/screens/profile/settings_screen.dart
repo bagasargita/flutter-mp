@@ -54,7 +54,7 @@ class SettingsScreen extends StatelessWidget {
         _buildSettingsItem(
           icon: Icons.credit_card,
           title: 'Kartu',
-          subtitle: 'Merah Putih',
+          subtitle: 'MerahPutih',
           onTap: () {
             // Handle card settings
           },

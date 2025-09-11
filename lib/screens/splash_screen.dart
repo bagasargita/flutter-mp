@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     SvgPicture.asset('assets/images/LOGO-SVG.svg', height: 160),
                     const SizedBox(height: 50),
                     Text(
-                      'Merah Putih',
+                      'MerahPutih',
                       style: AppText.kaiseiBold.copyWith(
                         fontSize: 32,
                         color: AppColors.primaryRed,
@@ -82,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      'Merah Putih',
+                      'MerahPutih',
                       style: AppText.kaiseiBold.copyWith(
                         color: AppColors.primaryRed,
                         fontWeight: FontWeight.w700,

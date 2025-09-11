@@ -8,9 +8,12 @@ import '../constants/app_text.dart';
 import '../features/home/presentation/bloc/home_bloc.dart';
 import 'all_services_screen.dart';
 import 'setor_tunai/setor_tunai_screen.dart';
+import 'mesin/komisi_screen.dart';
+import 'mesin/riwayat_screen.dart';
+import 'mesin/faq_screen.dart';
+import 'mesin/bantuan_screen.dart';
 import '../widgets/common/app_top_bar.dart';
 import 'auth/role_selection_screen.dart';
-import '../main.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userRoleMobile;
@@ -100,18 +103,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getTitleForRole(String role) {
     if (widget.selectedRole == 'PELANGGAN') {
-      return 'Merah Putih';
+      return 'MerahPutih';
     }
 
     switch (role) {
       case 'CUSTOMER':
-        return 'Merah Putih';
+        return 'MerahPutih';
       case 'NON_MESIN':
         return 'Penyedia Layanan';
       case 'MESIN':
         return 'Penyedia Layanan';
       default:
-        return 'Merah Putih';
+        return 'MerahPutih';
     }
   }
 
@@ -122,9 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           const SizedBox(height: 24),
 
-          // Back button for PELANGGAN selection
-          if (widget.selectedRole == 'PELANGGAN' ||
-              widget.userRoleMobile == 'NON_MESIN' ||
+          // Back button for role selection - show for MESIN and NON_MESIN users
+          if (widget.userRoleMobile == 'NON_MESIN' ||
               widget.userRoleMobile == 'MESIN')
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -154,8 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             widget.selectedRole == 'PELANGGAN'
                                 ? 'Pelanggan'
-                                : widget.userRoleMobile == 'NON_MESIN'
-                                ? 'Penyedia Layanan'
+                                : widget.selectedRole == 'NON_MESIN'
+                                ? 'Penyedia Layanan Non Mesin'
+                                : widget.selectedRole == 'MESIN'
+                                ? 'Penyedia Layanan Mesin'
                                 : 'Penyedia Layanan',
                             style: AppText.kaiseiRegular.copyWith(
                               color: AppColors.textBlack,
@@ -333,19 +337,24 @@ class _ServicesSectionState extends State<ServicesSection>
     } else if (role == 'MESIN' && selectedRole != 'PELANGGAN') {
       return [
         {
-          'name': 'Kelola Mesin',
+          'name': 'Komisi',
           'image': 'assets/images/BayarTagihan.svg',
           'color': Colors.green,
         },
         {
-          'name': 'Riwayat Mesin',
+          'name': 'Riwayat',
           'image': 'assets/images/Riwayat.svg',
           'color': Colors.green,
         },
         {
-          'name': 'Laporan',
+          'name': 'FAQ',
           'image': 'assets/images/Lainnya.svg',
-          'color': Colors.green,
+          'color': Colors.blue,
+        },
+        {
+          'name': 'Bantuan',
+          'image': 'assets/images/Bantuan.svg',
+          'color': Colors.orange,
         },
       ];
     } else {
@@ -413,15 +422,25 @@ class _ServicesSectionState extends State<ServicesSection>
       widget.selectedRole,
     );
 
+    // Use 2x2 grid for MESIN role, 3-column grid for others
+    final crossAxisCount =
+        (widget.userRoleMobile == 'MESIN' && widget.selectedRole != 'PELANGGAN')
+        ? 2
+        : 3;
+    final childAspectRatio =
+        (widget.userRoleMobile == 'MESIN' && widget.selectedRole != 'PELANGGAN')
+        ? 1.0
+        : 0.8;
+
     return GridView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.8,
+        childAspectRatio: childAspectRatio,
       ),
       itemCount: services.length,
       itemBuilder: (context, index) {
@@ -446,6 +465,26 @@ class _ServicesSectionState extends State<ServicesSection>
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SetorTunaiScreen()),
+            );
+          } else if (service['name'] == 'Komisi') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const KomisiScreen()),
+            );
+          } else if (service['name'] == 'Riwayat') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RiwayatScreen()),
+            );
+          } else if (service['name'] == 'FAQ') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FAQScreen()),
+            );
+          } else if (service['name'] == 'Bantuan') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const BantuanScreen()),
             );
           }
         },

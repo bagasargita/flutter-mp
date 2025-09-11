@@ -6,7 +6,7 @@ class BottomNavMapper {
     required String selectedRole,
     required String userRoleMobile,
   }) {
-    if (selectedRole == 'CUSTOMER' || userRoleMobile == 'CUSTOMER') {
+    if (selectedRole == 'CUSTOMER' || selectedRole == 'PELANGGAN' || userRoleMobile == 'CUSTOMER') {
       return [
         BottomNavItemData(icon: Icons.home, label: 'Beranda'),
         BottomNavItemData(icon: Icons.history, label: 'Riwayat Transaksi'),

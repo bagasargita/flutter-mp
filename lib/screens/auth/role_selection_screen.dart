@@ -38,7 +38,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         widget.userRoleMobile == 'MESIN') {
       _selectedRole = widget.userRoleMobile;
     } else {
-      _selectedRole = 'CUSTOMER';
+      _selectedRole = 'PELANGGAN';
     }
   }
 
@@ -88,9 +88,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 title: 'Pelanggan',
                 subtitle: 'Masuk sebagai Pelanggan',
                 icon: Icons.person,
-                role: 'CUSTOMER',
-                isSelected: _selectedRole == 'CUSTOMER',
-                onTap: () => setState(() => _selectedRole = 'CUSTOMER'),
+                role: 'PELANGGAN',
+                isSelected: _selectedRole == 'PELANGGAN',
+                onTap: () => setState(() => _selectedRole = 'PELANGGAN'),
               ),
               const SizedBox(height: 16),
               if (widget.userRoleMobile == 'NON_MESIN')
