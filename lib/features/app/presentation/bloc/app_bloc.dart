@@ -35,7 +35,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
               userRoleMobile: user.roleMobile,
               userEmail: user.email,
               userName: user.name,
-              selectedRole: user.roleMobile == 'CUSTOMER' ? 'PELANGGAN' : '',
+              selectedRole: user.roleMobile == 'CUSTOMER' ? 'CUSTOMER' : '',
             ),
           );
         } else {

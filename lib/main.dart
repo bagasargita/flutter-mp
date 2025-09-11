@@ -130,6 +130,7 @@ class _AppEntryState extends State<AppEntry> {
         }
 
         // For MESIN/NON_MESIN users without selectedRole, go to role selection
+        // CUSTOMER users should skip role selection entirely
         if ((state.userRoleMobile == 'MESIN' ||
                 state.userRoleMobile == 'NON_MESIN') &&
             state.selectedRole.isEmpty) {
