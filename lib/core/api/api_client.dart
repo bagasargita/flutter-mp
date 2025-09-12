@@ -153,4 +153,28 @@ class ApiClient {
       queryParameters: queryParameters,
     );
   }
+
+  Future<Response<Map<String, dynamic>>> getMachineLocations({
+    required double latitude,
+    required double longitude,
+    String? type,
+    String? status,
+  }) async {
+    final Map<String, dynamic> queryParameters = {
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+
+    if (type != null && type.isNotEmpty) {
+      queryParameters['type'] = type;
+    }
+    if (status != null && status.isNotEmpty) {
+      queryParameters['status'] = status;
+    }
+
+    return await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.machineLocations,
+      queryParameters: queryParameters,
+    );
+  }
 }

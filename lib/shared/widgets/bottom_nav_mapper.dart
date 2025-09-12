@@ -6,7 +6,9 @@ class BottomNavMapper {
     required String selectedRole,
     required String userRoleMobile,
   }) {
-    if (selectedRole == 'CUSTOMER' || selectedRole == 'PELANGGAN' || userRoleMobile == 'CUSTOMER') {
+    if (selectedRole == 'CUSTOMER' ||
+        selectedRole == 'PELANGGAN' ||
+        userRoleMobile == 'CUSTOMER') {
       return [
         BottomNavItemData(icon: Icons.home, label: 'Beranda'),
         BottomNavItemData(icon: Icons.history, label: 'Riwayat Transaksi'),
@@ -21,7 +23,7 @@ class BottomNavMapper {
     } else if (selectedRole == 'MESIN') {
       return [
         BottomNavItemData(icon: Icons.home, label: 'Beranda'),
-        BottomNavItemData(icon: Icons.history, label: 'Riwayat Mesin'),
+        BottomNavItemData(icon: Icons.history, label: 'Komisi'),
         BottomNavItemData(icon: Icons.person, label: 'Akun'),
       ];
     } else {

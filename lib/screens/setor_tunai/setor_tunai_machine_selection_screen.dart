@@ -6,6 +6,8 @@ import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
 import 'package:smart_mob/screens/setor_tunai/setor_tunai_machine_details_screen.dart';
 import 'package:smart_mob/core/services/location_service.dart';
+import 'package:smart_mob/core/api/api_client.dart';
+import 'dart:io';
 
 class SetorTunaiMachineSelectionScreen extends StatefulWidget {
   const SetorTunaiMachineSelectionScreen({super.key});
@@ -21,94 +23,27 @@ class _SetorTunaiMachineSelectionScreenState
   final MapController _mapController = MapController();
 
   LatLng? _currentLocation;
-
-  final List<Map<String, dynamic>> _machines = [
-    {
-      'name': 'Grosir Pondok Pinang',
-      'maxAmount': 'Rp. 5.000.000,-',
-      'distance': '90 m',
-      'address': 'Jl. Pondok Pinang Raya No. 45',
-      'latitude': -6.2606,
-      'longitude': 106.7816,
-      'type': 'ATM',
-      'status': 'Available',
-    },
-    {
-      'name': 'WSMM Pondok Indah',
-      'maxAmount': 'Rp. 5.000.000,-',
-      'distance': '1.2 km',
-      'address': 'Jl. Metro Pondok Indah No. 12',
-      'latitude': -6.2654,
-      'longitude': 106.7834,
-      'type': 'CDM',
-      'status': 'Available',
-    },
-    {
-      'name': 'Warung Madura Deplu',
-      'maxAmount': 'Rp. 5.000.000,-',
-      'distance': '5.3 km',
-      'address': 'Jl. Deplu Raya No. 78',
-      'latitude': -6.2088,
-      'longitude': 106.8456,
-      'type': 'ATM',
-      'status': 'Available',
-    },
-    {
-      'name': 'Bank Central Asia - SCBD',
-      'maxAmount': 'Rp. 10.000.000,-',
-      'distance': '2.1 km',
-      'address': 'Jl. Jend. Sudirman No. 52-53',
-      'latitude': -6.2088,
-      'longitude': 106.8456,
-      'type': 'ATM',
-      'status': 'Available',
-    },
-    {
-      'name': 'Bank Mandiri - Thamrin',
-      'maxAmount': 'Rp. 7.500.000,-',
-      'distance': '3.5 km',
-      'address': 'Jl. M.H. Thamrin No. 5',
-      'latitude': -6.1865,
-      'longitude': 106.8243,
-      'type': 'CDM',
-      'status': 'Available',
-    },
-    {
-      'name': 'Bank Negara Indonesia - Sudirman',
-      'maxAmount': 'Rp. 8.000.000,-',
-      'distance': '4.2 km',
-      'address': 'Jl. Jend. Sudirman Kav. 1',
-      'latitude': -6.2088,
-      'longitude': 106.8456,
-      'type': 'ATM',
-      'status': 'Available',
-    },
-    {
-      'name': 'Indomaret - Kebayoran Baru',
-      'maxAmount': 'Rp. 3.000.000,-',
-      'distance': '1.8 km',
-      'address': 'Jl. Kebayoran Baru No. 23',
-      'latitude': -6.2456,
-      'longitude': 106.7890,
-      'type': 'CDM',
-      'status': 'Available',
-    },
-    {
-      'name': 'Alfamart - Senayan',
-      'maxAmount': 'Rp. 2.500.000,-',
-      'distance': '2.7 km',
-      'address': 'Jl. Asia Afrika No. 8',
-      'latitude': -6.2088,
-      'longitude': 106.8456,
-      'type': 'ATM',
-      'status': 'Available',
-    },
-  ];
+  bool _isMapReady = false;
+  bool _isOnline = true;
+  final List<Map<String, dynamic>> _machines = [];
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _checkConnectivity().then((_) => _getCurrentLocation());
+  }
+
+  Future<void> _checkConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('tile.openstreetmap.org');
+      setState(() {
+        _isOnline = result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+      });
+    } catch (_) {
+      setState(() {
+        _isOnline = false;
+      });
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -118,7 +53,85 @@ class _SetorTunaiMachineSelectionScreenState
     });
 
     if (_currentLocation != null) {
-      _mapController.move(_currentLocation!, 15.0);
+      if (_isMapReady) {
+        _mapController.move(_currentLocation!, 15.0);
+      }
+    }
+
+    await _fetchMachines();
+  }
+
+  Future<void> _fetchMachines() async {
+    if (_currentLocation == null) return;
+    try {
+      final client = ApiClient.create();
+      final response = await client.getMachineLocations(
+        latitude: _currentLocation!.latitude,
+        longitude: _currentLocation!.longitude,
+        type: 'Mesin',
+        status: 'Buka',
+      );
+      final data = response.data;
+      final dynamic listRaw = (data is Map<String, dynamic>)
+          ? (data['data'] ?? data['list'] ?? data['items'])
+          : data;
+      final List<dynamic> list = (listRaw is List) ? listRaw : <dynamic>[];
+      final List<Map<String, dynamic>> parsed = list
+          .map((item) {
+            final Map<String, dynamic> m = (item as Map)
+                .cast<String, dynamic>();
+            final dynamic latRaw =
+                m['coordinateLatitude'] ?? m['latitude'] ?? m['lat'];
+            final dynamic lngRaw =
+                m['coordinateLongitude'] ??
+                m['longitude'] ??
+                m['lng'] ??
+                m['lon'];
+            final double? lat = latRaw is num
+                ? latRaw.toDouble()
+                : double.tryParse((latRaw ?? '').toString());
+            final double? lng = lngRaw is num
+                ? lngRaw.toDouble()
+                : double.tryParse((lngRaw ?? '').toString());
+            final dynamic distanceRaw = m['distance'];
+            final String distanceStr = distanceRaw == null
+                ? '-'
+                : (distanceRaw is num
+                      ? '${distanceRaw.toStringAsFixed(1)} km'
+                      : distanceRaw.toString());
+            return {
+              'name': m['name'] ?? m['location'] ?? 'Mesin',
+              'maxAmount': m['description'] ?? '-',
+              'distance': distanceStr,
+              'address': m['addressStreet'] ?? m['address'] ?? '-',
+              'latitude': lat ?? 0.0,
+              'longitude': lng ?? 0.0,
+              'type':
+                  (m['locationType'] ?? m['type'] ?? 'ATM')
+                      .toString()
+                      .toUpperCase()
+                      .contains('MACHINE')
+                  ? 'ATM'
+                  : 'ATM',
+              'status': (m['currentStatus'] ?? '').toString() == 'Buka'
+                  ? 'Available'
+                  : 'Not Available',
+            };
+          })
+          .where(
+            (e) =>
+                (e['latitude'] as double) != 0.0 &&
+                (e['longitude'] as double) != 0.0,
+          )
+          .toList();
+
+      setState(() {
+        _machines
+          ..clear()
+          ..addAll(parsed);
+      });
+    } catch (_) {
+      setState(() {});
     }
   }
 
@@ -178,12 +191,19 @@ class _SetorTunaiMachineSelectionScreenState
             initialZoom: 15.0,
             minZoom: 10.0,
             maxZoom: 18.0,
+            onMapReady: () {
+              _isMapReady = true;
+              if (_currentLocation != null) {
+                _mapController.move(_currentLocation!, 15.0);
+              }
+            },
           ),
           children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.smartmob.app',
-            ),
+            if (_isOnline)
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.smartmob.app',
+              ),
             MarkerLayer(
               markers: [
                 Marker(

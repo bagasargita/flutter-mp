@@ -16,6 +16,7 @@ import 'widgets/common/app_bottom_nav.dart';
 import 'core/di/service_locator.dart';
 import 'shared/widgets/account_menu_widget.dart';
 import 'shared/widgets/bottom_nav_mapper.dart';
+import 'screens/mesin/komisi_screen.dart';
 
 void main() {
   ServiceLocator().init();
@@ -211,14 +212,33 @@ class _RootScreenState extends State<RootScreen> {
   @override
   void initState() {
     super.initState();
-    _screens = [
+    _screens = _buildScreens();
+  }
+
+  @override
+  void didUpdateWidget(covariant RootScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedRole != widget.selectedRole ||
+        oldWidget.userRoleMobile != widget.userRoleMobile) {
+      _screens = _buildScreens();
+      if (_selectedIndex > _screens.length - 1) {
+        _selectedIndex = 0;
+      }
+    }
+  }
+
+  List<Widget> _buildScreens() {
+    final secondTab = (widget.selectedRole == 'MESIN')
+        ? const KomisiScreen()
+        : const SetorTunaiHistoryScreen();
+    return [
       HomeScreen(
         userRoleMobile: widget.userRoleMobile,
         userEmail: widget.userEmail,
         userName: widget.userName,
         selectedRole: widget.selectedRole,
       ),
-      const SetorTunaiHistoryScreen(),
+      secondTab,
       const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
     ];
   }

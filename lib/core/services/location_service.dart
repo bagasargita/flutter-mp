@@ -1,9 +1,14 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 class LocationService {
   static Future<LatLng?> getCurrentLocation() async {
     try {
+      if (await _isEmulator()) {
+        return const LatLng(-6.2088, 106.8456);
+      }
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         print('Location services are disabled.');
@@ -25,8 +30,8 @@ class LocationService {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: LocationAccuracy.best,
+        timeLimit: const Duration(seconds: 15),
       );
 
       return LatLng(position.latitude, position.longitude);
@@ -49,5 +54,22 @@ class LocationService {
 
   static Future<bool> isLocationServiceEnabled() async {
     return await Geolocator.isLocationServiceEnabled();
+  }
+
+  static Future<bool> _isEmulator() async {
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final info = await deviceInfo.androidInfo;
+        return !(info.isPhysicalDevice);
+      }
+      if (Platform.isIOS) {
+        final info = await deviceInfo.iosInfo;
+        return !(info.isPhysicalDevice);
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 }

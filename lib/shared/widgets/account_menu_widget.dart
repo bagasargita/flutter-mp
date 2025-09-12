@@ -231,7 +231,6 @@ class AccountMenuWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context);
-                      await clearAuthState(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[200],

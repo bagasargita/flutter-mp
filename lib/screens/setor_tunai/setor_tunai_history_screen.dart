@@ -353,7 +353,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
               child: const SizedBox(
                 width: 48,
                 height: 48,
-                child: Icon(Icons.filter_list, color: Colors.grey),
+                child: Icon(Icons.tune, color: Colors.grey),
               ),
             ),
           ),

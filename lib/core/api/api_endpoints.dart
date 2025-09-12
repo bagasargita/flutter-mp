@@ -27,4 +27,6 @@ class ApiEndpoints {
   static const String transactions = '/transactions';
   static const String transactionHistory = '/transactions/history';
   static const String depositTransactions = '/deposit-transaction';
+  // Machine/location endpoints
+  static const String machineLocations = '/machine-location';
 }

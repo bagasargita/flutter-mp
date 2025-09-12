@@ -3,8 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
 import 'package:smart_mob/core/services/location_service.dart';
+import 'package:smart_mob/core/api/api_client.dart';
+import 'dart:io';
+import 'package:smart_mob/screens/setor_tunai/setor_tunai_location_list_screen.dart';
 
 class SetorTunaiLocationScreen extends StatefulWidget {
   const SetorTunaiLocationScreen({super.key});
@@ -18,63 +20,31 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
   final MapController _mapController = MapController();
   String _selectedLocationType = 'Lokasi Partner';
   String _selectedStatus = '';
+  String? _requestType;
+  String? _requestStatus;
   LatLng? _currentLocation;
+  bool _isMapReady = false;
+  bool _isOnline = true;
 
-  final List<Map<String, dynamic>> _locations = [
-    {
-      'name': 'Grosir Pondok Pinang',
-      'address': 'Jalan Ciledug Raya no 11',
-      'info': 'Available Max Rp. 5.000.000,-',
-      'distance': '50 m',
-      'type': 'Lokasi Partner',
-      'status': 'Available',
-      'icon': Icons.shopping_bag,
-      'iconColor': const Color(0xFF8B5CF6),
-      'latitude': -6.2606,
-      'longitude': 106.7816,
-    },
-    {
-      'name': 'WSSM Pondok Indah',
-      'address': 'Jalan Ciledug Raya no 11',
-      'info': 'Available Max Rp. 5.000.000,-',
-      'distance': '50 m',
-      'type': 'Lokasi Partner',
-      'status': 'Available',
-      'icon': Icons.shopping_bag,
-      'iconColor': const Color(0xFF8B5CF6),
-      'latitude': -6.2654,
-      'longitude': 106.7834,
-    },
-    {
-      'name': 'Toserba Pondok Indah',
-      'address': 'Jalan Ciledug Raya no 11',
-      'info': 'Available Max Rp. 5.000.000,-',
-      'distance': '50 m',
-      'type': 'Lokasi Partner',
-      'status': 'Available',
-      'icon': Icons.shopping_bag,
-      'iconColor': const Color(0xFF8B5CF6),
-      'latitude': -6.2088,
-      'longitude': 106.8456,
-    },
-    {
-      'name': 'Wisma ANTAM',
-      'address': 'Jalan Metro Pondok Indah',
-      'info': 'Available Max Rp. 5.000.000,-',
-      'distance': '9.8 Km',
-      'type': 'ATM/CDM',
-      'status': 'Available',
-      'icon': Icons.atm,
-      'iconColor': const Color(0xFFE53E3E),
-      'latitude': -6.1865,
-      'longitude': 106.8243,
-    },
-  ];
+  final List<Map<String, dynamic>> _locations = [];
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _checkConnectivity().then((_) => _getCurrentLocation());
+  }
+
+  Future<void> _checkConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('tile.openstreetmap.org');
+      setState(() {
+        _isOnline = result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+      });
+    } catch (_) {
+      setState(() {
+        _isOnline = false;
+      });
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -84,19 +54,134 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
     });
 
     if (_currentLocation != null) {
-      _mapController.move(_currentLocation!, 15.0);
+      if (_isMapReady) {
+        _mapController.move(_currentLocation!, 15.0);
+      }
     }
+    await _fetchLocations();
   }
 
   List<Map<String, dynamic>> get _filteredLocations {
-    return _locations.where((location) {
-      bool matchesType =
-          _selectedLocationType.isEmpty ||
-          location['type'] == _selectedLocationType;
-      bool matchesStatus =
-          _selectedStatus.isEmpty || location['status'] == _selectedStatus;
-      return matchesType && matchesStatus;
-    }).toList();
+    return _locations;
+  }
+
+  Future<void> _fetchLocations() async {
+    if (_currentLocation == null) return;
+    setState(() {});
+    try {
+      final client = ApiClient.create();
+      final response = await client.getMachineLocations(
+        latitude: _currentLocation!.latitude,
+        longitude: _currentLocation!.longitude,
+        type: _requestType,
+        status: _requestStatus,
+      );
+
+      final data = response.data;
+      final dynamic listRaw = (data is Map<String, dynamic>)
+          ? (data['data'] ?? data['list'] ?? data['items'])
+          : data;
+      final List<dynamic> list = (listRaw is List) ? listRaw : <dynamic>[];
+
+      final List<Map<String, dynamic>> parsed = list
+          .map((item) {
+            final Map<String, dynamic> m = (item as Map)
+                .cast<String, dynamic>();
+            final dynamic latRaw =
+                m['coordinateLatitude'] ?? m['latitude'] ?? m['lat'];
+            final dynamic lngRaw =
+                m['coordinateLongitude'] ??
+                m['longitude'] ??
+                m['lng'] ??
+                m['lon'];
+            final double? lat = latRaw is num
+                ? latRaw.toDouble()
+                : double.tryParse((latRaw ?? '').toString());
+            final double? lng = lngRaw is num
+                ? lngRaw.toDouble()
+                : double.tryParse((lngRaw ?? '').toString());
+
+            final dynamic distanceRaw = m['distance'];
+            String distanceStr;
+            if (distanceRaw == null) {
+              distanceStr = '-';
+            } else {
+              final double? distanceNum = distanceRaw is num
+                  ? distanceRaw.toDouble()
+                  : double.tryParse(
+                      distanceRaw.toString().replaceAll(RegExp('[^0-9.-]'), ''),
+                    );
+              if (distanceNum != null) {
+                if (distanceNum < 1.0) {
+                  final int meters = (distanceNum * 1000).round();
+                  distanceStr = '$meters m';
+                } else {
+                  distanceStr = '${distanceNum.toStringAsFixed(2)} km';
+                }
+              } else {
+                final String s = distanceRaw.toString();
+                distanceStr = s.contains('km') ? s : '$s km';
+              }
+            }
+
+            final String locationType =
+                m['locationType'] ?? m['type'] ?? 'machine';
+            final String currentStatus =
+                m['currentStatus'] ?? m['status'] ?? 'Buka';
+            final String operatingHours =
+                '${m['operatingHourOpen'] ?? '00:00'} - ${m['operatingHourClose'] ?? '23:59'}';
+
+            IconData iconData;
+            Color iconColor;
+
+            if (locationType.toLowerCase() == 'machine') {
+              iconData = Icons.atm;
+              iconColor = const Color(0xFFE53E3E);
+            } else if (locationType.toLowerCase() == 'partner') {
+              iconData = Icons.shopping_bag;
+              iconColor = const Color(0xFF8B5CF6);
+            } else {
+              iconData = Icons.location_on;
+              iconColor = const Color(0xFF4CAF50);
+            }
+
+            return {
+              'name': m['name'] ?? m['location'] ?? 'Lokasi',
+              'location': m['location'] ?? m['name'] ?? 'Lokasi',
+              'address': m['addressStreet'] ?? m['address'] ?? '-',
+              'description': m['description'] ?? m['info'] ?? '',
+              'info': m['description'] ?? m['info'] ?? '',
+              'distance': distanceStr,
+              'type': locationType,
+              'status': currentStatus,
+              'operatingHours': operatingHours,
+              'operatingHourOpen': m['operatingHourOpen'] ?? '00:00',
+              'operatingHourClose': m['operatingHourClose'] ?? '23:59',
+              'icon': iconData,
+              'iconColor': iconColor,
+              'latitude': lat ?? 0.0,
+              'longitude': lng ?? 0.0,
+            };
+          })
+          .where(
+            (e) =>
+                (e['latitude'] as double) != 0.0 &&
+                (e['longitude'] as double) != 0.0,
+          )
+          .toList();
+
+      setState(() {
+        _locations
+          ..clear()
+          ..addAll(parsed);
+      });
+    } catch (e) {
+      setState(() {});
+    } finally {
+      if (mounted) {
+        setState(() {});
+      }
+    }
   }
 
   @override
@@ -215,12 +300,20 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
             initialZoom: 15.0,
             minZoom: 10.0,
             maxZoom: 18.0,
+            onMapReady: () {
+              _isMapReady = true;
+              if (_currentLocation != null) {
+                _mapController.move(_currentLocation!, 15.0);
+              }
+            },
           ),
           children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.smartmob.app',
-            ),
+            if (_isOnline)
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.smartmob.app',
+                errorTileCallback: (tile, error, stackTrace) {},
+              ),
             MarkerLayer(
               markers: [
                 Marker(
@@ -339,8 +432,9 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
             ),
             const SizedBox(height: 16),
             _buildInfoRow('Address', location['address']),
-            _buildInfoRow('Info', location['info']),
+            _buildInfoRow('Description', location['description']),
             _buildInfoRow('Distance', location['distance']),
+            _buildInfoRow('Operating Hours', location['operatingHours']),
             _buildInfoRow('Status', location['status']),
             const SizedBox(height: 20),
             SizedBox(
@@ -439,7 +533,41 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SetorTunaiLocationListScreen(
+                          locations: List<Map<String, dynamic>>.from(
+                            _filteredLocations,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryRed,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Tampilkan List',
+                    style: AppText.kaiseiRegular.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -505,13 +633,49 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  location['info'],
+                  location['description'],
                   style: TextStyle(
                     color: AppColors.textGray,
                     fontSize: 12,
                     fontFamily: 'Roboto',
                     height: 1.2,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: location['status'] == 'Buka'
+                            ? Colors.green.withOpacity(0.1)
+                            : Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        location['status'],
+                        style: TextStyle(
+                          color: location['status'] == 'Buka'
+                              ? Colors.green[700]
+                              : Colors.red[700],
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      location['operatingHours'],
+                      style: TextStyle(
+                        color: AppColors.textGray,
+                        fontSize: 10,
+                        fontFamily: 'Roboto',
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -570,8 +734,11 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                       setState(() {
                         _selectedLocationType = '';
                         _selectedStatus = '';
+                        _requestType = null;
+                        _requestStatus = null;
                       });
                       setModalState(() {});
+                      _fetchLocations();
                       Navigator.pop(context);
                     },
                     child: Text(
@@ -606,6 +773,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                     (value) {
                       setState(() {
                         _selectedLocationType = value ? 'ATM/CDM' : '';
+                        _requestType = value ? 'Mesin' : null;
                       });
                       setModalState(() {});
                     },
@@ -618,6 +786,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                     (value) {
                       setState(() {
                         _selectedLocationType = value ? 'Lokasi Partner' : '';
+                        _requestType = null;
                       });
                       setModalState(() {});
                     },
@@ -646,6 +815,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                     (value) {
                       setState(() {
                         _selectedStatus = value ? 'Available' : '';
+                        _requestStatus = value ? 'Buka' : null;
                       });
                       setModalState(() {});
                     },
@@ -658,6 +828,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                     (value) {
                       setState(() {
                         _selectedStatus = value ? 'Not Available' : '';
+                        _requestStatus = value ? 'Tutup' : null;
                       });
                       setModalState(() {});
                     },
@@ -670,6 +841,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    _fetchLocations();
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
