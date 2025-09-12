@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../widgets/common/app_top_bar.dart';
+import '../../widgets/komisi/komisi_filter_modal.dart';
 
 class KomisiDetailScreen extends StatelessWidget {
   const KomisiDetailScreen({super.key});
@@ -29,13 +30,7 @@ class KomisiDetailScreen extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Filter belum diimplementasikan'),
-                              ),
-                            );
-                          },
+                          onPressed: () => _showFilterModal(context),
                           icon: const Icon(
                             Icons.tune,
                             size: 18,
@@ -199,6 +194,28 @@ class KomisiDetailScreen extends StatelessWidget {
             color: AppColors.textBlack,
           ),
         ),
+      ),
+    );
+  }
+
+  void _showFilterModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      enableDrag: true,
+      isDismissible: true,
+      builder: (context) => KomisiFilterModal(
+        onApplyFilter: (startDate, endDate) {
+          // TODO: Apply filter logic here
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Filter applied: ${startDate?.toString().split(' ')[0] ?? 'No start'} to ${endDate?.toString().split(' ')[0] ?? 'No end'}',
+              ),
+            ),
+          );
+        },
       ),
     );
   }
