@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
@@ -14,6 +15,8 @@ class SetorTunaiHistoryScreen extends StatefulWidget {
 
 class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  final ScrollController _scrollController = ScrollController();
 
   String _selectedTransactionType = 'Setoran';
   String _selectedPeriod = '';
@@ -23,6 +26,9 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
   bool _isLoading = false;
   String _errorMessage = '';
   List<Map<String, dynamic>> _transactions = [];
+  int _pageSize = 10;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
 
   String _formatRupiah(dynamic value) {
     if (value == null) return '';
@@ -50,24 +56,91 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchTransactions();
+    _searchController.addListener(_onSearchChanged);
+    _scrollController.addListener(_onScroll);
+    _fetchTransactions(reset: true);
   }
 
-  Future<void> _fetchTransactions() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-    final DateTime from = _startDate ?? DateTime.parse('2025-01-01T00:00:00');
-    final DateTime to = _endDate ?? DateTime.parse('2025-12-31T23:59:59');
+  void _onSearchChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      _fetchTransactions(reset: true);
+    });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 64 &&
+        !_isLoading &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    setState(() {
+      _isLoadingMore = true;
+    });
+    _pageSize += 10;
+    await _fetchTransactions();
+    if (mounted) {
+      setState(() {
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  Future<void> _fetchTransactions({bool reset = false}) async {
+    if (reset) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+        _transactions = [];
+        _pageSize = 10;
+        _hasMore = true;
+      });
+    } else {
+      setState(() {
+        _isLoading = _transactions.isEmpty;
+        _errorMessage = '';
+      });
+    }
+
+    final now = DateTime.now();
+    DateTime from = _startDate ?? DateTime(now.year, 1, 1, 0, 0, 0);
+    DateTime to = _endDate ?? DateTime(now.year, 12, 31, 23, 59, 59);
+
+    if (_selectedPeriod == 'This month') {
+      from = DateTime(now.year, now.month, 1, 0, 0, 0);
+      final nextMonth = DateTime(now.year, now.month + 1, 1);
+      to = nextMonth.subtract(const Duration(seconds: 1));
+    } else if (_selectedPeriod == 'Previous month') {
+      final prevMonth = DateTime(now.year, now.month - 1, 1);
+      from = prevMonth;
+      final thisMonth = DateTime(now.year, now.month, 1);
+      to = thisMonth.subtract(const Duration(seconds: 1));
+    } else if (_selectedPeriod == 'This year') {
+      from = DateTime(now.year, 1, 1, 0, 0, 0);
+      to = DateTime(now.year, 12, 31, 23, 59, 59);
+    }
 
     try {
       final client = ApiClient.create();
       final response = await client.getDepositTransactions(
         page: 0,
-        size: 1,
-        sort: const ['string'],
+        size: _pageSize,
+        sort: const ['transactionDate,desc'],
         fromDate: from,
         toDate: to,
         search: _searchController.text.isEmpty ? null : _searchController.text,
@@ -168,15 +241,20 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
         };
       }).toList();
 
+      bool nextHasMore = mapped.length >= _pageSize;
+
       setState(() {
         _transactions = mapped;
         _isLoading = false;
+        _hasMore = nextHasMore;
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Gagal memuat data';
-        _transactions = [];
+        if (reset) {
+          _transactions = [];
+        }
       });
     }
   }
@@ -192,7 +270,10 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              const AppTopBar(title: 'Riwayat Transaksi', showBack: true),
+              AppTopBar(
+                title: 'Riwayat Transaksi',
+                showBack: Navigator.of(context).canPop(),
+              ),
               Expanded(
                 child: Column(
                   children: [
@@ -231,6 +312,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                         onPressed: () {
                           _searchController.clear();
                           setState(() {});
+                          _fetchTransactions();
                         },
                       )
                     : null,
@@ -359,6 +441,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                         _selectedTransactionType = value ? 'Setoran' : '';
                       });
                       setModalState(() {});
+                      _fetchTransactions(reset: true);
                     },
                   ),
                   _buildFilterChip(
@@ -369,6 +452,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                         _selectedTransactionType = value ? 'Tarik Tunai' : '';
                       });
                       setModalState(() {});
+                      _fetchTransactions(reset: true);
                     },
                   ),
                   _buildFilterChip(
@@ -377,8 +461,13 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     (value) {
                       setState(() {
                         _selectedPeriod = value ? 'This month' : '';
+                        if (value) {
+                          _startDate = null;
+                          _endDate = null;
+                        }
                       });
                       setModalState(() {});
+                      _fetchTransactions(reset: true);
                     },
                   ),
                   _buildFilterChip(
@@ -387,8 +476,13 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     (value) {
                       setState(() {
                         _selectedPeriod = value ? 'Previous month' : '';
+                        if (value) {
+                          _startDate = null;
+                          _endDate = null;
+                        }
                       });
                       setModalState(() {});
+                      _fetchTransactions(reset: true);
                     },
                   ),
                   _buildFilterChip(
@@ -397,8 +491,13 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     (value) {
                       setState(() {
                         _selectedPeriod = value ? 'This year' : '';
+                        if (value) {
+                          _startDate = null;
+                          _endDate = null;
+                        }
                       });
                       setModalState(() {});
+                      _fetchTransactions(reset: true);
                     },
                   ),
                 ],
@@ -417,7 +516,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                 children: [
                   Expanded(
                     child: _buildDateField(
-                      '15 Sep 2023',
+                      _formatDateForField(_startDate),
                       Icons.calendar_today,
                       () => _selectDate(true),
                     ),
@@ -427,7 +526,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildDateField(
-                      '20 Sep 2023',
+                      _formatDateForField(_endDate),
                       Icons.calendar_today,
                       () => _selectDate(false),
                     ),
@@ -455,6 +554,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                       _selectedStatus = value ? 'Berhasil' : '';
                     });
                     setModalState(() {});
+                    _fetchTransactions(reset: true);
                   }),
                   _buildFilterChip('Pending', _selectedStatus == 'Pending', (
                     value,
@@ -463,6 +563,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                       _selectedStatus = value ? 'Pending' : '';
                     });
                     setModalState(() {});
+                    _fetchTransactions(reset: true);
                   }),
                   _buildFilterChip('Gagal', _selectedStatus == 'Gagal', (
                     value,
@@ -471,6 +572,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                       _selectedStatus = value ? 'Gagal' : '';
                     });
                     setModalState(() {});
+                    _fetchTransactions(reset: true);
                   }),
                 ],
               ),
@@ -535,6 +637,25 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
     );
   }
 
+  String _formatDateForField(DateTime? date) {
+    if (date == null) return '-';
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+  }
+
   Widget _buildDateField(String date, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -569,21 +690,40 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
     if (picked != null) {
       setState(() {
         if (isStartDate) {
-          _startDate = picked;
+          _startDate = DateTime(picked.year, picked.month, picked.day, 0, 0, 0);
         } else {
-          _endDate = picked;
+          _endDate = DateTime(
+            picked.year,
+            picked.month,
+            picked.day,
+            23,
+            59,
+            59,
+          );
         }
+        _selectedPeriod = '';
       });
+      _fetchTransactions();
     }
   }
 
   Widget _buildTransactionList(List<Map<String, dynamic>> transactions) {
-    return ListView.builder(
-      itemCount: transactions.length,
-      itemBuilder: (context, index) {
-        final transaction = transactions[index];
-        return _buildTransactionItem(transaction);
-      },
+    return RefreshIndicator(
+      onRefresh: () => _fetchTransactions(reset: true),
+      child: ListView.builder(
+        controller: _scrollController,
+        itemCount: transactions.length + (_isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (_isLoadingMore && index == transactions.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            );
+          }
+          final transaction = transactions[index];
+          return _buildTransactionItem(transaction);
+        },
+      ),
     );
   }
 
