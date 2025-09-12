@@ -119,4 +119,38 @@ class ApiClient {
       data: payload,
     );
   }
+
+  Future<Response<Map<String, dynamic>>> getDepositTransactions({
+    required int page,
+    required int size,
+    required List<String> sort,
+    required DateTime fromDate,
+    required DateTime toDate,
+    String? search,
+    String? tipeTransaksi,
+    String? statusTransaksi,
+  }) async {
+    final Map<String, dynamic> queryParameters = {
+      'page': page,
+      'size': size,
+      'sort': sort,
+      'fromDate': fromDate.toIso8601String(),
+      'toDate': toDate.toIso8601String(),
+    };
+
+    if (search != null && search.isNotEmpty) {
+      queryParameters['search'] = search;
+    }
+    if (tipeTransaksi != null && tipeTransaksi.isNotEmpty) {
+      queryParameters['tipeTransaksi'] = tipeTransaksi;
+    }
+    if (statusTransaksi != null && statusTransaksi.isNotEmpty) {
+      queryParameters['statusTransaksi'] = statusTransaksi;
+    }
+
+    return await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.depositTransactions,
+      queryParameters: queryParameters,
+    );
+  }
 }

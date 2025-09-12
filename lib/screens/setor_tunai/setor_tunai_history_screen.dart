@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
+import 'package:smart_mob/core/api/api_client.dart';
 
 class SetorTunaiHistoryScreen extends StatefulWidget {
   const SetorTunaiHistoryScreen({super.key});
@@ -19,88 +20,175 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
   String _selectedStatus = '';
   DateTime? _startDate;
   DateTime? _endDate;
+  bool _isLoading = false;
+  String _errorMessage = '';
+  List<Map<String, dynamic>> _transactions = [];
 
-  final List<Map<String, dynamic>> _transactions = [
-    {
-      'month': 'Juli',
-      'status': 'Gagal',
-      'date': '10 Juli 2025 14:23:44',
-      'company': 'PT Warung Makmur Sejahtera',
-      'amount': 'Rp -',
-      'type': 'Setoran',
-    },
-    {
-      'month': 'Juli',
-      'status': 'Gagal',
-      'date': '10 Juli 2025 14:23:44',
-      'company': 'PT Warung Makmur Sejahtera',
-      'amount': 'Rp -',
-      'type': 'Setoran',
-    },
-    {
-      'month': 'Juli',
-      'status': 'Pending',
-      'date': '09 Juli 2025 12:00:09',
-      'company': 'PT Warung Makmur Sejahtera',
-      'amount': 'Rp. 5.540.000',
-      'type': 'Setoran',
-    },
-    {
-      'month': 'Juni',
-      'status': 'Berhasil',
-      'date': '29 Juni 2025 21:03:55',
-      'company': 'PT Warung Makmur Sejahtera',
-      'amount': 'Rp. 3.250.000',
-      'type': 'Setoran',
-    },
-    {
-      'month': 'Mei',
-      'status': 'Berhasil',
-      'date': '30 Mei 2025 18:03:23',
-      'company': 'PT Warung Makmur Sejahtera',
-      'amount': 'Rp. 36.000.000',
-      'type': 'Setoran',
-    },
-    {
-      'month': 'Mei',
-      'status': 'Successfully',
-      'date': '30 Mei 2025 14:03:55',
-      'company': 'PT Warung Makmur Sejahtera',
-      'amount': 'Rp. 46.000.000',
-      'type': 'Setoran',
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredTransactions {
-    return _transactions.where((transaction) {
-      final company = transaction['company']?.toString() ?? '';
-      final amount = transaction['amount']?.toString() ?? '';
-      final status = transaction['status']?.toString() ?? '';
-      final type = transaction['type']?.toString() ?? '';
-
-      bool matchesSearch =
-          _searchController.text.isEmpty ||
-          company.toLowerCase().contains(
-            _searchController.text.toLowerCase(),
-          ) ||
-          amount.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-          status.toLowerCase().contains(_searchController.text.toLowerCase());
-
-      bool matchesType =
-          _selectedTransactionType.isEmpty || type == _selectedTransactionType;
-
-      bool matchesStatus = _selectedStatus.isEmpty || status == _selectedStatus;
-
-      return matchesSearch && matchesType && matchesStatus;
-    }).toList();
+  String _formatRupiah(dynamic value) {
+    if (value == null) return '';
+    num number;
+    if (value is num) {
+      number = value;
+    } else {
+      number = num.tryParse(value.toString()) ?? 0;
+    }
+    final s = number.toStringAsFixed(0);
+    final buf = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buf.write(s[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buf.write('.');
+        count = 0;
+      }
+    }
+    final reversed = buf.toString().split('').reversed.join();
+    return 'Rp. $reversed';
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTransactions();
+  }
+
+  Future<void> _fetchTransactions() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    final DateTime from = _startDate ?? DateTime.parse('2025-01-01T00:00:00');
+    final DateTime to = _endDate ?? DateTime.parse('2025-12-31T23:59:59');
+
+    try {
+      final client = ApiClient.create();
+      final response = await client.getDepositTransactions(
+        page: 0,
+        size: 1,
+        sort: const ['string'],
+        fromDate: from,
+        toDate: to,
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+        tipeTransaksi: _selectedTransactionType.isEmpty
+            ? null
+            : _selectedTransactionType,
+        statusTransaksi: _selectedStatus.isEmpty ? null : _selectedStatus,
+      );
+
+      final Map<String, dynamic> body = (response.data is Map<String, dynamic>)
+          ? response.data as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      final Map<String, dynamic>? container =
+          (body['data'] is Map<String, dynamic>)
+          ? body['data'] as Map<String, dynamic>
+          : null;
+
+      List<dynamic> rawList = [];
+      if (container != null && container['content'] is List) {
+        rawList = container['content'] as List<dynamic>;
+      } else if (body['content'] is List) {
+        rawList = body['content'] as List<dynamic>;
+      } else if (body['data'] is List) {
+        rawList = body['data'] as List<dynamic>;
+      }
+
+      final mapped = rawList.map<Map<String, dynamic>>((item) {
+        final m = item is Map<String, dynamic> ? item : <String, dynamic>{};
+
+        final status =
+            (m['transactionStatus'] ??
+                    m['statusTransaksi'] ??
+                    m['status'] ??
+                    '')
+                .toString();
+
+        final txDate = (m['transactionDate'] ?? m['tanggalTransaksi'] ?? '')
+            .toString();
+        final txTime = (m['transactionTime'] ?? m['waktuTransaksi'] ?? '')
+            .toString();
+
+        String month = '';
+        String formattedDate = '';
+        if (txDate.isNotEmpty) {
+          DateTime? dt;
+          try {
+            dt = DateTime.tryParse(txDate);
+          } catch (_) {}
+          if (dt != null) {
+            const months = [
+              'Januari',
+              'Februari',
+              'Maret',
+              'April',
+              'Mei',
+              'Juni',
+              'Juli',
+              'Agustus',
+              'September',
+              'Oktober',
+              'November',
+              'Desember',
+            ];
+            month = months[dt.month - 1];
+            formattedDate =
+                '${dt.day.toString().padLeft(2, '0')} $month ${dt.year}' +
+                (txTime.isNotEmpty ? ' $txTime' : '');
+          } else {
+            formattedDate = txDate + (txTime.isNotEmpty ? ' $txTime' : '');
+          }
+        }
+
+        final company =
+            (m['accountName'] ??
+                    m['merchantName'] ??
+                    m['company'] ??
+                    m['namaPerusahaan'] ??
+                    '')
+                .toString();
+        final dynamic rawAmount =
+            (m['depositAmount'] ?? m['nominal'] ?? m['amount']);
+        final amount = _formatRupiah(rawAmount);
+        final type = (m['tipeTransaksi'] ?? m['type'] ?? 'Setoran').toString();
+
+        return {
+          'month': month,
+          'status': status,
+          'date': formattedDate,
+          'company': company,
+          'amount': amount,
+          'type': type,
+          'transactionNumber': (m['transactionNumber'] ?? '').toString(),
+          'branch': (m['branch'] ?? '').toString(),
+          'location': (m['location'] ?? '').toString(),
+          'machine': (m['machine'] ?? '').toString(),
+          'user': (m['user'] ?? '').toString(),
+        };
+      }).toList();
+
+      setState(() {
+        _transactions = mapped;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal memuat data';
+        _transactions = [];
+      });
+    }
+  }
+
+  // removed local filter; server-side filtering is used
 
   @override
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Column(
             children: [
@@ -109,7 +197,13 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                 child: Column(
                   children: [
                     _buildSearchAndFilters(),
-                    Expanded(child: _buildTransactionList()),
+                    Expanded(
+                      child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(20),
+                        child: _buildTransactionList(_transactions),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -126,72 +220,59 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.grey[300]!),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) => setState(() {}),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                      )
+                    : null,
+                hintText: 'Cari...',
+                hintStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 16,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide(
+                    color: Colors.blue.shade300,
+                    width: 1.5,
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.search, color: Colors.grey[400], size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) => setState(() {}),
-                      decoration: const InputDecoration(
-                        hintText: 'Cari',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                  if (_searchController.text.isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                      child: Icon(
-                        Icons.close,
-                        color: Colors.grey[400],
-                        size: 20,
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _showFilterPopup,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+          Material(
+            color: Colors.white,
+            elevation: 2,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _showFilterPopup,
+              child: const SizedBox(
+                width: 48,
+                height: 48,
+                child: Icon(Icons.filter_list, color: Colors.grey),
               ),
-              child: Icon(Icons.more_vert, color: Colors.grey[600], size: 24),
             ),
           ),
         ],
@@ -244,6 +325,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                       });
                       setModalState(() {});
                       Navigator.pop(context);
+                      _fetchTransactions();
                     },
                     child: Text(
                       'Clear',
@@ -399,6 +481,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
+                    _fetchTransactions();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryRed,
@@ -409,7 +492,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     ),
                   ),
                   child: Text(
-                    'Tampilkan hasil (${_filteredTransactions.length})',
+                    'Tampilkan hasil (${_transactions.length})',
                     style: AppText.kaiseiRegular.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -494,12 +577,11 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
     }
   }
 
-  Widget _buildTransactionList() {
+  Widget _buildTransactionList(List<Map<String, dynamic>> transactions) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _filteredTransactions.length,
+      itemCount: transactions.length,
       itemBuilder: (context, index) {
-        final transaction = _filteredTransactions[index];
+        final transaction = transactions[index];
         return _buildTransactionItem(transaction);
       },
     );
@@ -546,6 +628,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
       ),
       child: Row(
         children: [
+          /// LEFT SIDE
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,22 +638,19 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                   style: TextStyle(
                     color: AppColors.textBlack,
                     fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    fontFamily: 'Roboto',
-                    height: 1.2,
+                    fontSize: 16, // ✅ smaller than before (18)
+                    height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     Text(
                       'Status ',
                       style: TextStyle(
                         color: AppColors.textLightGray,
-                        fontWeight: FontWeight.normal,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                        height: 1.2,
+                        fontSize: 12, // ✅ reduced from 13
+                        height: 1.3,
                       ),
                     ),
                     Text(
@@ -578,9 +658,8 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                       style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        fontFamily: 'Roboto',
-                        height: 1.2,
+                        fontSize: 12, // ✅ reduced from 13
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -588,6 +667,8 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
               ],
             ),
           ),
+
+          /// RIGHT SIDE
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -596,32 +677,27 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                   date,
                   style: TextStyle(
                     color: AppColors.textLightGray,
-                    fontSize: 12,
-                    fontWeight: FontWeight.normal,
-                    fontFamily: 'Roboto',
-                    height: 1.2,
+                    fontSize: 11, // ✅ reduced from 12
+                    height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   company,
                   style: TextStyle(
                     color: AppColors.textLightGray,
-                    fontWeight: FontWeight.normal,
-                    fontSize: 11,
-                    fontFamily: 'Roboto',
-                    height: 1.2,
+                    fontSize: 11, // ✅ same, but balanced
+                    height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   amount,
                   style: TextStyle(
                     color: const Color(0xFF38A169),
                     fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    fontFamily: 'Roboto',
-                    height: 1.2,
+                    fontSize: 16, // ✅ reduced from 18
+                    height: 1.3,
                   ),
                 ),
               ],
