@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/widgets/common/watermark_widget.dart';
+import 'package:merah_putih/widgets/common/watermark_widget.dart';
 
 class WatermarkDemo extends StatelessWidget {
   const WatermarkDemo({super.key});
@@ -56,7 +56,11 @@ class WatermarkDemo extends StatelessWidget {
     );
   }
 
-  Widget _buildWatermarkCard(String title, Widget watermark, String description) {
+  Widget _buildWatermarkCard(
+    String title,
+    Widget watermark,
+    String description,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

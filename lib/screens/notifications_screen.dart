@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/features/notifications/presentation/bloc/notifications_bloc.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/features/notifications/presentation/bloc/notifications_bloc.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});

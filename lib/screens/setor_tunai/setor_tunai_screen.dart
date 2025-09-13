@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
-import 'package:smart_mob/widgets/setor_tunai/setor_tunai_services_grid.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/widgets/setor_tunai/setor_tunai_services_grid.dart';
 
 class SetorTunaiScreen extends StatefulWidget {
   const SetorTunaiScreen({super.key});

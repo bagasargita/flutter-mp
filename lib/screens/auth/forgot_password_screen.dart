@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/auth/forgot_password_otp_screen.dart';
-import 'package:smart_mob/core/di/service_locator.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/screens/auth/forgot_password_otp_screen.dart';
+import 'package:merah_putih/core/di/service_locator.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
 import 'package:qr/qr.dart';
-import 'package:smart_mob/core/di/service_locator.dart';
-import 'package:smart_mob/features/auth/domain/entities/user.dart';
-import 'package:smart_mob/features/setor_tunai/domain/entities/beneficiary_account.dart';
+import 'package:merah_putih/core/di/service_locator.dart';
+import 'package:merah_putih/features/auth/domain/entities/user.dart';
+import 'package:merah_putih/features/setor_tunai/domain/entities/beneficiary_account.dart';
 
 class SetorTunaiQRScreen extends StatefulWidget {
   const SetorTunaiQRScreen({super.key});

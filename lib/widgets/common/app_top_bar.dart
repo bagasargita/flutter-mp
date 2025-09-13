@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
 
 class AppTopBar extends StatelessWidget {
   final String title;

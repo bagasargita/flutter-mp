@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/core/services/receipt_service.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/core/services/receipt_service.dart';
 
 class CustomShareSheet extends StatelessWidget {
   final VoidCallback? onClose;

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:smart_mob/core/di/service_locator.dart';
+import 'package:merah_putih/core/di/service_locator.dart';
 
 part 'app_event.dart';
 part 'app_state.dart';

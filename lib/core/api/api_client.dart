@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:smart_mob/core/api/api_config.dart';
-import 'package:smart_mob/core/api/api_endpoints.dart';
+import 'package:merah_putih/core/api/api_config.dart';
+import 'package:merah_putih/core/api/api_endpoints.dart';
 
 class ApiClient {
   final Dio _dio;

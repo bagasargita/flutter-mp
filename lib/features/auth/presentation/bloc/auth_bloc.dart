@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:smart_mob/features/auth/domain/entities/user.dart';
-import 'package:smart_mob/features/auth/domain/repositories/auth_repository.dart';
+import 'package:merah_putih/features/auth/domain/entities/user.dart';
+import 'package:merah_putih/features/auth/domain/repositories/auth_repository.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

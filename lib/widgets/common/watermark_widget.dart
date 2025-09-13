@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_colors.dart';
 
 class WatermarkWidget extends StatelessWidget {
   final double opacity;

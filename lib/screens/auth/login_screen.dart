@@ -5,7 +5,6 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/app/presentation/bloc/app_bloc.dart';
-import '../../core/di/service_locator.dart';
 import '../../main.dart';
 import 'forgot_password_screen.dart';
 

@@ -6,12 +6,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
 import '../features/app/presentation/bloc/app_bloc.dart';
-import 'all_services_screen.dart';
 import 'setor_tunai/setor_tunai_screen.dart';
 import 'mesin/komisi_screen.dart';
 import 'mesin/riwayat_screen.dart';
 import 'mesin/faq_screen.dart';
-import 'mesin/bantuan_screen.dart';
 import '../widgets/common/app_top_bar.dart';
 import 'setor_tunai/setor_tunai_help_screen.dart';
 
@@ -435,12 +433,6 @@ class _ServicesSectionState extends State<ServicesSection>
       child: GestureDetector(
         onTap: () {
           if (service['name'] == 'Lainnya') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AllServicesScreen(),
-              ),
-            );
           } else if (service['name'] == 'Setor Tunai') {
             Navigator.push(
               context,

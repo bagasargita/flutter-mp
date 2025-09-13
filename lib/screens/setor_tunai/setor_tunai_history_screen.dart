@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
-import 'package:smart_mob/core/api/api_client.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/core/api/api_client.dart';
+import 'package:merah_putih/screens/setor_tunai/setor_tunai_success_screen.dart';
 
 class SetorTunaiHistoryScreen extends StatefulWidget {
   const SetorTunaiHistoryScreen({super.key});
@@ -51,6 +52,11 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
     }
     final reversed = buf.toString().split('').reversed.join();
     return 'Rp. $reversed';
+  }
+
+  bool _isValidDateRange() {
+    if (_startDate == null || _endDate == null) return true;
+    return !_startDate!.isAfter(_endDate!);
   }
 
   @override
@@ -166,7 +172,7 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
         rawList = body['content'] as List<dynamic>;
       } else if (body['data'] is List) {
         rawList = body['data'] as List<dynamic>;
-      }
+      } else {}
 
       final mapped = rawList.map<Map<String, dynamic>>((item) {
         final m = item is Map<String, dynamic> ? item : <String, dynamic>{};
@@ -226,7 +232,11 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
         final amount = _formatRupiah(rawAmount);
         final type = (m['tipeTransaksi'] ?? m['type'] ?? 'Setoran').toString();
 
-        return {
+        // Start with original API data to preserve all fields
+        final mappedResult = Map<String, dynamic>.from(m);
+
+        // Add/override with processed fields for display
+        mappedResult.addAll({
           'month': month,
           'status': status,
           'date': formattedDate,
@@ -238,7 +248,9 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
           'location': (m['location'] ?? '').toString(),
           'machine': (m['machine'] ?? '').toString(),
           'user': (m['user'] ?? '').toString(),
-        };
+        });
+
+        return mappedResult;
       }).toList();
 
       bool nextHasMore = mapped.length >= _pageSize;
@@ -518,17 +530,27 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                     child: _buildDateField(
                       _formatDateForField(_startDate),
                       Icons.calendar_today,
-                      () => _selectDate(true),
+                      () => _selectDate(true, setModalState),
+                      isStartDate: true,
+                      setModalState: setModalState,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text('-', style: AppText.kaiseiRegular),
+                  Text(
+                    '-',
+                    style: AppText.kaiseiRegular.copyWith(
+                      color: AppColors.textGray,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildDateField(
                       _formatDateForField(_endDate),
                       Icons.calendar_today,
-                      () => _selectDate(false),
+                      () => _selectDate(false, setModalState),
+                      isStartDate: false,
+                      setModalState: setModalState,
                     ),
                   ),
                 ],
@@ -576,17 +598,40 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
                   }),
                 ],
               ),
-              const SizedBox(height: 32),
+              if (!_isValidDateRange())
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Text(
+                    'Tanggal mulai harus sebelum tanggal akhir',
+                    style: AppText.kaiseiRegular.copyWith(
+                      color: Colors.red[700],
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const SizedBox(height: 16),
 
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _fetchTransactions();
-                  },
+                  onPressed: _isValidDateRange()
+                      ? () {
+                          Navigator.pop(context);
+                          _fetchTransactions(reset: true);
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryRed,
+                    backgroundColor: _isValidDateRange()
+                        ? AppColors.primaryRed
+                        : Colors.grey[400],
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -656,41 +701,97 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
     return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
   }
 
-  Widget _buildDateField(String date, IconData icon, VoidCallback onTap) {
+  Widget _buildDateField(
+    String date,
+    IconData icon,
+    VoidCallback onTap, {
+    bool isStartDate = true,
+    StateSetter? setModalState,
+  }) {
+    final bool hasValue = date != '-';
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: hasValue ? Colors.blue[50] : Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(
+            color: hasValue ? Colors.blue[300]! : Colors.grey[300]!,
+            width: hasValue ? 1.5 : 1,
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.grey[600], size: 16),
-            const SizedBox(width: 8),
-            Text(
-              date,
-              style: AppText.kaiseiRegular.copyWith(color: AppColors.textBlack),
+            Icon(
+              icon,
+              color: hasValue ? Colors.blue[600] : Colors.grey[600],
+              size: 16,
             ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                date,
+                style: AppText.kaiseiRegular.copyWith(
+                  color: hasValue ? Colors.blue[700] : AppColors.textBlack,
+                  fontWeight: hasValue ? FontWeight.w500 : FontWeight.normal,
+                ),
+              ),
+            ),
+            if (hasValue)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isStartDate) {
+                      _startDate = null;
+                    } else {
+                      _endDate = null;
+                    }
+                  });
+                  if (setModalState != null) {
+                    setModalState(() {});
+                  }
+                  _fetchTransactions(reset: true);
+                },
+                child: Icon(Icons.close, color: Colors.grey[600], size: 16),
+              ),
           ],
         ),
       ),
     );
   }
 
-  void _selectDate(bool isStartDate) async {
+  void _selectDate(bool isStartDate, [StateSetter? setModalState]) async {
+    DateTime initialDate = DateTime.now();
+    DateTime firstDate = DateTime(2020);
+    DateTime lastDate = DateTime.now();
+
+    if (isStartDate && _endDate != null) {
+      lastDate = _endDate!;
+      if (_startDate != null) {
+        initialDate = _startDate!;
+      }
+    } else if (!isStartDate && _startDate != null) {
+      firstDate = _startDate!;
+      if (_endDate != null) {
+        initialDate = _endDate!;
+      }
+    }
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
+
     if (picked != null) {
       setState(() {
         if (isStartDate) {
           _startDate = DateTime(picked.year, picked.month, picked.day, 0, 0, 0);
+          if (_endDate != null && _startDate!.isAfter(_endDate!)) {
+            _endDate = null;
+          }
         } else {
           _endDate = DateTime(
             picked.year,
@@ -700,14 +801,46 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
             59,
             59,
           );
+          if (_startDate != null && _startDate!.isAfter(_endDate!)) {
+            _startDate = null;
+          }
         }
         _selectedPeriod = '';
       });
-      _fetchTransactions();
+      if (setModalState != null) {
+        setModalState(() {});
+      }
+      _fetchTransactions(reset: true);
     }
   }
 
   Widget _buildTransactionList(List<Map<String, dynamic>> transactions) {
+    if (_errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage,
+              style: const TextStyle(fontSize: 16, color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _fetchTransactions(reset: true),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_isLoading && transactions.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return RefreshIndicator(
       onRefresh: () => _fetchTransactions(reset: true),
       child: ListView.builder(
@@ -750,100 +883,113 @@ class _SetorTunaiHistoryScreenState extends State<SetorTunaiHistoryScreen> {
         statusColor = Colors.grey;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            spreadRadius: 0,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          /// LEFT SIDE
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  month,
-                  style: TextStyle(
-                    color: AppColors.textBlack,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16, // ✅ smaller than before (18)
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      'Status ',
-                      style: TextStyle(
-                        color: AppColors.textLightGray,
-                        fontSize: 12, // ✅ reduced from 13
-                        height: 1.3,
-                      ),
-                    ),
-                    Text(
-                      status,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12, // ✅ reduced from 13
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+    return GestureDetector(
+      onTap: () => _navigateToDetail(transaction),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[300]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.08),
+              spreadRadius: 0,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
+        ),
+        child: Row(
+          children: [
+            /// LEFT SIDE
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    month,
+                    style: TextStyle(
+                      color: AppColors.textBlack,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16, // ✅ smaller than before (18)
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Text(
+                        'Status ',
+                        style: TextStyle(
+                          color: AppColors.textLightGray,
+                          fontSize: 12, // ✅ reduced from 13
+                          height: 1.3,
+                        ),
+                      ),
+                      Text(
+                        status,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12, // ✅ reduced from 13
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
-          /// RIGHT SIDE
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  date,
-                  style: TextStyle(
-                    color: AppColors.textLightGray,
-                    fontSize: 11, // ✅ reduced from 12
-                    height: 1.3,
+            /// RIGHT SIDE
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    date,
+                    style: TextStyle(
+                      color: AppColors.textLightGray,
+                      fontSize: 11, // ✅ reduced from 12
+                      height: 1.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  company,
-                  style: TextStyle(
-                    color: AppColors.textLightGray,
-                    fontSize: 11, // ✅ same, but balanced
-                    height: 1.3,
+                  const SizedBox(height: 6),
+                  Text(
+                    company,
+                    style: TextStyle(
+                      color: AppColors.textLightGray,
+                      fontSize: 11, // ✅ same, but balanced
+                      height: 1.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  amount,
-                  style: TextStyle(
-                    color: const Color(0xFF38A169),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16, // ✅ reduced from 18
-                    height: 1.3,
+                  const SizedBox(height: 6),
+                  Text(
+                    amount,
+                    style: TextStyle(
+                      color: const Color(0xFF38A169),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16, // ✅ reduced from 18
+                      height: 1.3,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToDetail(Map<String, dynamic> transaction) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            SetorTunaiSuccessScreen(transactionData: transaction),
       ),
     );
   }

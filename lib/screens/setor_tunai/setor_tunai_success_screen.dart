@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
-import 'package:smart_mob/widgets/common/watermark_widget.dart';
-import 'package:smart_mob/widgets/common/custom_share_sheet.dart';
-import 'package:smart_mob/core/services/receipt_service.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/widgets/common/watermark_widget.dart';
+import 'package:merah_putih/widgets/common/custom_share_sheet.dart';
+import 'package:merah_putih/core/services/receipt_service.dart';
 
 class SetorTunaiSuccessScreen extends StatefulWidget {
   final Map<String, dynamic> transactionData;
@@ -19,10 +19,158 @@ class SetorTunaiSuccessScreen extends StatefulWidget {
 class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
   bool _showNotification = true;
 
+  String _getTransactionAmount() {
+    final depositAmount = widget.transactionData['depositAmount'];
+    if (depositAmount != null) {
+      return depositAmount.toString();
+    }
+
+    final amount = widget.transactionData['amount']?.toString() ?? '0';
+    return amount.replaceAll('Rp. ', '').replaceAll('.', '');
+  }
+
+  String _getTransactionDate() {
+    final transactionDate = widget.transactionData['transactionDate']
+        ?.toString();
+    if (transactionDate != null && transactionDate.isNotEmpty) {
+      try {
+        final date = DateTime.parse(transactionDate);
+        return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+      } catch (e) {
+        return transactionDate;
+      }
+    }
+
+    final dateString = widget.transactionData['date']?.toString() ?? '';
+    if (dateString.isNotEmpty) {
+      final parts = dateString.split(' ');
+      return parts.isNotEmpty ? parts[0] : 'N/A';
+    }
+    return 'N/A';
+  }
+
+  String _getTransactionTime() {
+    final transactionTime = widget.transactionData['transactionTime']
+        ?.toString();
+    if (transactionTime != null && transactionTime.isNotEmpty) {
+      return transactionTime;
+    }
+
+    final dateString = widget.transactionData['date']?.toString() ?? '';
+    if (dateString.isNotEmpty) {
+      final parts = dateString.split(' ');
+      if (parts.length > 1) {
+        return parts.sublist(1).join(' ');
+      }
+    }
+    return 'N/A';
+  }
+
+  String _getTransactionLocation() {
+    final location = widget.transactionData['location']?.toString();
+    if (location != null && location.isNotEmpty) {
+      return location;
+    }
+
+    final company = widget.transactionData['company']?.toString();
+    if (company != null && company.isNotEmpty) {
+      return company;
+    }
+
+    final accountName = widget.transactionData['accountName']?.toString();
+    if (accountName != null && accountName.isNotEmpty) {
+      return accountName;
+    }
+
+    return 'N/A';
+  }
+
+  String _getTransactionRef() {
+    return widget.transactionData['transactionNumber']?.toString() ?? 'N/A';
+  }
+
+  String _getTransactionTid() {
+    return widget.transactionData['machine']?.toString() ?? 'N/A';
+  }
+
+  String _getTransactionName() {
+    return widget.transactionData['user']?.toString() ?? 'N/A';
+  }
+
+  String _getTransactionType() {
+    return widget.transactionData['type']?.toString() ?? 'Setoran';
+  }
+
+  List<Map<String, String>> _getDenominations() {
+    final denominations =
+        widget.transactionData['denominations'] as List<dynamic>?;
+    if (denominations == null) return [];
+
+    return denominations.map<Map<String, String>>((item) {
+      if (item is Map<String, dynamic>) {
+        final amount = item['amount'] ?? 0;
+        final quantity = item['quantity'] ?? 0;
+        final denomination = item['denomination'] ?? 0;
+
+        return {
+          'denom': denomination.toString(),
+          'quantity': quantity.toString(),
+          'total': amount.toString(),
+        };
+      }
+      return {'denom': '0', 'quantity': '0', 'total': '0'};
+    }).toList();
+  }
+
+  String _formatDenomination(String denom) {
+    final value = int.tryParse(denom) ?? 0;
+    if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(0)}.000';
+    }
+    return value.toString();
+  }
+
+  String _formatAmount(String amount) {
+    final value = int.tryParse(amount) ?? 0;
+    final s = value.toString();
+    final buf = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buf.write(s[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buf.write('.');
+        count = 0;
+      }
+    }
+    final reversed = buf.toString().split('').reversed.join();
+    return reversed;
+  }
+
   @override
   void initState() {
     super.initState();
+    _logTransactionData();
     _showPushNotification();
+  }
+
+  void _logTransactionData() {
+    print('=== SUCCESS SCREEN RECEIVED DATA ===');
+    print('Transaction data received:');
+    print('Raw data: ${widget.transactionData}');
+    print('--- Parsed Data ---');
+    print('Amount: ${_getTransactionAmount()}');
+    print('Date: ${_getTransactionDate()}');
+    print('Time: ${_getTransactionTime()}');
+    print('Location: ${_getTransactionLocation()}');
+    print('Reference: ${_getTransactionRef()}');
+    print('TID: ${_getTransactionTid()}');
+    print('Name: ${_getTransactionName()}');
+    print('Type: ${_getTransactionType()}');
+    print('Denominations: ${_getDenominations()}');
+    print('--- Available Keys ---');
+    print('Keys in transactionData: ${widget.transactionData.keys.toList()}');
+    print('===============================');
   }
 
   void _showPushNotification() {
@@ -46,7 +194,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
             children: [
               Column(
                 children: [
-                  const AppTopBar(title: '', showBack: false),
+                  const AppTopBar(title: '', showBack: true),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20),
@@ -61,7 +209,6 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
                   ),
                 ],
               ),
-              if (_showNotification) _buildNotificationBubble(),
             ],
           ),
         ),
@@ -228,19 +375,19 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
   Widget _buildTransactionInfo() {
     return Column(
       children: [
-        _buildInfoRow('Date', '10/07/2025'),
+        _buildInfoRow('Date', _getTransactionDate()),
         const SizedBox(height: 12),
-        _buildInfoRow('Time', '21:39:54'),
+        _buildInfoRow('Time', _getTransactionTime()),
         const SizedBox(height: 12),
-        _buildInfoRow('Lokasi', 'PT Warung Sejahtera\nMaju Makmur'),
+        _buildInfoRow('Lokasi', _getTransactionLocation()),
         const SizedBox(height: 12),
-        _buildInfoRow('Ref', 'KSN001250710211500176'),
+        _buildInfoRow('Ref', _getTransactionRef()),
         const SizedBox(height: 12),
-        _buildInfoRow('TID', 'KSN001'),
+        _buildInfoRow('TID', _getTransactionTid()),
         const SizedBox(height: 12),
-        _buildInfoRow('Nama', 'Wahid'),
+        _buildInfoRow('Nama', _getTransactionName()),
         const SizedBox(height: 12),
-        _buildInfoRow('Trx', 'Setoran'),
+        _buildInfoRow('Trx', _getTransactionType()),
       ],
     );
   }
@@ -335,13 +482,13 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        _buildDenomRow('1.000', '87', '87.000'),
-        _buildDenomRow('2.000', '533', '1.066.000'),
-        _buildDenomRow('5.000', '96', '480.000'),
-        _buildDenomRow('10.000', '64', '640.000'),
-        _buildDenomRow('20.000', '53', '1.060.000'),
-        _buildDenomRow('50.000', '331', '16.550.000'),
-        _buildDenomRow('100.000', '367', '36.700.000'),
+        ..._getDenominations().map(
+          (denom) => _buildDenomRow(
+            _formatDenomination(denom['denom']!),
+            denom['quantity']!,
+            _formatAmount(denom['total']!),
+          ),
+        ),
       ],
     );
   }
@@ -438,7 +585,7 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
             Expanded(
               flex: 3,
               child: Text(
-                '56.583.000',
+                _getTransactionAmount(),
                 style: AppText.kaiseiRegular.copyWith(
                   color: AppColors.textBlack,
                   fontWeight: FontWeight.w700,
@@ -558,24 +705,16 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
 
   Future<void> _downloadReceipt() async {
     try {
-      final denominations = [
-        {'denom': '1.000', 'quantity': '87', 'total': '87.000'},
-        {'denom': '2.000', 'quantity': '533', 'total': '1.066.000'},
-        {'denom': '5.000', 'quantity': '96', 'total': '480.000'},
-        {'denom': '10.000', 'quantity': '64', 'total': '640.000'},
-        {'denom': '20.000', 'quantity': '53', 'total': '1.060.000'},
-        {'denom': '50.000', 'quantity': '331', 'total': '16.550.000'},
-        {'denom': '100.000', 'quantity': '367', 'total': '36.700.000'},
-      ];
+      final denominations = _getDenominations();
 
       final pdfFile = await ReceiptService.generateReceiptPDF(
-        reference: 'KSN001250710211500176',
-        total: 'Rp 56.583.000',
-        date: '10/07/2025',
-        time: '21:39:54',
-        location: 'PT Warung Sejahtera Maju Makmur',
-        name: 'Wahid',
-        transactionType: 'Setoran',
+        reference: _getTransactionRef(),
+        total: 'Rp ${_getTransactionAmount()}',
+        date: _getTransactionDate(),
+        time: _getTransactionTime(),
+        location: _getTransactionLocation(),
+        name: _getTransactionName(),
+        transactionType: _getTransactionType(),
         denominations: denominations,
       );
 
@@ -618,24 +757,16 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
 
   Future<void> _shareReceipt() async {
     try {
-      final denominations = [
-        {'denom': '1.000', 'quantity': '87', 'total': '87.000'},
-        {'denom': '2.000', 'quantity': '533', 'total': '1.066.000'},
-        {'denom': '5.000', 'quantity': '96', 'total': '480.000'},
-        {'denom': '10.000', 'quantity': '64', 'total': '640.000'},
-        {'denom': '20.000', 'quantity': '53', 'total': '1.060.000'},
-        {'denom': '50.000', 'quantity': '331', 'total': '16.550.000'},
-        {'denom': '100.000', 'quantity': '367', 'total': '36.700.000'},
-      ];
+      final denominations = _getDenominations();
 
       await ReceiptService.shareReceiptSimple(
-        reference: 'KSN001250710211500176',
-        total: 'Rp 56.583.000',
-        date: '10/07/2025',
-        time: '21:39:54',
-        location: 'PT Warung Sejahtera Maju Makmur',
-        name: 'Wahid',
-        transactionType: 'Setoran',
+        reference: _getTransactionRef(),
+        total: 'Rp ${_getTransactionAmount()}',
+        date: _getTransactionDate(),
+        time: _getTransactionTime(),
+        location: _getTransactionLocation(),
+        name: _getTransactionName(),
+        transactionType: _getTransactionType(),
         denominations: denominations,
       );
 
@@ -665,28 +796,5 @@ class _SetorTunaiSuccessScreenState extends State<SetorTunaiSuccessScreen> {
         );
       }
     }
-  }
-
-  void _showCustomShareSheet() {
-    final receiptData = {
-      'reference': 'KSN001250710211500176',
-      'total': 'Rp 56.583.000',
-      'date': '10/07/2025',
-      'time': '21:39:54',
-      'location': 'PT Warung Sejahtera Maju Makmur',
-      'name': 'Wahid',
-      'transactionType': 'Setoran',
-    };
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CustomShareSheet(
-        onClose: () => Navigator.pop(context),
-        onNativeShare: _shareReceipt,
-        receiptData: receiptData,
-      ),
-    );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:smart_mob/core/api/api_client.dart';
+import 'package:merah_putih/core/api/api_client.dart';
 
 class BeneficiaryAccountService {
   final ApiClient _apiClient;

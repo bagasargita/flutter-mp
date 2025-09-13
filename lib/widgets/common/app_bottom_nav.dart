@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/widgets/common/app_nav_item.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/widgets/common/app_nav_item.dart';
 
 class BottomNavItemData {
   final IconData icon;

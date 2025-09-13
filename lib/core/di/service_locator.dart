@@ -1,15 +1,15 @@
-import 'package:smart_mob/core/api/api_client.dart';
-import 'package:smart_mob/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:smart_mob/features/auth/domain/repositories/auth_repository.dart';
-import 'package:smart_mob/features/home/data/repositories/home_repository_impl.dart';
-import 'package:smart_mob/features/home/domain/repositories/home_repository.dart';
-import 'package:smart_mob/features/home/data/services/dashboard_service.dart';
-import 'package:smart_mob/features/home/data/services/transaction_data_service.dart';
-import 'package:smart_mob/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:smart_mob/features/profile/domain/repositories/profile_repository.dart';
-import 'package:smart_mob/features/notifications/data/repositories/notifications_repository_impl.dart';
-import 'package:smart_mob/features/notifications/domain/repositories/notifications_repository.dart';
-import 'package:smart_mob/features/setor_tunai/data/services/beneficiary_account_service.dart';
+import 'package:merah_putih/core/api/api_client.dart';
+import 'package:merah_putih/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:merah_putih/features/auth/domain/repositories/auth_repository.dart';
+import 'package:merah_putih/features/home/data/repositories/home_repository_impl.dart';
+import 'package:merah_putih/features/home/domain/repositories/home_repository.dart';
+import 'package:merah_putih/features/home/data/services/dashboard_service.dart';
+import 'package:merah_putih/features/home/data/services/transaction_data_service.dart';
+import 'package:merah_putih/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:merah_putih/features/profile/domain/repositories/profile_repository.dart';
+import 'package:merah_putih/features/notifications/data/repositories/notifications_repository_impl.dart';
+import 'package:merah_putih/features/notifications/domain/repositories/notifications_repository.dart';
+import 'package:merah_putih/features/setor_tunai/data/services/beneficiary_account_service.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();

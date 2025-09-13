@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_mob/core/api/api_client.dart';
-import 'package:smart_mob/core/error/failures.dart';
-import 'package:smart_mob/core/utils/either.dart';
-import 'package:smart_mob/features/auth/domain/entities/user.dart';
-import 'package:smart_mob/features/auth/domain/repositories/auth_repository.dart';
+import 'package:merah_putih/core/api/api_client.dart';
+import 'package:merah_putih/core/error/failures.dart';
+import 'package:merah_putih/core/utils/either.dart';
+import 'package:merah_putih/features/auth/domain/entities/user.dart';
+import 'package:merah_putih/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final ApiClient _apiClient;

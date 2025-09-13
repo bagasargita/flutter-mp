@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_history_screen.dart';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_location_screen.dart';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_help_screen.dart';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_qr_screen.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/screens/setor_tunai/setor_tunai_history_screen.dart';
+import 'package:merah_putih/screens/setor_tunai/setor_tunai_location_screen.dart';
+import 'package:merah_putih/screens/setor_tunai/setor_tunai_help_screen.dart';
+import 'package:merah_putih/screens/setor_tunai/setor_tunai_qr_screen.dart';
 
 class SetorTunaiServicesGrid extends StatefulWidget {
   final Function(Map<String, dynamic>)? onMachineSelected;

@@ -1,6 +1,6 @@
-import 'package:smart_mob/core/error/failures.dart';
-import 'package:smart_mob/core/utils/either.dart';
-import 'package:smart_mob/features/home/domain/repositories/home_repository.dart';
+import 'package:merah_putih/core/error/failures.dart';
+import 'package:merah_putih/core/utils/either.dart';
+import 'package:merah_putih/features/home/domain/repositories/home_repository.dart';
 
 class GetServicesUseCase {
   final HomeRepository _repository;

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/core/services/location_service.dart';
-import 'package:smart_mob/core/api/api_client.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/core/services/location_service.dart';
+import 'package:merah_putih/core/api/api_client.dart';
 import 'dart:io';
-import 'package:smart_mob/screens/setor_tunai/setor_tunai_location_list_screen.dart';
+import 'package:merah_putih/screens/setor_tunai/setor_tunai_location_list_screen.dart';
 
 class SetorTunaiLocationScreen extends StatefulWidget {
   const SetorTunaiLocationScreen({super.key});

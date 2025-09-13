@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:smart_mob/constants/app_colors.dart';
-import 'package:smart_mob/constants/app_text.dart';
-import 'package:smart_mob/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/constants/app_colors.dart';
+import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SetorTunaiHelpScreen extends StatefulWidget {

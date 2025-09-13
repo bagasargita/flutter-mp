@@ -1,6 +1,6 @@
-import 'package:smart_mob/core/error/failures.dart';
-import 'package:smart_mob/core/utils/either.dart';
-import 'package:smart_mob/features/auth/domain/entities/user.dart';
+import 'package:merah_putih/core/error/failures.dart';
+import 'package:merah_putih/core/utils/either.dart';
+import 'package:merah_putih/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, User>> login({
