@@ -101,8 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          const SizedBox(height: 24),
-
           // Back button for role selection - show for MESIN and NON_MESIN users
           if (widget.userRoleMobile == 'NON_MESIN' ||
               widget.userRoleMobile == 'MESIN')
@@ -152,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-          const SizedBox(height: 16),
+          // const SizedBox(height: 16),
           // Use a separate widget that won't rebuild with carousel changes
           ServicesSection(
             userRoleMobile: widget.userRoleMobile,
