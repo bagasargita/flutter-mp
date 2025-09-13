@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text.dart';
 import '../features/app/presentation/bloc/app_bloc.dart';
-import '../features/home/presentation/bloc/home_bloc.dart';
 import 'all_services_screen.dart';
 import 'setor_tunai/setor_tunai_screen.dart';
 import 'mesin/komisi_screen.dart';
@@ -14,6 +13,7 @@ import 'mesin/riwayat_screen.dart';
 import 'mesin/faq_screen.dart';
 import 'mesin/bantuan_screen.dart';
 import '../widgets/common/app_top_bar.dart';
+import 'setor_tunai/setor_tunai_help_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userRoleMobile;
@@ -36,11 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<HomeBloc>().add(const HomeDataRequested());
-      }
-    });
+    // HomeScreen doesn't need HomeBloc - it's only for MESIN role dashboard
   }
 
   @override
@@ -60,28 +56,22 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           }
         },
-        child: BlocBuilder<HomeBloc, HomeState>(
-          builder: (context, state) {
-            return Scaffold(
-              backgroundColor: AppColors.backgroundWhite,
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    AppTopBar(
-                      title: _getTitleForRole(widget.userRoleMobile),
-                      leading: const CircleAvatar(
-                        radius: 20,
-                        backgroundImage: AssetImage(
-                          'assets/images/profile.png',
-                        ),
-                      ),
-                    ),
-                    Expanded(child: _buildMainContent()),
-                  ],
+        child: Scaffold(
+          backgroundColor: AppColors.backgroundWhite,
+          body: SafeArea(
+            child: Column(
+              children: [
+                AppTopBar(
+                  title: _getTitleForRole(widget.userRoleMobile),
+                  leading: const CircleAvatar(
+                    radius: 20,
+                    backgroundImage: AssetImage('assets/images/profile.png'),
+                  ),
                 ),
-              ),
-            );
-          },
+                Expanded(child: _buildMainContent()),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -474,7 +464,9 @@ class _ServicesSectionState extends State<ServicesSection>
           } else if (service['name'] == 'Bantuan') {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const BantuanScreen()),
+              MaterialPageRoute(
+                builder: (context) => const SetorTunaiHelpScreen(),
+              ),
             );
           }
         },

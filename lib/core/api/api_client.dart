@@ -177,4 +177,44 @@ class ApiClient {
       queryParameters: queryParameters,
     );
   }
+
+  Future<Response<Map<String, dynamic>>> getDashboard() async {
+    return await _dio.get<Map<String, dynamic>>(ApiEndpoints.dashboard);
+  }
+
+  Future<Response<Map<String, dynamic>>> getTransactionData({
+    int page = 0,
+    int size = 10,
+    List<String>? sort,
+    String? transactionDateFrom,
+    String? transactionDateTo,
+    String? transactionNo,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'size': size,
+      'user': 'Own User',
+    };
+
+    if (sort != null && sort.isNotEmpty) {
+      queryParams['sort'] = sort;
+    }
+    if (transactionDateFrom != null) {
+      queryParams['transactionDateFrom'] = transactionDateFrom;
+    }
+    if (transactionDateTo != null) {
+      queryParams['transactionDateTo'] = transactionDateTo;
+    }
+    if (transactionNo != null) {
+      queryParams['transactionNo'] = transactionNo;
+    }
+
+    print('ApiClient: Making request to ${ApiEndpoints.transactionData}');
+    print('ApiClient: Query parameters: $queryParams');
+
+    return await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.transactionData,
+      queryParameters: queryParams,
+    );
+  }
 }

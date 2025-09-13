@@ -10,7 +10,6 @@ import 'screens/notifications_screen.dart';
 import 'screens/setor_tunai/setor_tunai_history_screen.dart';
 import 'features/app/presentation/bloc/app_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'widgets/common/app_bottom_nav.dart';
 import 'core/di/service_locator.dart';
@@ -265,15 +264,12 @@ class _RootScreenState extends State<RootScreen> {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: BlocProvider(
-        create: (context) => HomeBloc(),
-        child: Scaffold(
-          body: _screens[_selectedIndex],
-          bottomNavigationBar: AppBottomNav(
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            items: _getBottomNavItems(),
-          ),
+      child: Scaffold(
+        body: _screens[_selectedIndex],
+        bottomNavigationBar: AppBottomNav(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: _getBottomNavItems(),
         ),
       ),
     );

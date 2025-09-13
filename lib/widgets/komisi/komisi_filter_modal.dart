@@ -5,12 +5,14 @@ import '../../constants/app_text.dart';
 class KomisiFilterModal extends StatefulWidget {
   final DateTime? startDate;
   final DateTime? endDate;
-  final Function(DateTime?, DateTime?) onApplyFilter;
+  final String? transactionNo;
+  final Function(DateTime?, DateTime?, String?) onApplyFilter;
 
   const KomisiFilterModal({
     super.key,
     this.startDate,
     this.endDate,
+    this.transactionNo,
     required this.onApplyFilter,
   });
 
@@ -21,33 +23,52 @@ class KomisiFilterModal extends StatefulWidget {
 class _KomisiFilterModalState extends State<KomisiFilterModal> {
   late DateTime? _startDate;
   late DateTime? _endDate;
+  late TextEditingController _transactionNoController;
 
   @override
   void initState() {
     super.initState();
     _startDate = widget.startDate;
     _endDate = widget.endDate;
+    _transactionNoController = TextEditingController(
+      text: widget.transactionNo ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _transactionNoController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final modalHeight = screenHeight * 0.6;
+
     return Container(
-      height: MediaQuery.of(context).size.height * 0.4,
+      height: modalHeight,
+      constraints: BoxConstraints(
+        maxHeight: screenHeight * 0.8,
+        minHeight: 400,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           _buildHeader(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Select period',
+                    'Filter Options',
                     style: AppText.kaiseiRegular.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -55,6 +76,30 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // Transaction Number Field
+                  Text(
+                    'Transaction Number',
+                    style: AppText.kaiseiRegular.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textBlack,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildTransactionNoField(),
+                  const SizedBox(height: 16),
+
+                  // Date Range Fields
+                  Text(
+                    'Date Range',
+                    style: AppText.kaiseiRegular.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textBlack,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
@@ -74,6 +119,7 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -107,7 +153,12 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
               setState(() {
                 _startDate = null;
                 _endDate = null;
+                _transactionNoController.clear();
               });
+
+              // Apply the cleared filter immediately
+              widget.onApplyFilter(null, null, null);
+              Navigator.pop(context);
             },
             child: Text(
               'Clear',
@@ -119,6 +170,40 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionNoField() {
+    return TextField(
+      controller: _transactionNoController,
+      decoration: InputDecoration(
+        hintText: 'Enter transaction number',
+        hintStyle: AppText.kaiseiRegular.copyWith(
+          fontSize: 14,
+          color: Colors.grey[600],
+        ),
+        prefixIcon: Icon(Icons.receipt_long, size: 18, color: Colors.grey[600]),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primaryRed),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 14,
+        ),
+      ),
+      style: AppText.kaiseiRegular.copyWith(
+        fontSize: 14,
+        color: AppColors.textBlack,
       ),
     );
   }
@@ -173,8 +258,10 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
   }
 
   Widget _buildBottomButton() {
-    final hasSelection = _startDate != null || _endDate != null;
-    final resultCount = _calculateResultCount();
+    final hasSelection =
+        _startDate != null ||
+        _endDate != null ||
+        _transactionNoController.text.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -194,7 +281,13 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
             child: ElevatedButton(
               onPressed: hasSelection
                   ? () {
-                      widget.onApplyFilter(_startDate, _endDate);
+                      widget.onApplyFilter(
+                        _startDate,
+                        _endDate,
+                        _transactionNoController.text.isNotEmpty
+                            ? _transactionNoController.text.trim()
+                            : null,
+                      );
                       Navigator.pop(context);
                     }
                   : null,
@@ -210,9 +303,7 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
                 elevation: 0,
               ),
               child: Text(
-                hasSelection
-                    ? 'Tampilkan hasil ($resultCount)'
-                    : 'Pilih periode terlebih dahulu',
+                hasSelection ? 'Apply Filter' : 'Pilih filter terlebih dahulu',
                 style: AppText.kaiseiRegular.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -269,11 +360,5 @@ class _KomisiFilterModalState extends State<KomisiFilterModal> {
       'Dec',
     ];
     return months[month - 1];
-  }
-
-  int _calculateResultCount() {
-    // Mock calculation - in real app, this would be based on actual data
-    if (_startDate == null && _endDate == null) return 0;
-    return 3261; // Mock result count
   }
 }

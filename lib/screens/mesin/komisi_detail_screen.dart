@@ -1,11 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../widgets/common/app_top_bar.dart';
 import '../../widgets/komisi/komisi_filter_modal.dart';
+import '../../core/di/service_locator.dart';
+import '../../features/home/presentation/bloc/transaction_data_bloc.dart';
+import '../../features/home/presentation/bloc/transaction_data_event.dart';
+import '../../features/home/presentation/bloc/transaction_data_state.dart';
+import '../../features/home/data/models/transaction_item.dart';
 
 class KomisiDetailScreen extends StatelessWidget {
   const KomisiDetailScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    try {
+      return BlocProvider(
+        create: (context) => TransactionDataBloc(
+          transactionDataService: ServiceLocator().transactionDataService,
+        )..add(const TransactionDataRequested()),
+        child: const _KomisiDetailScreenContent(),
+      );
+    } catch (e) {
+      print('Error creating TransactionDataBloc: $e');
+      return Scaffold(
+        backgroundColor: AppColors.backgroundWhite,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'Gagal memuat layanan',
+                style: AppText.kaiseiRegular.copyWith(
+                  fontSize: 16,
+                  color: AppColors.textGray,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                e.toString(),
+                style: AppText.kaiseiRegular.copyWith(
+                  fontSize: 14,
+                  color: AppColors.textGray,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+}
+
+class _KomisiDetailScreenContent extends StatefulWidget {
+  const _KomisiDetailScreenContent();
+
+  @override
+  State<_KomisiDetailScreenContent> createState() =>
+      _KomisiDetailScreenContentState();
+}
+
+class _KomisiDetailScreenContentState
+    extends State<_KomisiDetailScreenContent> {
+  final ScrollController _scrollController = ScrollController();
+  String? _transactionDateFrom;
+  String? _transactionDateTo;
+  String? _transactionNo;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
+      context.read<TransactionDataBloc>().add(
+        TransactionDataLoadMore(
+          transactionDateFrom: _transactionDateFrom,
+          transactionDateTo: _transactionDateTo,
+          transactionNo: _transactionNo,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,23 +112,38 @@ class KomisiDetailScreen extends StatelessWidget {
                 showBack: Navigator.of(context).canPop(),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Align(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Align(
                         alignment: Alignment.centerLeft,
                         child: OutlinedButton.icon(
                           onPressed: () => _showFilterModal(context),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.tune,
                             size: 18,
-                            color: AppColors.textBlack,
+                            color: _hasActiveFilters()
+                                ? AppColors.primaryRed
+                                : AppColors.textBlack,
                           ),
-                          label: const Text('Filter'),
+                          label: Text(
+                            _hasActiveFilters() ? 'Filter (Active)' : 'Filter',
+                            style: AppText.kaiseiRegular.copyWith(
+                              color: _hasActiveFilters()
+                                  ? AppColors.primaryRed
+                                  : AppColors.textBlack,
+                            ),
+                          ),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.grey[300]!),
-                            foregroundColor: AppColors.textBlack,
+                            side: BorderSide(
+                              color: _hasActiveFilters()
+                                  ? AppColors.primaryRed
+                                  : Colors.grey[300]!,
+                            ),
+                            foregroundColor: _hasActiveFilters()
+                                ? AppColors.primaryRed
+                                : AppColors.textBlack,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 10,
@@ -50,23 +154,74 @@ class KomisiDetailScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          children: [
-                            _buildHeaderRow(),
-                            const Divider(height: 1),
-                            ..._mockRows.map((e) => _buildDataRow(e)).toList(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    Expanded(
+                      child:
+                          BlocBuilder<
+                            TransactionDataBloc,
+                            TransactionDataState
+                          >(
+                            builder: (context, state) {
+                              if (state is TransactionDataLoading) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              if (state is TransactionDataFailure) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.error_outline,
+                                        size: 64,
+                                        color: Colors.grey[400],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Gagal memuat data transaksi',
+                                        style: AppText.kaiseiRegular.copyWith(
+                                          fontSize: 16,
+                                          color: AppColors.textGray,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        state.message,
+                                        style: AppText.kaiseiRegular.copyWith(
+                                          fontSize: 14,
+                                          color: AppColors.textGray,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          context
+                                              .read<TransactionDataBloc>()
+                                              .add(
+                                                const TransactionDataRequested(),
+                                              );
+                                        },
+                                        child: const Text('Coba Lagi'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              if (state is TransactionDataLoaded) {
+                                return _buildTransactionList(state);
+                              }
+
+                              return const Center(
+                                child: Text('Tidak ada data'),
+                              );
+                            },
+                          ),
+                    ),
+                  ],
                 ),
               ),
               Container(
@@ -129,32 +284,70 @@ class KomisiDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTransactionList(TransactionDataLoaded state) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: [
+          _buildHeaderRow(),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount:
+                  state.transactions.length + (state.isLoadingMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= state.transactions.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                return _buildTransactionRow(state.transactions[index]);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeaderRow() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Row(
         children: [
           _cell('Tanggal Transaksi', flex: 2, isHeader: true),
-          _cell('Jumlah setoran', flex: 2, isHeader: true),
+          _cell('Nama', flex: 2, isHeader: true),
+          _cell('Jumlah', flex: 2, isHeader: true),
           _cell('Komisi', flex: 1, isHeader: true, alignEnd: true),
         ],
       ),
     );
   }
 
-  Widget _buildDataRow(Map<String, String> row) {
+  Widget _buildTransactionRow(TransactionItem transaction) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           child: Row(
             children: [
-              _cell(row['tanggal']!, flex: 2),
-              _cell(row['setoran']!, flex: 2),
+              _cell(_formatDate(transaction.transactionDate), flex: 2),
+              _cell(transaction.name, flex: 2),
+              _cell(
+                'Rp${transaction.amount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                flex: 2,
+              ),
               Row(
                 children: [
                   Text(
-                    row['komisi']!,
+                    'Rp${transaction.commission.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
                     style: AppText.kaiseiRegular.copyWith(
                       fontSize: 12,
                       color: AppColors.textBlack,
@@ -199,31 +392,78 @@ class KomisiDetailScreen extends StatelessWidget {
   }
 
   void _showFilterModal(BuildContext context) {
+    final bloc = context.read<TransactionDataBloc>();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       enableDrag: true,
       isDismissible: true,
+      useSafeArea: true,
       builder: (context) => KomisiFilterModal(
-        onApplyFilter: (startDate, endDate) {
-          // TODO: Apply filter logic here
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Filter applied: ${startDate?.toString().split(' ')[0] ?? 'No start'} to ${endDate?.toString().split(' ')[0] ?? 'No end'}',
-              ),
+        startDate: _transactionDateFrom != null
+            ? DateTime.tryParse(_transactionDateFrom!)
+            : null,
+        endDate: _transactionDateTo != null
+            ? DateTime.tryParse(_transactionDateTo!)
+            : null,
+        transactionNo: _transactionNo,
+        onApplyFilter: (startDate, endDate, transactionNo) {
+          setState(() {
+            _transactionDateFrom = startDate?.toIso8601String();
+            _transactionDateTo = endDate?.toIso8601String();
+            _transactionNo = transactionNo;
+          });
+
+          bloc.add(
+            TransactionDataFilterChanged(
+              transactionDateFrom: _transactionDateFrom,
+              transactionDateTo: _transactionDateTo,
+              transactionNo: _transactionNo,
             ),
           );
+
+          // Show appropriate message
+          String filterMessage;
+          if (startDate == null &&
+              endDate == null &&
+              (transactionNo == null || transactionNo.isEmpty)) {
+            filterMessage = 'Filter berhasil dihapus';
+          } else {
+            filterMessage = 'Filter diterapkan: ';
+            if (startDate != null || endDate != null) {
+              filterMessage +=
+                  '${startDate?.toString().split(' ')[0] ?? 'Semua'} - ${endDate?.toString().split(' ')[0] ?? 'Semua'}';
+            }
+            if (transactionNo != null && transactionNo.isNotEmpty) {
+              if (startDate != null || endDate != null) {
+                filterMessage += ', ';
+              }
+              filterMessage += 'No: $transactionNo';
+            }
+          }
+
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(filterMessage)));
         },
       ),
     );
   }
-}
 
-final List<Map<String, String>> _mockRows = [
-  {'tanggal': '10/09/2025', 'setoran': 'Rp 1.000.000', 'komisi': 'Rp 5.000'},
-  {'tanggal': '09/09/2025', 'setoran': 'Rp 2.500.000', 'komisi': 'Rp 12.500'},
-  {'tanggal': '08/09/2025', 'setoran': 'Rp 750.000', 'komisi': 'Rp 3.750'},
-  {'tanggal': '07/09/2025', 'setoran': 'Rp 3.200.000', 'komisi': 'Rp 16.000'},
-];
+  bool _hasActiveFilters() {
+    return _transactionDateFrom != null ||
+        _transactionDateTo != null ||
+        (_transactionNo != null && _transactionNo!.isNotEmpty);
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
+  }
+}

@@ -29,4 +29,8 @@ class ApiEndpoints {
   static const String depositTransactions = '/deposit-transaction';
   // Machine/location endpoints
   static const String machineLocations = '/machine-location';
+
+  // Dashboard endpoints
+  static const String dashboard = '/home/dashboard';
+  static const String transactionData = '/transaction-data';
 }
