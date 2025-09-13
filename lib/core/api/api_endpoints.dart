@@ -33,4 +33,8 @@ class ApiEndpoints {
   // Dashboard endpoints
   static const String dashboard = '/home/dashboard';
   static const String transactionData = '/transaction-data';
+
+  // Beneficiary account endpoints
+  static const String beneficiaryAccount =
+      'http://103.23.199.26:8085/mobile/beneficiary-account';
 }

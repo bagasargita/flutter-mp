@@ -120,6 +120,33 @@ class ApiClient {
     );
   }
 
+  Future<Response<Map<String, dynamic>>> getBeneficiaryAccounts({
+    required String branchId,
+  }) async {
+    print('ApiClient: getBeneficiaryAccounts called with branchId: $branchId');
+    print('ApiClient: Making request to ${ApiEndpoints.beneficiaryAccount}');
+    print('ApiClient: Query parameters: {branch_id: $branchId}');
+
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.beneficiaryAccount,
+        queryParameters: {'branch_id': branchId},
+      );
+
+      print(
+        'ApiClient: getBeneficiaryAccounts response status: ${response.statusCode}',
+      );
+      print(
+        'ApiClient: getBeneficiaryAccounts response data: ${response.data}',
+      );
+
+      return response;
+    } catch (e) {
+      print('ApiClient: getBeneficiaryAccounts error: $e');
+      rethrow;
+    }
+  }
+
   Future<Response<Map<String, dynamic>>> getDepositTransactions({
     required int page,
     required int size,

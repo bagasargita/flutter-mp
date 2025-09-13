@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
-// removed unused import
 import 'package:qr/qr.dart';
 import 'dart:convert';
 import 'package:smart_mob/core/di/service_locator.dart';
 import 'package:smart_mob/features/auth/domain/entities/user.dart';
+import 'package:smart_mob/features/setor_tunai/domain/entities/beneficiary_account.dart';
 
 class SetorTunaiQRScreen extends StatefulWidget {
   const SetorTunaiQRScreen({super.key});
@@ -19,14 +19,15 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   int _remainingSeconds = 3 * 60; // 3 minutes
   bool _isProcessing = false;
   bool _isSuccess = false;
-  final TextEditingController _qrDataController = TextEditingController();
   QrImage? _qrImage;
-  String? _loggedInEmail;
+  String? _selectedBeneficiaryAccountId;
+  List<BeneficiaryAccount> _beneficiaryAccounts = [];
+  bool _isLoadingAccounts = false;
 
   @override
   void initState() {
     super.initState();
-    _prefillEmailFromLogin();
+    _loadBeneficiaryAccounts();
   }
 
   void _startTimer() {
@@ -49,11 +50,16 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   // removed unused method
 
   void _generateQr() async {
-    final email = (_loggedInEmail ?? _qrDataController.text).trim();
-    if (email.isEmpty) {
+    print('SetorTunaiQRScreen: _generateQr called');
+    print(
+      'SetorTunaiQRScreen: Selected beneficiary account ID: $_selectedBeneficiaryAccountId',
+    );
+
+    if (_selectedBeneficiaryAccountId == null) {
+      print('SetorTunaiQRScreen: No beneficiary account selected');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Email tidak boleh kosong'),
+          content: Text('Pilih rekening tujuan terlebih dahulu'),
           backgroundColor: AppColors.primaryRed,
         ),
       );
@@ -65,17 +71,29 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     });
 
     try {
-      // final api = ServiceLocator().apiClient;
-      // final response = await api.createQr(payload: {'email': email});
-      // final data = response.data ?? {'email': email};
-      // final jsonString = jsonEncode(data);
-      final code = QrCode(4, QrErrorCorrectLevel.M)..addData(email);
+      final api = ServiceLocator().apiClient;
+      final payload = {'beneficiary_account_id': _selectedBeneficiaryAccountId};
+      print('SetorTunaiQRScreen: Creating QR with payload: $payload');
+
+      final response = await api.createQr(payload: payload);
+      print('SetorTunaiQRScreen: QR creation response: ${response.statusCode}');
+      print('SetorTunaiQRScreen: QR creation data: ${response.data}');
+
+      final data =
+          response.data ??
+          {'beneficiary_account_id': _selectedBeneficiaryAccountId};
+      final jsonString = jsonEncode(data);
+      print('SetorTunaiQRScreen: QR data string: $jsonString');
+
+      final code = QrCode(4, QrErrorCorrectLevel.M)..addData(jsonString);
       setState(() {
         _qrImage = QrImage(code);
         _isProcessing = false;
       });
+      print('SetorTunaiQRScreen: QR generated successfully');
       _startTimer();
     } catch (e) {
+      print('SetorTunaiQRScreen: Error generating QR: $e');
       setState(() {
         _isProcessing = false;
       });
@@ -88,20 +106,94 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     }
   }
 
-  Future<void> _prefillEmailFromLogin() async {
+  Future<void> _loadBeneficiaryAccounts() async {
+    print('SetorTunaiQRScreen: _loadBeneficiaryAccounts called');
     try {
       final authRepo = ServiceLocator().authRepository;
       final result = await authRepo.getCurrentUser();
-      result.fold((_) {}, (User? user) {
-        final u = user;
-        final email = u?.email;
-        if (email != null && email.isNotEmpty) {
-          _loggedInEmail = email;
-          _qrDataController.text = email;
-          setState(() {});
-        }
+      result.fold(
+        (_) {
+          print('SetorTunaiQRScreen: Failed to get current user');
+        },
+        (User? user) {
+          print(
+            'SetorTunaiQRScreen: Current user: ${user?.email}, branchId: ${user?.branchId}',
+          );
+          if (user?.branchId != null) {
+            _fetchBeneficiaryAccounts(user!.branchId!);
+          } else {
+            print('SetorTunaiQRScreen: User branchId is null');
+          }
+        },
+      );
+    } catch (e) {
+      print('SetorTunaiQRScreen: Error in _loadBeneficiaryAccounts: $e');
+    }
+  }
+
+  Future<void> _fetchBeneficiaryAccounts(String branchId) async {
+    print(
+      'SetorTunaiQRScreen: _fetchBeneficiaryAccounts called with branchId: $branchId',
+    );
+    setState(() {
+      _isLoadingAccounts = true;
+    });
+
+    try {
+      final beneficiaryService = ServiceLocator().beneficiaryAccountService;
+      print(
+        'SetorTunaiQRScreen: Calling beneficiaryService.getBeneficiaryAccounts',
+      );
+      final response = await beneficiaryService.getBeneficiaryAccounts(
+        branchId: branchId,
+      );
+
+      print('SetorTunaiQRScreen: Response received: ${response.statusCode}');
+      print('SetorTunaiQRScreen: Response data: ${response.data}');
+
+      if (response.data != null && response.data!['data'] != null) {
+        final List<dynamic> accountsData =
+            response.data!['data'] as List<dynamic>;
+        print(
+          'SetorTunaiQRScreen: Found ${accountsData.length} beneficiary accounts',
+        );
+
+        final accounts = accountsData
+            .map(
+              (json) =>
+                  BeneficiaryAccount.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+
+        print(
+          'SetorTunaiQRScreen: Parsed accounts: ${accounts.map((a) => a.toString()).toList()}',
+        );
+
+        setState(() {
+          _beneficiaryAccounts = accounts;
+          if (accounts.isNotEmpty) {
+            _selectedBeneficiaryAccountId = accounts.first.id;
+            print(
+              'SetorTunaiQRScreen: Selected first account: ${accounts.first.id}',
+            );
+          }
+        });
+      } else {
+        print('SetorTunaiQRScreen: No data found in response or data is null');
+      }
+    } catch (e) {
+      print('SetorTunaiQRScreen: Error in _fetchBeneficiaryAccounts: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memuat daftar rekening: ${e.toString()}'),
+          backgroundColor: AppColors.primaryRed,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoadingAccounts = false;
       });
-    } catch (_) {}
+    }
   }
 
   @override
@@ -122,7 +214,8 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
                       _buildInstructions(),
                       if (_qrImage == null) ...[
                         const SizedBox(height: 24),
-                        _buildGenerateButton(),
+                        _buildBeneficiaryAccountDropdown(),
+                        const SizedBox(height: 16),
                       ],
                       const SizedBox(height: 24),
                       _buildQRCode(),
@@ -146,7 +239,7 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
       children: [
         Text(
           (_qrImage == null
-              ? 'Silakan Generate QR untuk memulai setoran'
+              ? 'Pilih rekening tujuan dan Generate QR untuk memulai setoran'
               : 'QR Code siap digunakan'),
           style: AppText.kaiseiBold.copyWith(
             color: AppColors.textBlack,
@@ -185,7 +278,36 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
       ),
       child: Center(
         child: _qrImage == null
-            ? Icon(Icons.qr_code, size: 150, color: AppColors.primaryRed)
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.qr_code, size: 80, color: AppColors.primaryRed),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 180,
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: _isProcessing ? null : _generateQr,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryRed,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        _isProcessing ? 'Memproses...' : 'Generate QR',
+                        style: AppText.kaiseiRegular.copyWith(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        textScaler: TextScaler.linear(1.0),
+                      ),
+                    ),
+                  ),
+                ],
+              )
             : CustomPaint(
                 size: const Size.square(220),
                 painter: _QrPainter(_qrImage!),
@@ -256,64 +378,71 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     );
   }
 
-  Widget _buildInputAndButton() {
+  Widget _buildBeneficiaryAccountDropdown() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: _qrDataController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Email untuk QR',
-            border: OutlineInputBorder(),
+        Text(
+          'Pilih Rekening Tujuan',
+          style: AppText.kaiseiRegular.copyWith(
+            color: AppColors.textBlack,
+            fontWeight: FontWeight.w600,
           ),
-          readOnly: _loggedInEmail != null,
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: _isProcessing ? null : _generateQr,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryRed,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              _isProcessing ? 'Memproses...' : 'Generate QR',
-              style: AppText.kaiseiRegular.copyWith(color: Colors.white),
-              textScaler: TextScaler.linear(1.0),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGenerateButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        onPressed: _isProcessing ? null : _generateQr,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryRed,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          _isProcessing ? 'Memproses...' : 'Generate QR',
-          style: AppText.kaiseiRegular.copyWith(color: Colors.white),
           textScaler: TextScaler.linear(1.0),
         ),
-      ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+          ),
+          child: _isLoadingAccounts
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryRed,
+                    ),
+                  ),
+                )
+              : DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedBeneficiaryAccountId,
+                    hint: Text(
+                      'Pilih rekening tujuan',
+                      style: AppText.kaiseiRegular.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      textScaler: TextScaler.linear(1.0),
+                    ),
+                    isExpanded: true,
+                    items: _beneficiaryAccounts.map((
+                      BeneficiaryAccount account,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: account.id,
+                        child: Text(
+                          account.toString(),
+                          style: AppText.kaiseiRegular.copyWith(
+                            color: AppColors.textBlack,
+                          ),
+                          textScaler: TextScaler.linear(1.0),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedBeneficiaryAccountId = newValue;
+                      });
+                    },
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:smart_mob/features/profile/data/repositories/profile_repository_
 import 'package:smart_mob/features/profile/domain/repositories/profile_repository.dart';
 import 'package:smart_mob/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:smart_mob/features/notifications/domain/repositories/notifications_repository.dart';
+import 'package:smart_mob/features/setor_tunai/data/services/beneficiary_account_service.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();
@@ -24,6 +25,7 @@ class ServiceLocator {
   late final TransactionDataService _transactionDataService;
   late final ProfileRepository _profileRepository;
   late final NotificationsRepository _notificationsRepository;
+  late final BeneficiaryAccountService _beneficiaryAccountService;
 
   void _init() {
     _apiClient = ApiClient.create();
@@ -33,6 +35,7 @@ class ServiceLocator {
     _transactionDataService = TransactionDataService(_apiClient);
     _profileRepository = ProfileRepositoryImpl(_apiClient);
     _notificationsRepository = NotificationsRepositoryImpl(_apiClient);
+    _beneficiaryAccountService = BeneficiaryAccountService(_apiClient);
   }
 
   void init() {
@@ -47,4 +50,6 @@ class ServiceLocator {
   ProfileRepository get profileRepository => _profileRepository;
   NotificationsRepository get notificationsRepository =>
       _notificationsRepository;
+  BeneficiaryAccountService get beneficiaryAccountService =>
+      _beneficiaryAccountService;
 }
