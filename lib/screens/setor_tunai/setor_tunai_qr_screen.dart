@@ -3,7 +3,6 @@ import 'package:smart_mob/constants/app_colors.dart';
 import 'package:smart_mob/constants/app_text.dart';
 import 'package:smart_mob/widgets/common/app_top_bar.dart';
 import 'package:qr/qr.dart';
-import 'dart:convert';
 import 'package:smart_mob/core/di/service_locator.dart';
 import 'package:smart_mob/features/auth/domain/entities/user.dart';
 import 'package:smart_mob/features/setor_tunai/domain/entities/beneficiary_account.dart';
@@ -16,13 +15,14 @@ class SetorTunaiQRScreen extends StatefulWidget {
 }
 
 class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
-  int _remainingSeconds = 3 * 60; // 3 minutes
+  int _remainingSeconds = 0;
   bool _isProcessing = false;
   bool _isSuccess = false;
   QrImage? _qrImage;
   String? _selectedBeneficiaryAccountId;
   List<BeneficiaryAccount> _beneficiaryAccounts = [];
   bool _isLoadingAccounts = false;
+  DateTime? _expiredTime;
 
   @override
   void initState() {
@@ -31,12 +31,24 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
   }
 
   void _startTimer() {
+    if (_expiredTime == null) return;
+
     Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && _remainingSeconds > 0) {
-        setState(() {
-          _remainingSeconds--;
-        });
-        _startTimer();
+      if (mounted) {
+        final now = DateTime.now();
+        final remaining = _expiredTime!.difference(now).inSeconds;
+
+        if (remaining > 0) {
+          setState(() {
+            _remainingSeconds = remaining;
+          });
+          _startTimer();
+        } else {
+          setState(() {
+            _remainingSeconds = 0;
+            _qrImage = null; // Clear QR when expired
+          });
+        }
       }
     });
   }
@@ -45,6 +57,24 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  String _formatExpiredTime(DateTime expiredTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final expiredDate = DateTime(
+      expiredTime.year,
+      expiredTime.month,
+      expiredTime.day,
+    );
+
+    if (expiredDate == today) {
+      // Same day - show time only
+      return '${expiredTime.hour.toString().padLeft(2, '0')}:${expiredTime.minute.toString().padLeft(2, '0')}';
+    } else {
+      // Different day - show date and time
+      return '${expiredTime.day}/${expiredTime.month}/${expiredTime.year} ${expiredTime.hour.toString().padLeft(2, '0')}:${expiredTime.minute.toString().padLeft(2, '0')}';
+    }
   }
 
   // removed unused method
@@ -79,13 +109,32 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
       print('SetorTunaiQRScreen: QR creation response: ${response.statusCode}');
       print('SetorTunaiQRScreen: QR creation data: ${response.data}');
 
-      final data =
-          response.data ??
-          {'beneficiary_account_id': _selectedBeneficiaryAccountId};
-      final jsonString = jsonEncode(data);
-      print('SetorTunaiQRScreen: QR data string: $jsonString');
+      String qrCodeString;
+      if (response.data != null &&
+          response.data!['success'] == true &&
+          response.data!['data'] != null &&
+          response.data!['data']['code'] != null) {
+        qrCodeString = response.data!['data']['code'] as String;
+        print('SetorTunaiQRScreen: Using QR code from API: $qrCodeString');
 
-      final code = QrCode(4, QrErrorCorrectLevel.M)..addData(jsonString);
+        // Extract expired_time from response
+        if (response.data!['data']['expired_time'] != null) {
+          final expiredTimeString =
+              response.data!['data']['expired_time'] as String;
+          _expiredTime = DateTime.parse(expiredTimeString);
+          print('SetorTunaiQRScreen: QR expires at: $_expiredTime');
+        }
+      } else {
+        qrCodeString = _selectedBeneficiaryAccountId!;
+        print(
+          'SetorTunaiQRScreen: Fallback to beneficiary account ID: $qrCodeString',
+        );
+        // Set default expiration time for fallback (3 minutes from now)
+        _expiredTime = DateTime.now().add(const Duration(minutes: 3));
+      }
+
+      print('SetorTunaiQRScreen: Final QR code string: $qrCodeString');
+      final code = QrCode(4, QrErrorCorrectLevel.M)..addData(qrCodeString);
       setState(() {
         _qrImage = QrImage(code);
         _isProcessing = false;
@@ -94,14 +143,53 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
       _startTimer();
     } catch (e) {
       print('SetorTunaiQRScreen: Error generating QR: $e');
+
+      String errorMessage = 'Gagal membuat QR';
+      if (e.toString().contains('500')) {
+        errorMessage = 'Server error. Menggunakan fallback QR.';
+      } else if (e.toString().contains('404')) {
+        errorMessage = 'Endpoint tidak ditemukan. Menggunakan fallback QR.';
+      } else if (e.toString().contains('401')) {
+        errorMessage = 'Sesi telah berakhir. Silakan login kembali.';
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.primaryRed,
+          ),
+        );
+        return;
+      } else if (e.toString().contains('403')) {
+        errorMessage = 'Akses ditolak.';
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.primaryRed,
+          ),
+        );
+        return;
+      }
+
+      // Fallback: Generate QR with beneficiary account ID
+      print(
+        'SetorTunaiQRScreen: Using fallback QR generation with beneficiary account ID',
+      );
+      _expiredTime = DateTime.now().add(const Duration(minutes: 3));
+      final fallbackCode = QrCode(4, QrErrorCorrectLevel.M)
+        ..addData(_selectedBeneficiaryAccountId!);
       setState(() {
+        _qrImage = QrImage(fallbackCode);
         _isProcessing = false;
       });
+      _startTimer();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal membuat QR: ${e.toString()}'),
-          backgroundColor: AppColors.primaryRed,
-        ),
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.orange),
       );
     }
   }
@@ -219,10 +307,12 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
                       ],
                       const SizedBox(height: 24),
                       _buildQRCode(),
-                      const SizedBox(height: 32),
-                      _buildExpiryTimer(),
-                      const SizedBox(height: 48),
-                      _buildActionButton(),
+                      if (_qrImage != null) ...[
+                        const SizedBox(height: 32),
+                        _buildExpiryTimer(),
+                        const SizedBox(height: 48),
+                        _buildActionButton(),
+                      ],
                     ],
                   ),
                 ),
@@ -320,7 +410,9 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
     return Column(
       children: [
         Text(
-          'QR Code ini akan kadaluarsa dalam',
+          _remainingSeconds > 0
+              ? 'QR Code ini akan kadaluarsa dalam'
+              : 'QR Code telah kadaluarsa',
           style: AppText.kaiseiRegular.copyWith(color: AppColors.textGray),
           textScaler: TextScaler.linear(1.0),
           textAlign: TextAlign.center,
@@ -329,19 +421,37 @@ class _SetorTunaiQRScreenState extends State<SetorTunaiQRScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
+            color: _remainingSeconds > 0
+                ? Colors.red.withOpacity(0.1)
+                : Colors.grey.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
+            border: Border.all(
+              color: _remainingSeconds > 0
+                  ? Colors.red.withOpacity(0.3)
+                  : Colors.grey.withOpacity(0.3),
+            ),
           ),
           child: Text(
-            _formatTime(_remainingSeconds),
+            _remainingSeconds > 0 ? _formatTime(_remainingSeconds) : '00:00',
             style: AppText.kaiseiBold.copyWith(
-              color: Colors.red,
+              color: _remainingSeconds > 0 ? Colors.red : Colors.grey,
               fontWeight: FontWeight.w700,
             ),
             textScaler: TextScaler.linear(1.0),
           ),
         ),
+        if (_expiredTime != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Kadaluarsa pada: ${_formatExpiredTime(_expiredTime!)}',
+            style: AppText.kaiseiRegular.copyWith(
+              color: AppColors.textGray,
+              fontSize: 12,
+            ),
+            textScaler: TextScaler.linear(1.0),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ],
     );
   }

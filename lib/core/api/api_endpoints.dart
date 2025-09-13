@@ -1,4 +1,5 @@
 class ApiEndpoints {
+  static const String host = 'http://103.23.199.26:8085';
   static const String baseUrl = 'http://103.23.199.26:8085/mobile/api';
 
   // Auth endpoints
@@ -9,7 +10,7 @@ class ApiEndpoints {
   static const String forgotPassword = '/auth/forgot-password';
   static const String verifyOtp = '/auth/verify-otp';
   static const String resetPassword = '/auth/reset-password';
-  static const String createQr = '/api/create-qr';
+  static const String createQr = '/create-qr';
 
   // User endpoints
   static const String profile = '/user/profile';
