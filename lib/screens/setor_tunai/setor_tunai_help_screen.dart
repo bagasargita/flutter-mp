@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:merah_putih/constants/app_colors.dart';
 import 'package:merah_putih/constants/app_text.dart';
 import 'package:merah_putih/widgets/common/app_top_bar.dart';
+import 'package:merah_putih/core/api/api_client.dart';
+import 'package:merah_putih/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:merah_putih/features/auth/domain/entities/user.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SetorTunaiHelpScreen extends StatefulWidget {
@@ -13,11 +17,15 @@ class SetorTunaiHelpScreen extends StatefulWidget {
 
 class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _transactionNumberController =
       TextEditingController();
+  final TextEditingController _machineController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   String? _selectedComplaintType;
+  bool _isSubmitting = false;
 
   final List<String> _complaintTypes = [
     'Masalah Teknis',
@@ -28,29 +36,63 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthBloc>().add(const AuthCheckRequested());
+    });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _transactionNumberController.dispose();
+    _machineController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _updateControllers(User user) {
+    _nameController.text = user.name;
+    _emailController.text = user.email;
+    _phoneController.text = user.phoneNumber ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundWhite,
-        body: SafeArea(
-          child: Column(
-            children: [
-              const AppTopBar(title: 'Bantuan', showBack: true),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildComplaintSection(),
-                      const SizedBox(height: 32),
-                      _buildContactSection(),
-                    ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          _updateControllers(state.user);
+        }
+      },
+      child: MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(1.0)),
+        child: Scaffold(
+          backgroundColor: AppColors.backgroundWhite,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const AppTopBar(title: 'Bantuan', showBack: true),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildComplaintSection(),
+                        const SizedBox(height: 32),
+                        _buildContactSection(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -75,32 +117,54 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
           hintText: 'Nama',
           icon: Icons.person_outline,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
+
+        _buildInputField(
+          controller: _emailController,
+          hintText: 'Email',
+          icon: Icons.email_outlined,
+        ),
+        const SizedBox(height: 20),
+
+        _buildInputField(
+          controller: _phoneController,
+          hintText: 'Nomor Telepon',
+          icon: Icons.phone_outlined,
+        ),
+        const SizedBox(height: 20),
 
         _buildInputField(
           controller: _transactionNumberController,
           hintText: 'Nomor Transaksi (opsional)',
           icon: Icons.receipt_outlined,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
+
+        _buildInputField(
+          controller: _machineController,
+          hintText: 'Mesin (opsional)',
+          icon: Icons.devices_outlined,
+        ),
+        const SizedBox(height: 20),
 
         _buildDropdownField(),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
         Text(
           'Deskripsi Keluhan Anda',
           style: AppText.kaiseiRegular.copyWith(
             color: AppColors.textBlack,
             fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         _buildTextArea(),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
         _buildAttachmentButton(),
-        const SizedBox(height: 24),
+        const SizedBox(height: 32),
 
         _buildSubmitButton(),
       ],
@@ -113,23 +177,42 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey[600], size: 20),
-          const SizedBox(width: 12),
+          Icon(icon, color: Colors.grey[600], size: 22),
+          const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: controller,
+              style: AppText.kaiseiRegular.copyWith(
+                color: AppColors.textBlack,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
               decoration: InputDecoration(
                 hintText: hintText,
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                hintStyle: AppText.kaiseiRegular.copyWith(
+                  color: Colors.grey[500],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
               ),
             ),
           ),
@@ -142,28 +225,37 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
     return GestureDetector(
       onTap: _showComplaintTypeDialog,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: Colors.grey[50],
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: Colors.grey[300]!, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(Icons.category_outlined, color: Colors.grey[600], size: 20),
-            const SizedBox(width: 12),
+            Icon(Icons.category_outlined, color: Colors.grey[600], size: 22),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 _selectedComplaintType ?? 'Jenis Keluhan',
-                style: TextStyle(
+                style: AppText.kaiseiRegular.copyWith(
                   color: _selectedComplaintType != null
                       ? AppColors.textBlack
                       : Colors.grey[500],
-                  fontSize: 14,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down, color: Colors.grey[600], size: 20),
+            Icon(Icons.keyboard_arrow_down, color: Colors.grey[600], size: 22),
           ],
         ),
       ),
@@ -172,21 +264,41 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
 
   Widget _buildTextArea() {
     return Container(
+      constraints: const BoxConstraints(minHeight: 120),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
           TextField(
             controller: _descriptionController,
             maxLines: 5,
-            decoration: const InputDecoration(
+            minLines: 4,
+            style: AppText.kaiseiRegular.copyWith(
+              color: AppColors.textBlack,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+            ),
+            decoration: InputDecoration(
               hintText: 'Ketik pesan Anda di sini..',
               border: InputBorder.none,
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+              hintStyle: AppText.kaiseiRegular.copyWith(
+                color: Colors.grey[500],
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
             ),
           ),
           const SizedBox(height: 8),
@@ -205,26 +317,34 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
     return GestureDetector(
       onTap: _addAttachment,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: Colors.grey[50],
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: Colors.grey[300]!, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(Icons.attach_file, color: Colors.grey[600], size: 20),
-            const SizedBox(width: 12),
+            Icon(Icons.attach_file, color: Colors.grey[600], size: 22),
+            const SizedBox(width: 16),
             Text(
               'Tambahkan Lampiran',
-              style: TextStyle(
+              style: AppText.kaiseiRegular.copyWith(
                 color: Colors.grey[600],
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
-            Icon(Icons.keyboard_arrow_right, color: Colors.grey[600], size: 20),
+            Icon(Icons.keyboard_arrow_right, color: Colors.grey[600], size: 22),
           ],
         ),
       ),
@@ -234,8 +354,9 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
+      height: 56,
       child: ElevatedButton(
-        onPressed: _submitComplaint,
+        onPressed: _isSubmitting ? null : _submitComplaint,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryRed,
           foregroundColor: Colors.white,
@@ -243,16 +364,26 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 0,
+          elevation: 2,
+          shadowColor: AppColors.primaryRed.withOpacity(0.3),
         ),
-        child: Text(
-          'Kirim',
-          style: AppText.kaiseiRegular.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
+        child: _isSubmitting
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Text(
+                'Kirim',
+                style: AppText.kaiseiRegular.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
       ),
     );
   }
@@ -273,42 +404,50 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
         GestureDetector(
           onTap: _openWhatsApp,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: Colors.grey[50],
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: Colors.grey[300]!, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF25D366),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.message,
-                    color: Colors.white,
-                    size: 20,
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(shape: BoxShape.circle),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/whatsapp.png',
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Text(
                   'WhatsApp',
-                  style: TextStyle(
+                  style: AppText.kaiseiRegular.copyWith(
                     color: AppColors.textBlack,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '+62 812-3456-7890',
-                  style: TextStyle(
+                  style: AppText.kaiseiRegular.copyWith(
                     color: Colors.grey[600],
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -412,9 +551,19 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
     );
   }
 
-  void _submitComplaint() {
+  void _submitComplaint() async {
     if (_nameController.text.isEmpty) {
       _showErrorDialog('Nama harus diisi');
+      return;
+    }
+
+    if (_emailController.text.isEmpty) {
+      _showErrorDialog('Email harus diisi');
+      return;
+    }
+
+    if (_phoneController.text.isEmpty) {
+      _showErrorDialog('Nomor telepon harus diisi');
       return;
     }
 
@@ -428,24 +577,55 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Keluhan Terkirim'),
-        content: const Text(
-          'Terima kasih atas keluhan Anda. Tim kami akan segera menghubungi Anda.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _clearForm();
-            },
-            child: const Text('OK'),
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final apiClient = ApiClient.create();
+      await apiClient.createSupportTicket(
+        name: _nameController.text,
+        email: _emailController.text,
+        phoneNumber: _phoneController.text,
+        transactionNumber: _transactionNumberController.text,
+        machine: _machineController.text.isNotEmpty
+            ? _machineController.text
+            : null,
+        subject: _selectedComplaintType!,
+        message: _descriptionController.text,
+      );
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Keluhan Terkirim'),
+            content: const Text(
+              'Terima kasih atas keluhan Anda. Tim kami akan segera menghubungi Anda.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _clearForm();
+                },
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      _showErrorDialog('Gagal mengirim keluhan. Silakan coba lagi.');
+    }
   }
 
   void _showErrorDialog(String message) {
@@ -467,7 +647,10 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
   void _clearForm() {
     setState(() {
       _nameController.clear();
+      _emailController.clear();
+      _phoneController.clear();
       _transactionNumberController.clear();
+      _machineController.clear();
       _descriptionController.clear();
       _selectedComplaintType = null;
     });
@@ -475,7 +658,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
 
   void _openWhatsApp() async {
     const phoneNumber = '+6281234567890';
-    const message = 'Halo, saya ingin bertanya tentang layanan SmartMob';
+    const message = 'Halo, saya ingin bertanya tentang layanan MerahPutih';
     final url =
         'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
 

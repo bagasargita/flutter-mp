@@ -38,4 +38,7 @@ class ApiEndpoints {
   // Beneficiary account endpoints
   static const String beneficiaryAccount =
       'http://103.23.199.26:8085/mobile/beneficiary-account';
+
+  // Support endpoints
+  static const String supportTickets = '/support/tickets';
 }

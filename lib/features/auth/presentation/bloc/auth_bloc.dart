@@ -13,6 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
     on<AuthCheckRequested>(_onAuthCheckRequested);
+    on<AuthUpdateProfile>(_onAuthUpdateProfile);
   }
 
   void _onAuthLoginRequested(
@@ -36,15 +37,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print('AuthBloc: Clearing user data...');
-    // Clear saved user data
-    final result = await _authRepository.clearUser();
-    result.fold(
-      (failure) =>
-          print('AuthBloc: Failed to clear user data: ${failure.message}'),
-      (_) => print('AuthBloc: User data cleared successfully'),
-    );
-    emit(AuthUnauthenticated());
+    print('AuthBloc: Clearing all user data and state...');
+
+    try {
+      // Clear saved user data
+      final result = await _authRepository.clearUser();
+      result.fold(
+        (failure) =>
+            print('AuthBloc: Failed to clear user data: ${failure.message}'),
+        (_) => print('AuthBloc: User data cleared successfully'),
+      );
+
+      // Emit unauthenticated state
+      emit(AuthUnauthenticated());
+      print('AuthBloc: State cleared and set to unauthenticated');
+    } catch (e) {
+      print('AuthBloc: Error during logout: $e');
+      // Still emit unauthenticated even if there's an error
+      emit(AuthUnauthenticated());
+    }
   }
 
   void _onAuthCheckRequested(
@@ -61,5 +72,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthUnauthenticated());
       }
     });
+  }
+
+  void _onAuthUpdateProfile(
+    AuthUpdateProfile event,
+    Emitter<AuthState> emit,
+  ) async {
+    // Update the user data in the current state
+    final result = await _authRepository.saveUser(event.user);
+    result.fold(
+      (failure) => emit(AuthFailure(message: failure.message)),
+      (_) => emit(AuthAuthenticated(user: event.user)),
+    );
   }
 }

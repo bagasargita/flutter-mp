@@ -244,4 +244,32 @@ class ApiClient {
       queryParameters: queryParams,
     );
   }
+
+  Future<Response<Map<String, dynamic>>> createSupportTicket({
+    required String name,
+    required String email,
+    required String phoneNumber,
+    required String transactionNumber,
+    String? machine,
+    required String subject,
+    required String message,
+  }) async {
+    final Map<String, dynamic> data = {
+      'name': name,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'transactionNumber': transactionNumber,
+      'subject': subject,
+      'message': message,
+    };
+
+    if (machine != null && machine.isNotEmpty) {
+      data['machine'] = machine;
+    }
+
+    return await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.supportTickets,
+      data: data,
+    );
+  }
 }

@@ -24,27 +24,33 @@ void main() {
 
 // Global function to clear authentication state
 Future<void> clearAuthState(BuildContext context) async {
-  print('Clearing authentication state...');
+  print('Clearing all authentication and app states...');
 
-  // First, clear AppBloc state to prevent any UI issues
-  context.read<AppBloc>().add(const AppLogoutRequested());
-
-  // Clear AuthBloc state (this also clears SharedPreferences)
-  context.read<AuthBloc>().add(const AuthLogoutRequested());
-
-  // Wait longer for all async operations to complete
-  await Future.delayed(const Duration(milliseconds: 500));
-
-  // Double-check that SharedPreferences are cleared by directly accessing the repository
   try {
-    final authRepo = ServiceLocator().authRepository;
-    await authRepo.clearUser();
-    print('Additional clearUser call completed');
-  } catch (e) {
-    print('Error in additional clearUser: $e');
-  }
+    // Clear AppBloc state first
+    context.read<AppBloc>().add(const AppLogoutRequested());
+    print('AppBloc logout requested');
 
-  print('Authentication state cleared successfully');
+    // Clear AuthBloc state (this also clears SharedPreferences)
+    context.read<AuthBloc>().add(const AuthLogoutRequested());
+    print('AuthBloc logout requested');
+
+    // Wait for all async operations to complete
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // Double-check that SharedPreferences are cleared by directly accessing the repository
+    try {
+      final authRepo = ServiceLocator().authRepository;
+      await authRepo.clearUser();
+      print('Additional clearUser call completed');
+    } catch (e) {
+      print('Error in additional clearUser: $e');
+    }
+
+    print('All states cleared successfully');
+  } catch (e) {
+    print('Error clearing states: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

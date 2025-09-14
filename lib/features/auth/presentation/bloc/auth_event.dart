@@ -24,3 +24,12 @@ class AuthLogoutRequested extends AuthEvent {
 class AuthCheckRequested extends AuthEvent {
   const AuthCheckRequested();
 }
+
+class AuthUpdateProfile extends AuthEvent {
+  final User user;
+
+  const AuthUpdateProfile(this.user);
+
+  @override
+  List<Object> get props => [user];
+}

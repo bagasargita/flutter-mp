@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:merah_putih/constants/app_colors.dart';
 import 'package:merah_putih/constants/app_text.dart';
+import 'package:merah_putih/widgets/common/app_top_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SetorTunaiLocationListScreen extends StatefulWidget {
   final List<Map<String, dynamic>> locations;
+  final String? selectedType;
 
-  const SetorTunaiLocationListScreen({super.key, required this.locations});
+  const SetorTunaiLocationListScreen({
+    super.key,
+    required this.locations,
+    this.selectedType,
+  });
 
   @override
   State<SetorTunaiLocationListScreen> createState() =>
@@ -20,6 +26,14 @@ class _SetorTunaiLocationListScreenState
   String _selectedType = '';
   String _selectedStatus = '';
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.selectedType != null) {
+      _selectedType = widget.selectedType!;
+    }
+  }
+
   List<Map<String, dynamic>> get _filteredLocations {
     return widget.locations.where((location) {
       final name = location['name'].toString().toLowerCase();
@@ -32,12 +46,37 @@ class _SetorTunaiLocationListScreenState
           name.contains(_searchQuery.toLowerCase()) ||
           address.contains(_searchQuery.toLowerCase());
 
-      final matchesType = _selectedType.isEmpty || type == _selectedType;
+      // Map the filter selection to actual type values
+      bool matchesType = true;
+      if (_selectedType.isNotEmpty) {
+        if (_selectedType == 'Mesin') {
+          matchesType =
+              type.toLowerCase() == 'machine' || type.toLowerCase() == 'mesin';
+        } else if (_selectedType == 'Non Mesin') {
+          matchesType =
+              type.toLowerCase() == 'partner' ||
+              type.toLowerCase() == 'non_mesin';
+        }
+      }
+
       final matchesStatus =
           _selectedStatus.isEmpty || status == _selectedStatus;
 
       return matchesSearch && matchesType && matchesStatus;
     }).toList();
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Buka':
+        return Colors.green[700]!;
+      case 'Tutup':
+        return Colors.red[700]!;
+      case 'Tidak Tersedia':
+        return Colors.orange[700]!;
+      default:
+        return Colors.grey[700]!;
+    }
   }
 
   Future<void> _openMaps({
@@ -74,185 +113,172 @@ class _SetorTunaiLocationListScreenState
       ).copyWith(textScaler: const TextScaler.linear(1.0)),
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          leading: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.arrow_back, color: Colors.black),
-          ),
-          centerTitle: true,
-          title: Text(
-            'List Lokasi Terdekat',
-            style: AppText.kaiseiRegular.copyWith(
-              color: AppColors.textBlack,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [
-            GestureDetector(
-              onTap: _showFilterBottomSheet,
-              child: Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.tune, color: Colors.grey[600], size: 20),
-              ),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            _buildSearchBar(),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: _filteredLocations.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final item = _filteredLocations[index];
-                  return Container(
-                    padding: const EdgeInsets.all(16),
+        body: SafeArea(
+          child: Column(
+            children: [
+              AppTopBar(
+                title: 'List Lokasi Terdekat',
+                showBack: true,
+                trailing: GestureDetector(
+                  onTap: _showFilterBottomSheet,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[200]!),
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: (item['iconColor'] as Color).withOpacity(
-                              0.1,
+                    child: Icon(Icons.tune, color: Colors.grey[600], size: 20),
+                  ),
+                ),
+              ),
+              _buildSearchBar(),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _filteredLocations.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final item = _filteredLocations[index];
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: (item['iconColor'] as Color).withOpacity(
+                                0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            borderRadius: BorderRadius.circular(10),
+                            child: Icon(
+                              item['icon'] as IconData,
+                              color: item['iconColor'] as Color,
+                              size: 20,
+                            ),
                           ),
-                          child: Icon(
-                            item['icon'] as IconData,
-                            color: item['iconColor'] as Color,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item['name'].toString(),
-                                style: TextStyle(
-                                  color: AppColors.textBlack,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  fontFamily: 'Roboto',
-                                  height: 1.2,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['name'].toString(),
+                                  style: TextStyle(
+                                    color: AppColors.textBlack,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto',
+                                    height: 1.2,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item['address'].toString(),
-                                style: TextStyle(
-                                  color: AppColors.textGray,
-                                  fontSize: 13,
-                                  fontFamily: 'Roboto',
-                                  height: 1.2,
+                                const SizedBox(height: 4),
+                                Text(
+                                  item['address'].toString(),
+                                  style: TextStyle(
+                                    color: AppColors.textGray,
+                                    fontSize: 13,
+                                    fontFamily: 'Roboto',
+                                    height: 1.2,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: item['status'] == 'Buka'
-                                          ? Colors.green.withOpacity(0.1)
-                                          : Colors.red.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      item['status'],
-                                      style: TextStyle(
-                                        color: item['status'] == 'Buka'
-                                            ? Colors.green[700]
-                                            : Colors.red[700],
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w500,
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _getStatusColor(
+                                          item['status'],
+                                        ).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        item['status'],
+                                        style: TextStyle(
+                                          color: _getStatusColor(
+                                            item['status'],
+                                          ),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    item['operatingHours'] ?? '',
-                                    style: TextStyle(
-                                      color: AppColors.textGray,
-                                      fontSize: 10,
-                                      fontFamily: 'Roboto',
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      item['operatingHours'] ?? '',
+                                      style: TextStyle(
+                                        color: AppColors.textGray,
+                                        fontSize: 10,
+                                        fontFamily: 'Roboto',
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Text(
-                                    item['distance'].toString(),
-                                    style: TextStyle(
-                                      color: AppColors.textGray,
-                                      fontSize: 13,
-                                      fontFamily: 'Roboto',
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Text(
+                                      item['distance'].toString(),
+                                      style: TextStyle(
+                                        color: AppColors.textGray,
+                                        fontSize: 13,
+                                        fontFamily: 'Roboto',
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        SizedBox(
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final double lat =
-                                  (item['latitude'] as double?) ?? 0.0;
-                              final double lng =
-                                  (item['longitude'] as double?) ?? 0.0;
-                              if (lat != 0.0 && lng != 0.0) {
-                                _openMaps(
-                                  latitude: lat,
-                                  longitude: lng,
-                                  label: item['name'].toString(),
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: Colors.grey[200],
-                              foregroundColor: AppColors.textBlack,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            child: const Text('Navigate'),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final double lat =
+                                    (item['latitude'] as double?) ?? 0.0;
+                                final double lng =
+                                    (item['longitude'] as double?) ?? 0.0;
+                                if (lat != 0.0 && lng != 0.0) {
+                                  _openMaps(
+                                    latitude: lat,
+                                    longitude: lng,
+                                    label: item['name'].toString(),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: Colors.grey[200],
+                                foregroundColor: AppColors.textBlack,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: const Text('Navigate'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -301,53 +327,6 @@ class _SetorTunaiLocationListScreenState
     );
   }
 
-  Widget _buildFilterChips() {
-    final types = widget.locations
-        .map((e) => e['type'].toString())
-        .toSet()
-        .toList();
-    final statuses = widget.locations
-        .map((e) => e['status'].toString())
-        .toSet()
-        .toList();
-
-    return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          _buildChip(
-            'Semua',
-            _selectedType.isEmpty && _selectedStatus.isEmpty,
-            () {
-              setState(() {
-                _selectedType = '';
-                _selectedStatus = '';
-              });
-            },
-          ),
-          ...types.map(
-            (type) => _buildChip(type, _selectedType == type, () {
-              setState(() {
-                _selectedType = _selectedType == type ? '' : type;
-                _selectedStatus = '';
-              });
-            }),
-          ),
-          ...statuses.map(
-            (status) => _buildChip(status, _selectedStatus == status, () {
-              setState(() {
-                _selectedStatus = _selectedStatus == status ? '' : status;
-                _selectedType = '';
-              });
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildChip(String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -387,14 +366,8 @@ class _SetorTunaiLocationListScreenState
   }
 
   Widget _buildFilterBottomSheet(StateSetter setModalState) {
-    final types = widget.locations
-        .map((e) => e['type'].toString())
-        .toSet()
-        .toList();
-    final statuses = widget.locations
-        .map((e) => e['status'].toString())
-        .toSet()
-        .toList();
+    final types = ['Mesin', 'Non Mesin'];
+    final statuses = ['Buka', 'Tutup', 'Tidak Tersedia'];
 
     return Container(
       decoration: const BoxDecoration(

@@ -5,7 +5,6 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/app/presentation/bloc/app_bloc.dart';
-import '../../main.dart';
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,18 +31,30 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Only clear state if we're actually authenticated (coming from a logout)
+    // Always clear all states before login attempt
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
-        final appState = context.read<AppBloc>().state;
-        if (appState.isAuthenticated) {
-          print('LoginScreen: Clearing authenticated state');
-          await clearAuthState(context);
-        } else {
-          print('LoginScreen: Already unauthenticated, no clearing needed');
-        }
+        print('LoginScreen: Clearing all states before login');
+        await _clearAllStates(context);
       }
     });
+  }
+
+  Future<void> _clearAllStates(BuildContext context) async {
+    try {
+      // Clear AppBloc state
+      context.read<AppBloc>().add(const AppLogoutRequested());
+
+      // Clear AuthBloc state
+      context.read<AuthBloc>().add(const AuthLogoutRequested());
+
+      // Wait for state clearing to complete
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      print('LoginScreen: All states cleared successfully');
+    } catch (e) {
+      print('LoginScreen: Error clearing states: $e');
+    }
   }
 
   @override
@@ -116,6 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _isPasswordVisible = value;
             });
           },
+          clearAllStates: _clearAllStates,
         ),
       ),
     );
@@ -128,6 +140,7 @@ class _LoginForm extends StatelessWidget {
   final TextEditingController passwordController;
   final bool isPasswordVisible;
   final Function(bool) onPasswordVisibilityChanged;
+  final Future<void> Function(BuildContext) clearAllStates;
 
   const _LoginForm({
     required this.formKey,
@@ -135,12 +148,21 @@ class _LoginForm extends StatelessWidget {
     required this.passwordController,
     required this.isPasswordVisible,
     required this.onPasswordVisibilityChanged,
+    required this.clearAllStates,
   });
 
   @override
   Widget build(BuildContext context) {
-    void login() {
+    void login() async {
       if (formKey.currentState!.validate()) {
+        // Clear all states before login attempt
+        print('LoginScreen: Clearing states before login attempt');
+        await clearAllStates(context);
+
+        // Wait a bit more to ensure state clearing is complete
+        await Future.delayed(const Duration(milliseconds: 200));
+
+        // Proceed with login
         context.read<AuthBloc>().add(
           AuthLoginRequested(
             identifier: identifierController.text.trim(),

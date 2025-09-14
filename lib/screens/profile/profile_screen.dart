@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../widgets/common/app_top_bar.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/domain/entities/user.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,10 +15,25 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'Jhon');
-  final _emailController = TextEditingController(text: 'jhondoe@gmail.com');
-  final _phoneController = TextEditingController(text: '+62 896-1234-1234');
-  final _passwordController = TextEditingController(text: '••••••••');
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _passwordController;
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _passwordController = TextEditingController(text: '••••••••');
+
+    // Check for current user data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthBloc>().add(const AuthCheckRequested());
+    });
+  }
 
   @override
   void dispose() {
@@ -26,36 +44,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  void _updateControllers(User user) {
+    _nameController.text = user.name;
+    _emailController.text = user.email;
+    _phoneController.text = user.phoneNumber ?? '';
+    _currentUser = user;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundWhite,
-        body: SafeArea(
-          child: Column(
-            children: [
-              const AppTopBar(title: 'Profile', showBack: true),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        _buildProfileSection(),
-                        const SizedBox(height: 32),
-                        _buildFormFields(),
-                        const SizedBox(height: 32),
-                        _buildSaveButton(),
-                      ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          _updateControllers(state.user);
+        }
+      },
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthAuthenticated && _currentUser == null) {
+            _updateControllers(state.user);
+          }
+
+          if (state is AuthLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (state is AuthUnauthenticated) {
+            return const Scaffold(
+              body: Center(child: Text('Please log in to view your profile')),
+            );
+          }
+
+          return MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(1.0)),
+            child: Scaffold(
+              backgroundColor: AppColors.backgroundWhite,
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    const AppTopBar(title: 'Profile', showBack: true),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildProfileSection(),
+                              const SizedBox(height: 32),
+                              _buildFormFields(),
+                              const SizedBox(height: 32),
+                              _buildSaveButton(),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -67,7 +121,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundImage: const AssetImage('assets/images/profile.png'),
+              backgroundImage: _currentUser?.profilePicture != null
+                  ? NetworkImage(_currentUser!.profilePicture!)
+                  : const AssetImage('assets/images/profile.png')
+                        as ImageProvider,
               onBackgroundImageError: (exception, stackTrace) {},
             ),
             Positioned(
@@ -86,9 +143,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Jhon Doe',
-          style: TextStyle(
+        Text(
+          _currentUser?.name ?? 'Loading...',
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: AppColors.primaryRed,
@@ -96,10 +153,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
           textScaler: TextScaler.linear(1.0),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'WSMM Pondok Pinang',
-          style: TextStyle(fontSize: 16, color: AppColors.textGray),
+        Text(
+          _currentUser?.customer ?? 'Loading...',
+          style: const TextStyle(fontSize: 16, color: AppColors.textGray),
           textScaler: TextScaler.linear(1.0),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primaryRed.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.primaryRed.withOpacity(0.3)),
+          ),
+          child: Text(
+            _currentUser?.roleMobile ?? 'Loading...',
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.primaryRed,
+              fontWeight: FontWeight.w600,
+            ),
+            textScaler: TextScaler.linear(1.0),
+          ),
         ),
       ],
     );
@@ -132,6 +207,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.lock,
           isPassword: true,
         ),
+        const SizedBox(height: 16),
+        _buildRoleField(),
       ],
     );
   }
@@ -145,6 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
+      enabled: !isPassword,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -152,6 +230,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
         labelStyle: const TextStyle(color: AppColors.textGray),
       ),
       style: const TextStyle(color: AppColors.textBlack, fontSize: 16),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter $label';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildRoleField() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.textGray.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.work, color: AppColors.textGray, size: 20),
+          const SizedBox(width: 12),
+          const Text(
+            'Role:',
+            style: TextStyle(color: AppColors.textGray, fontSize: 16),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _currentUser?.roleMobile ?? 'Loading...',
+              style: const TextStyle(
+                color: AppColors.primaryRed,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -161,12 +276,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: ElevatedButton(
         onPressed: () {
           if (_formKey.currentState!.validate()) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully'),
-                backgroundColor: AppColors.primaryRed,
-              ),
-            );
+            if (_currentUser != null) {
+              final updatedUser = _currentUser!.copyWith(
+                name: _nameController.text,
+                email: _emailController.text,
+                phoneNumber: _phoneController.text,
+              );
+
+              context.read<AuthBloc>().add(AuthUpdateProfile(updatedUser));
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Profile updated successfully'),
+                  backgroundColor: AppColors.primaryRed,
+                ),
+              );
+            }
           }
         },
         style: ElevatedButton.styleFrom(
@@ -176,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Text(
-          'Simpan',
+          'Update Profile',
           style: AppText.kaiseiRegular.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w600,

@@ -18,7 +18,7 @@ class SetorTunaiLocationScreen extends StatefulWidget {
 
 class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
   final MapController _mapController = MapController();
-  String _selectedLocationType = 'Lokasi Partner';
+  String _selectedLocationType = '';
   String _selectedStatus = '';
   String? _requestType;
   String? _requestStatus;
@@ -63,6 +63,19 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
 
   List<Map<String, dynamic>> get _filteredLocations {
     return _locations;
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Buka':
+        return Colors.green[700]!;
+      case 'Tutup':
+        return Colors.red[700]!;
+      case 'Tidak Tersedia':
+        return Colors.orange[700]!;
+      default:
+        return Colors.grey[700]!;
+    }
   }
 
   Future<void> _fetchLocations() async {
@@ -547,6 +560,9 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                           locations: List<Map<String, dynamic>>.from(
                             _filteredLocations,
                           ),
+                          selectedType: _selectedLocationType.isNotEmpty
+                              ? _selectedLocationType
+                              : null,
                         ),
                       ),
                     );
@@ -650,17 +666,15 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: location['status'] == 'Buka'
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.red.withOpacity(0.1),
+                        color: _getStatusColor(
+                          location['status'],
+                        ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         location['status'],
                         style: TextStyle(
-                          color: location['status'] == 'Buka'
-                              ? Colors.green[700]
-                              : Colors.red[700],
+                          color: _getStatusColor(location['status']),
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
@@ -754,7 +768,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
               const SizedBox(height: 24),
 
               Text(
-                'Locations',
+                'Tipe Lokasi',
                 style: AppText.kaiseiRegular.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textBlack,
@@ -766,27 +780,27 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 runSpacing: 8,
                 children: [
                   _buildFilterChip(
-                    'ATM/CDM',
-                    _selectedLocationType == 'ATM/CDM',
+                    'Mesin',
+                    _selectedLocationType == 'Mesin',
                     Icons.atm,
                     const Color(0xFFE53E3E),
                     (value) {
                       setState(() {
-                        _selectedLocationType = value ? 'ATM/CDM' : '';
-                        _requestType = value ? 'Mesin' : null;
+                        _selectedLocationType = value ? 'Mesin' : '';
+                        _requestType = value ? 'machine' : null;
                       });
                       setModalState(() {});
                     },
                   ),
                   _buildFilterChip(
-                    'Lokasi Partner',
-                    _selectedLocationType == 'Lokasi Partner',
+                    'Non Mesin',
+                    _selectedLocationType == 'Non Mesin',
                     Icons.shopping_bag,
                     const Color(0xFF8B5CF6),
                     (value) {
                       setState(() {
-                        _selectedLocationType = value ? 'Lokasi Partner' : '';
-                        _requestType = null;
+                        _selectedLocationType = value ? 'Non Mesin' : '';
+                        _requestType = value ? 'partner' : null;
                       });
                       setModalState(() {});
                     },
@@ -808,27 +822,40 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
                 runSpacing: 8,
                 children: [
                   _buildFilterChip(
-                    'Available',
-                    _selectedStatus == 'Available',
+                    'Buka',
+                    _selectedStatus == 'Buka',
                     null,
-                    Colors.grey,
+                    Colors.green,
                     (value) {
                       setState(() {
-                        _selectedStatus = value ? 'Available' : '';
+                        _selectedStatus = value ? 'Buka' : '';
                         _requestStatus = value ? 'Buka' : null;
                       });
                       setModalState(() {});
                     },
                   ),
                   _buildFilterChip(
-                    'Not Available',
-                    _selectedStatus == 'Not Available',
+                    'Tutup',
+                    _selectedStatus == 'Tutup',
                     null,
-                    Colors.grey,
+                    Colors.red,
                     (value) {
                       setState(() {
-                        _selectedStatus = value ? 'Not Available' : '';
+                        _selectedStatus = value ? 'Tutup' : '';
                         _requestStatus = value ? 'Tutup' : null;
+                      });
+                      setModalState(() {});
+                    },
+                  ),
+                  _buildFilterChip(
+                    'Tidak Tersedia',
+                    _selectedStatus == 'Tidak Tersedia',
+                    null,
+                    Colors.orange,
+                    (value) {
+                      setState(() {
+                        _selectedStatus = value ? 'Tidak Tersedia' : '';
+                        _requestStatus = value ? 'Tidak Tersedia' : null;
                       });
                       setModalState(() {});
                     },

@@ -7,6 +7,7 @@ class User {
   final String memberStatus;
   final String roleMobile;
   final String? branchId;
+  final String? customer;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -19,6 +20,7 @@ class User {
     required this.memberStatus,
     required this.roleMobile,
     this.branchId,
+    this.customer,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -33,6 +35,7 @@ class User {
       memberStatus: json['member_status'] as String? ?? 'active',
       roleMobile: json['roleMobile'] as String? ?? 'CUSTOMER',
       branchId: json['branch'] as String?,
+      customer: json['customer'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -52,6 +55,7 @@ class User {
       'member_status': memberStatus,
       'roleMobile': roleMobile,
       'branch': branchId,
+      'customer': customer,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -66,6 +70,7 @@ class User {
     String? memberStatus,
     String? roleMobile,
     String? branchId,
+    String? customer,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -78,6 +83,7 @@ class User {
       memberStatus: memberStatus ?? this.memberStatus,
       roleMobile: roleMobile ?? this.roleMobile,
       branchId: branchId ?? this.branchId,
+      customer: customer ?? this.customer,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
