@@ -8,6 +8,7 @@ import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/setor_tunai/setor_tunai_history_screen.dart';
+import 'screens/setor_tunai/setor_tunai_location_screen.dart';
 import 'features/app/presentation/bloc/app_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/notifications/presentation/bloc/notifications_bloc.dart';
@@ -118,16 +119,9 @@ class _AppEntryState extends State<AppEntry> {
   Widget build(BuildContext context) {
     return BlocBuilder<AppBloc, AppState>(
       buildWhen: (previous, current) {
-        // Always rebuild when authentication state changes
-        print(
-          'BlocBuilder buildWhen - Previous: ${previous.isAuthenticated}, Current: ${current.isAuthenticated}',
-        );
         return true;
       },
       builder: (context, state) {
-        print(
-          'AppEntry State - Auth: ${state.isAuthenticated}, Role: ${state.userRoleMobile}, SelectedRole: ${state.selectedRole}',
-        );
         if (state.showSplash) {
           final blocContext = context;
           Future.delayed(const Duration(seconds: 2), () {
@@ -213,11 +207,13 @@ class _RootScreenState extends State<RootScreen> {
   int _selectedIndex = 0;
 
   late final List<Widget> _screens;
+  late List<BottomNavItemData> _items;
 
   @override
   void initState() {
     super.initState();
-    _screens = _buildScreens();
+    _items = _getBottomNavItems();
+    _screens = _buildScreens(_items);
   }
 
   @override
@@ -225,38 +221,57 @@ class _RootScreenState extends State<RootScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selectedRole != widget.selectedRole ||
         oldWidget.userRoleMobile != widget.userRoleMobile) {
-      _screens = _buildScreens();
+      _items = _getBottomNavItems();
+      _screens = _buildScreens(_items);
       if (_selectedIndex > _screens.length - 1) {
         _selectedIndex = 0;
       }
     }
   }
 
-  List<Widget> _buildScreens() {
-    final secondTab = (widget.selectedRole == 'MESIN')
-        ? const KomisiScreen()
-        : const SetorTunaiHistoryScreen();
-    return [
-      HomeScreen(
-        userRoleMobile: widget.userRoleMobile,
-        userEmail: widget.userEmail,
-        userName: widget.userName,
-        selectedRole: widget.selectedRole,
-      ),
-      secondTab,
-      const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
-    ];
+  List<Widget> _buildScreens(List<BottomNavItemData> items) {
+    final List<Widget> screens = [];
+    for (final item in items) {
+      if (item.label == 'Beranda') {
+        screens.add(
+          HomeScreen(
+            userRoleMobile: widget.userRoleMobile,
+            userEmail: widget.userEmail,
+            userName: widget.userName,
+            selectedRole: widget.selectedRole,
+          ),
+        );
+      } else if (item.label == 'Lokasi') {
+        screens.add(const SetorTunaiLocationScreen());
+      } else if (item.label == 'Riwayat Transaksi' ||
+          item.label == 'Riwayat' ||
+          item.label == 'Riwayat Layanan') {
+        screens.add(const SetorTunaiHistoryScreen());
+      } else if (item.label == 'Komisi') {
+        screens.add(const KomisiScreen());
+      } else if (item.label == 'Akun') {
+        screens.add(
+          const Center(child: Text('Akun', style: TextStyle(fontSize: 24))),
+        );
+      } else {
+        screens.add(const SizedBox.shrink());
+      }
+    }
+    return screens;
   }
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      // Index 2 is the "Akun" tab
-      AccountMenuWidget.showMoreMenu(context);
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
+    if (index < 0 || index >= _items.length) {
+      return;
     }
+    final tappedItem = _items[index];
+    if (tappedItem.label == 'Akun') {
+      AccountMenuWidget.showMoreMenu(context);
+      return;
+    }
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   List<BottomNavItemData> _getBottomNavItems() {
@@ -275,7 +290,7 @@ class _RootScreenState extends State<RootScreen> {
         bottomNavigationBar: AppBottomNav(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          items: _getBottomNavItems(),
+          items: _items,
         ),
       ),
     );

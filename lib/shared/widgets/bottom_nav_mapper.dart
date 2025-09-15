@@ -11,6 +11,7 @@ class BottomNavMapper {
         userRoleMobile == 'CUSTOMER') {
       return [
         BottomNavItemData(icon: Icons.home, label: 'Beranda'),
+        BottomNavItemData(icon: Icons.location_on, label: 'Lokasi'),
         BottomNavItemData(icon: Icons.history, label: 'Riwayat Transaksi'),
         BottomNavItemData(icon: Icons.person, label: 'Akun'),
       ];
