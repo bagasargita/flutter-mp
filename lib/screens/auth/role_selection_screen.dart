@@ -80,7 +80,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 _buildRoleCard(
                   title: 'Penyedia Layanan Mesin',
                   subtitle: 'Masuk sebagai Penyedia Jasa Mesin',
-                  icon: Icons.camera_alt,
+                  icon: Icons.business,
                   role: 'MESIN',
                   isSelected: _selectedRole == 'MESIN',
                   onTap: () => setState(() => _selectedRole = 'MESIN'),

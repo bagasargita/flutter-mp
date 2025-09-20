@@ -252,7 +252,7 @@ class _RootScreenState extends State<RootScreen> {
           item.label == 'Riwayat' ||
           item.label == 'Riwayat Layanan') {
         screens.add(const SetorTunaiHistoryScreen());
-      } else if (item.label == 'Komisi') {
+      } else if (item.label == 'Komisi' || item.label == 'KOMISI') {
         screens.add(const KomisiScreen());
       } else if (item.label == 'Akun') {
         screens.add(

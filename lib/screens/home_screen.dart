@@ -305,11 +305,7 @@ class _ServicesSectionState extends State<ServicesSection>
           'image': 'assets/images/Riwayat.svg',
           'color': Colors.red,
         },
-        {
-          'name': 'FAQ',
-          'image': 'assets/images/Lainnya.svg',
-          'color': Colors.red,
-        },
+        {'name': 'FAQ', 'image': 'assets/images/faq.svg', 'color': Colors.red},
         {
           'name': 'Bantuan',
           'image': 'assets/images/Bantuan.svg',
@@ -328,11 +324,7 @@ class _ServicesSectionState extends State<ServicesSection>
           'image': 'assets/images/Riwayat.svg',
           'color': Colors.green,
         },
-        {
-          'name': 'FAQ',
-          'image': 'assets/images/Lainnya.svg',
-          'color': Colors.blue,
-        },
+        {'name': 'FAQ', 'image': 'assets/images/faq.svg', 'color': Colors.blue},
         {
           'name': 'Bantuan',
           'image': 'assets/images/Bantuan.svg',
@@ -450,6 +442,11 @@ class _ServicesSectionState extends State<ServicesSection>
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const QRScannerScreen()),
+            );
+          } else if (service['name'] == 'KOMISI') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const KomisiScreen()),
             );
           } else if (service['name'] == 'Komisi') {
             Navigator.push(

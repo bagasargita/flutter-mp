@@ -18,7 +18,7 @@ class BottomNavMapper {
     } else if (selectedRole == 'NON_MESIN') {
       return [
         BottomNavItemData(icon: Icons.home, label: 'Beranda'),
-        BottomNavItemData(icon: Icons.history, label: 'Riwayat Layanan'),
+        BottomNavItemData(icon: Icons.account_balance_wallet, label: 'Komisi'),
         BottomNavItemData(icon: Icons.person, label: 'Akun'),
       ];
     } else if (selectedRole == 'MESIN') {

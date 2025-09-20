@@ -273,7 +273,7 @@ class _LoginForm extends StatelessWidget {
                         child: Text(
                           'Forgot Password?',
                           style: AppText.kaiseiRegular.copyWith(
-                            color: AppColors.primaryBlue,
+                            color: const Color.fromARGB(255, 103, 107, 110),
                           ),
                         ),
                       ),
@@ -300,7 +300,7 @@ class _LoginForm extends StatelessWidget {
                                 ),
                               ),
                             )
-                          : Text('Login', style: AppText.kaiseiRegular),
+                          : Text('Login', style: AppText.kaiseiBold),
                     ),
                     const SizedBox(height: 16),
                   ],
