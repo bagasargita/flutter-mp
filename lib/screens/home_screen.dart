@@ -12,6 +12,7 @@ import 'mesin/riwayat_screen.dart';
 import 'mesin/faq_screen.dart';
 import '../widgets/common/app_top_bar.dart';
 import 'setor_tunai/setor_tunai_help_screen.dart';
+import 'non_mesin/qr_scanner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userRoleMobile;
@@ -295,19 +296,24 @@ class _ServicesSectionState extends State<ServicesSection>
     } else if (role == 'NON_MESIN' && selectedRole != 'PELANGGAN') {
       return [
         {
-          'name': 'Kelola Layanan',
-          'image': 'assets/images/BayarTagihan.svg',
-          'color': Colors.blue,
+          'name': 'Scan QR',
+          'image': 'assets/images/scanner.svg',
+          'color': Colors.red,
         },
         {
-          'name': 'Riwayat Layanan',
+          'name': 'Riwayat',
           'image': 'assets/images/Riwayat.svg',
-          'color': Colors.blue,
+          'color': Colors.red,
         },
         {
-          'name': 'Laporan',
+          'name': 'FAQ',
           'image': 'assets/images/Lainnya.svg',
-          'color': Colors.blue,
+          'color': Colors.red,
+        },
+        {
+          'name': 'Bantuan',
+          'image': 'assets/images/Bantuan.svg',
+          'color': Colors.red,
         },
       ];
     } else if (role == 'MESIN' && selectedRole != 'PELANGGAN') {
@@ -398,13 +404,17 @@ class _ServicesSectionState extends State<ServicesSection>
       widget.selectedRole,
     );
 
-    // Use 2x2 grid for MESIN role, 3-column grid for others
+    // Use 2x2 grid for MESIN and NON_MESIN roles, 3-column grid for others
     final crossAxisCount =
-        (widget.userRoleMobile == 'MESIN' && widget.selectedRole != 'PELANGGAN')
+        ((widget.userRoleMobile == 'MESIN' ||
+                widget.userRoleMobile == 'NON_MESIN') &&
+            widget.selectedRole != 'PELANGGAN')
         ? 2
         : 3;
     final childAspectRatio =
-        (widget.userRoleMobile == 'MESIN' && widget.selectedRole != 'PELANGGAN')
+        ((widget.userRoleMobile == 'MESIN' ||
+                widget.userRoleMobile == 'NON_MESIN') &&
+            widget.selectedRole != 'PELANGGAN')
         ? 1.0
         : 0.8;
 
@@ -436,12 +446,18 @@ class _ServicesSectionState extends State<ServicesSection>
               context,
               MaterialPageRoute(builder: (context) => const SetorTunaiScreen()),
             );
+          } else if (service['name'] == 'Scan QR') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const QRScannerScreen()),
+            );
           } else if (service['name'] == 'Komisi') {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const KomisiScreen()),
             );
-          } else if (service['name'] == 'Riwayat') {
+          } else if (service['name'] == 'Riwayat' ||
+              service['name'] == 'Riwayat Layanan') {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const RiwayatScreen()),

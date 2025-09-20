@@ -18,8 +18,13 @@ import 'shared/widgets/account_menu_widget.dart';
 import 'shared/widgets/bottom_nav_mapper.dart';
 import 'screens/mesin/komisi_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   ServiceLocator().init();
+
+  // Initialize permissions early in app lifecycle
+  await ServiceLocator().permissionService.initializePermissions();
+
   runApp(const MyApp());
 }
 

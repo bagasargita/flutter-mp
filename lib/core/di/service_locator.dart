@@ -10,6 +10,7 @@ import 'package:merah_putih/features/profile/domain/repositories/profile_reposit
 import 'package:merah_putih/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:merah_putih/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:merah_putih/features/setor_tunai/data/services/beneficiary_account_service.dart';
+import 'package:merah_putih/core/services/permission_service.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();
@@ -26,6 +27,7 @@ class ServiceLocator {
   late final ProfileRepository _profileRepository;
   late final NotificationsRepository _notificationsRepository;
   late final BeneficiaryAccountService _beneficiaryAccountService;
+  late final PermissionService _permissionService;
 
   void _init() {
     _apiClient = ApiClient.create();
@@ -36,6 +38,7 @@ class ServiceLocator {
     _profileRepository = ProfileRepositoryImpl(_apiClient);
     _notificationsRepository = NotificationsRepositoryImpl(_apiClient);
     _beneficiaryAccountService = BeneficiaryAccountService(_apiClient);
+    _permissionService = PermissionService();
   }
 
   void init() {
@@ -52,4 +55,5 @@ class ServiceLocator {
       _notificationsRepository;
   BeneficiaryAccountService get beneficiaryAccountService =>
       _beneficiaryAccountService;
+  PermissionService get permissionService => _permissionService;
 }

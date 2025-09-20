@@ -73,6 +73,7 @@ dependencies:
   device_info_plus: ^9.1.2
   url_launcher: ^6.2.4
   qr: ^3.0.2
+  mobile_scanner: ^5.0.2
 
 
 dev_dependencies:

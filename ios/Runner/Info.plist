@@ -49,5 +49,7 @@
 	<string>This app needs access to location to show nearby ATM and CDM machines for cash deposit services.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs access to location to show nearby ATM and CDM machines for cash deposit services.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to camera to scan QR codes for payment and service activation.</string>
 </dict>
 </plist>
