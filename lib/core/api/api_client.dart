@@ -11,6 +11,19 @@ class ApiClient {
     return ApiClient(ApiConfig.createDio());
   }
 
+  Future<Response<Map<String, dynamic>>> getFaqCategories() async {
+    return await _dio.get<Map<String, dynamic>>(ApiEndpoints.faqCategories);
+  }
+
+  Future<Response<Map<String, dynamic>>> getFaqByCategory({
+    required String kategori,
+  }) async {
+    return await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.faq,
+      queryParameters: {'kategori': kategori},
+    );
+  }
+
   Future<Response<Map<String, dynamic>>> login({
     required String identifier,
     required String password,

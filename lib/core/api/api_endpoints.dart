@@ -41,4 +41,8 @@ class ApiEndpoints {
 
   // Support endpoints
   static const String supportTickets = '/support/tickets';
+
+  // FAQ endpoints
+  static const String faqCategories = '$baseUrl/faq/categories';
+  static const String faq = '$baseUrl/faq';
 }

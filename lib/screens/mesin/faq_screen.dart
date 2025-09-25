@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:merah_putih/core/api/api_client.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text.dart';
 import '../../widgets/common/app_top_bar.dart';
@@ -15,49 +16,13 @@ class _FAQScreenState extends State<FAQScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   final Map<String, bool> _expandedItems = {};
-
-  final List<FAQCategory> _faqCategories = [
-    FAQCategory(
-      title: 'General',
-      items: [
-        FAQItem(
-          question: 'What is MerahPutih?',
-          answer:
-              'MerahPutih is a comprehensive digital platform that provides various financial services including cash deposits, money transfers, bill payments, and more. Our platform is designed to make financial transactions easier and more accessible for everyone.',
-        ),
-        FAQItem(
-          question: 'How do I create an account?',
-          answer:
-              'To create an account, simply download our app from the App Store or Google Play Store, then follow the registration process. You\'ll need to provide your personal information, verify your identity, and set up your security credentials.',
-        ),
-        FAQItem(
-          question: 'Is my data secure?',
-          answer:
-              'Yes, we take data security very seriously. We use industry-standard encryption protocols, secure servers, and comply with all relevant data protection regulations to ensure your personal and financial information is always protected.',
-        ),
-      ],
-    ),
-    FAQCategory(
-      title: 'Account',
-      items: [
-        FAQItem(
-          question: 'How do I reset my password?',
-          answer:
-              'To reset your password, go to the login screen and tap "Forgot Password". Enter your registered email address, and we\'ll send you a secure link to reset your password. Follow the instructions in the email to create a new password.',
-        ),
-        FAQItem(
-          question: 'Can I change my username?',
-          answer:
-              'Yes, you can change your username by going to your profile settings. However, please note that username changes may be subject to availability and certain restrictions. Contact our support team if you need assistance.',
-        ),
-        FAQItem(
-          question: 'How do I delete my account?',
-          answer:
-              'To delete your account, please contact our customer support team through the app or WhatsApp. We\'ll guide you through the process and ensure all your data is properly removed from our systems.',
-        ),
-      ],
-    ),
-  ];
+  final ApiClient _api = ApiClient.create();
+  bool _loadingCategories = false;
+  final List<String> _categories = [];
+  final Map<String, List<FAQItem>> _categoryItemsCache = {};
+  final Set<String> _loadingCategoryItems = {};
+  String? _selectedCategory;
+  bool _loadingItems = false;
 
   @override
   void initState() {
@@ -67,6 +32,7 @@ class _FAQScreenState extends State<FAQScreen> {
         _searchQuery = _searchController.text.toLowerCase();
       });
     });
+    _fetchCategories();
   }
 
   @override
@@ -111,7 +77,7 @@ class _FAQScreenState extends State<FAQScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
@@ -128,10 +94,11 @@ class _FAQScreenState extends State<FAQScreen> {
                 hintText: 'Search FAQs',
                 hintStyle: TextStyle(color: Colors.grey),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 6),
               ),
               style: AppText.kaiseiRegular.copyWith(
-                fontSize: 16,
+                fontSize: 14,
                 color: AppColors.textBlack,
               ),
             ),
@@ -142,31 +109,77 @@ class _FAQScreenState extends State<FAQScreen> {
   }
 
   List<Widget> _buildFAQCategories() {
-    return _faqCategories.map((category) {
-      final filteredItems = category.items.where((item) {
-        if (_searchQuery.isEmpty) return true;
-        return item.question.toLowerCase().contains(_searchQuery) ||
-            item.answer.toLowerCase().contains(_searchQuery);
-      }).toList();
+    if (_loadingCategories && _categories.isEmpty) {
+      return [const Center(child: CircularProgressIndicator())];
+    }
 
-      if (filteredItems.isEmpty && _searchQuery.isNotEmpty) {
-        return const SizedBox.shrink();
+    final List<String> visibleCategories = _categories.where((c) {
+      if (_searchQuery.isEmpty) return true;
+      final items = _categoryItemsCache[c];
+      if (items == null) {
+        return c.toLowerCase().contains(_searchQuery);
       }
+      final hasMatchInItems = items.any(
+        (i) =>
+            i.question.toLowerCase().contains(_searchQuery) ||
+            i.answer.toLowerCase().contains(_searchQuery),
+      );
+      return c.toLowerCase().contains(_searchQuery) || hasMatchInItems;
+    }).toList();
+
+    if (visibleCategories.isEmpty) {
+      return [const SizedBox.shrink()];
+    }
+
+    return visibleCategories.map((categoryTitle) {
+      final items = _categoryItemsCache[categoryTitle] ?? [];
+      final isLoadingItems = _loadingCategoryItems.contains(categoryTitle);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            category.title,
-            style: AppText.kaiseiRegular.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textBlack,
+          GestureDetector(
+            onTap: () async {
+              final expanded = _expandedItems[categoryTitle] ?? false;
+              setState(() {
+                _expandedItems[categoryTitle] = !expanded;
+              });
+              if (!expanded &&
+                  !_categoryItemsCache.containsKey(categoryTitle)) {
+                await _fetchFaqByCategory(categoryTitle);
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  categoryTitle,
+                  style: AppText.kaiseiRegular.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textBlack,
+                  ),
+                ),
+                Icon(
+                  (_expandedItems[categoryTitle] ?? false)
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: Colors.grey[600],
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 12),
+          if ((_expandedItems[categoryTitle] ?? false)) ...[
+            if (isLoadingItems)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else
+              ...items.map((item) => _buildFAQItem(item)),
+          ],
           const SizedBox(height: 16),
-          ...filteredItems.map((item) => _buildFAQItem(item)),
-          const SizedBox(height: 24),
         ],
       );
     }).toList();
@@ -185,10 +198,11 @@ class _FAQScreenState extends State<FAQScreen> {
       child: Column(
         children: [
           ListTile(
+            dense: true,
             title: Text(
               item.question,
               style: AppText.kaiseiRegular.copyWith(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textBlack,
               ),
@@ -196,6 +210,7 @@ class _FAQScreenState extends State<FAQScreen> {
             trailing: Icon(
               isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
               color: Colors.grey[600],
+              size: 20,
             ),
             onTap: () {
               setState(() {
@@ -206,13 +221,13 @@ class _FAQScreenState extends State<FAQScreen> {
           if (isExpanded) ...[
             const Divider(height: 1),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
               child: Text(
                 item.answer,
                 style: AppText.kaiseiRegular.copyWith(
-                  fontSize: 14,
+                  fontSize: 13,
                   color: AppColors.textGray,
-                  height: 1.5,
+                  height: 1.8,
                 ),
               ),
             ),
@@ -316,6 +331,70 @@ class _FAQScreenState extends State<FAQScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _fetchCategories() async {
+    setState(() {
+      _loadingCategories = true;
+    });
+    try {
+      final response = await _api.getFaqCategories();
+      final data = response.data;
+      if (data != null && data['data'] is List) {
+        final List<dynamic> raw = data['data'] as List<dynamic>;
+        _categories
+          ..clear()
+          ..addAll(raw.map((e) => e.toString()));
+        if (_categories.isNotEmpty) {
+          _selectedCategory = _categories.first;
+        }
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingCategories = false;
+        });
+      }
+    }
+    if (_selectedCategory != null &&
+        !_categoryItemsCache.containsKey(_selectedCategory!)) {
+      await _fetchFaqByCategory(_selectedCategory!);
+    }
+  }
+
+  Future<void> _fetchFaqByCategory(String category) async {
+    if (_loadingCategoryItems.contains(category)) return;
+    setState(() {
+      _loadingCategoryItems.add(category);
+      if (category == _selectedCategory) {
+        _loadingItems = true;
+      }
+    });
+    try {
+      final response = await _api.getFaqByCategory(kategori: category);
+      final data = response.data;
+      if (data != null && data['data'] is List) {
+        final List<dynamic> raw = data['data'] as List<dynamic>;
+        final items = raw.map((e) {
+          final map = e as Map<String, dynamic>;
+          final subject = map['subject']?.toString() ?? '';
+          final desc = map['desc']?.toString() ?? '';
+          return FAQItem(question: subject, answer: desc);
+        }).toList();
+        _categoryItemsCache[category] = items;
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingCategoryItems.remove(category);
+          if (category == _selectedCategory) {
+            _loadingItems = false;
+          }
+        });
+      }
     }
   }
 }
