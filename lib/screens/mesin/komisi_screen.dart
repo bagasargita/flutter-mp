@@ -121,20 +121,20 @@ class _KomisiScreenContentState extends State<_KomisiScreenContent> {
 
   Widget _buildDashboardContent(DashboardResponse dashboardResponse) {
     final cards = dashboardResponse.data.cards;
-    print('KomisiScreen: Building dashboard with ${cards.length} cards');
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
-            spacing: 16,
-            runSpacing: 16,
+            spacing: 12,
+            runSpacing: 12,
             children: cards.map((card) {
               return _StatCard(
                 title: card.title,
-                value: card.formattedValue,
+                valueRaw: card.value,
+                valueType: card.valueType,
+                formattedValue: card.formattedValue,
                 trend: card.trend,
                 trendDirection: card.trendDirection,
                 fullWidth: card.id == 5,
@@ -224,18 +224,45 @@ class _KomisiScreenContentState extends State<_KomisiScreenContent> {
 
 class _StatCard extends StatelessWidget {
   final String title;
-  final String value;
+  final int valueRaw;
+  final String valueType;
+  final String formattedValue;
   final bool fullWidth;
   final double? trend;
   final String? trendDirection;
 
   const _StatCard({
     required this.title,
-    required this.value,
+    required this.valueRaw,
+    required this.valueType,
+    required this.formattedValue,
     this.fullWidth = false,
     this.trend,
     this.trendDirection,
   });
+
+  String _formatThousands(int number) {
+    final isNegative = number < 0;
+    String s = number.abs().toString();
+    final StringBuffer sb = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      final idxFromEnd = s.length - i;
+      sb.write(s[i]);
+      if (idxFromEnd > 1 && idxFromEnd % 3 == 1) {
+        sb.write('.');
+      }
+    }
+    final result = sb.toString();
+    return isNegative ? '-$result' : result;
+  }
+
+  String get _displayValue {
+    if (formattedValue.isNotEmpty) return formattedValue;
+    if (valueType.toLowerCase() == 'amount') {
+      return 'Rp. ${_formatThousands(valueRaw)}';
+    }
+    return valueRaw.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,9 +289,9 @@ class _StatCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              value,
+              _displayValue,
               style: AppText.kaiseiRegular.copyWith(
-                fontSize: 18,
+                fontSize: fullWidth ? 20 : 18,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textBlack,
               ),

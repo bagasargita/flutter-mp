@@ -1,55 +1,59 @@
 class DashboardCard {
   final int id;
+  final String code;
   final String title;
   final int value;
   final String valueType;
   final String formattedValue;
-  final String prefix;
   final String icon;
-  final double trend;
-  final String trendDirection;
-  final String tooltip;
+  final double? trend;
+  final String? trendDirection;
+  final String? prefix;
+  final String? tooltip;
 
   const DashboardCard({
     required this.id,
+    required this.code,
     required this.title,
     required this.value,
     required this.valueType,
     required this.formattedValue,
-    required this.prefix,
     required this.icon,
-    required this.trend,
-    required this.trendDirection,
-    required this.tooltip,
+    this.trend,
+    this.trendDirection,
+    this.prefix,
+    this.tooltip,
   });
 
   factory DashboardCard.fromJson(Map<String, dynamic> json) {
     return DashboardCard(
       id: json['id'] as int,
+      code: json['code'] as String? ?? '',
       title: json['title'] as String,
       value: json['value'] as int,
       valueType: json['valueType'] as String,
       formattedValue: json['formattedValue'] as String,
-      prefix: json['prefix'] as String,
       icon: json['icon'] as String,
-      trend: (json['trend'] as num).toDouble(),
-      trendDirection: json['trendDirection'] as String,
-      tooltip: json['tooltip'] as String,
+      trend: json['trend'] == null ? null : (json['trend'] as num).toDouble(),
+      trendDirection: json['trendDirection'] as String?,
+      prefix: json['prefix'] as String?,
+      tooltip: json['tooltip'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'code': code,
       'title': title,
       'value': value,
       'valueType': valueType,
       'formattedValue': formattedValue,
-      'prefix': prefix,
       'icon': icon,
-      'trend': trend,
-      'trendDirection': trendDirection,
-      'tooltip': tooltip,
+      if (trend != null) 'trend': trend,
+      if (trendDirection != null) 'trendDirection': trendDirection,
+      if (prefix != null) 'prefix': prefix,
+      if (tooltip != null) 'tooltip': tooltip,
     };
   }
 }

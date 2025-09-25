@@ -45,26 +45,13 @@ class DashboardResponse {
 
       print('DashboardResponse: Dashboard keys - ${dashboard.keys}');
 
-      print(
-        'DashboardResponse: TransactionTrend value - ${data['transactionTrend']}',
-      );
-      print(
-        'DashboardResponse: TransactionTrend type - ${data['transactionTrend'].runtimeType}',
-      );
-
       final transactionTrend = data['transactionTrend'];
-      if (transactionTrend == null) {
-        throw Exception('TransactionTrend field is null in API response data');
-      }
-      if (transactionTrend is! Map<String, dynamic>) {
+      if (transactionTrend != null &&
+          transactionTrend is! Map<String, dynamic>) {
         throw Exception(
           'TransactionTrend field is not a Map: ${transactionTrend.runtimeType}',
         );
       }
-
-      print(
-        'DashboardResponse: TransactionTrend keys - ${transactionTrend.keys}',
-      );
 
       print('DashboardResponse: Dashboard cards value - ${dashboard['cards']}');
       print(
@@ -88,7 +75,11 @@ class DashboardResponse {
             .map((item) => DashboardCard.fromJson(item as Map<String, dynamic>))
             .toList(),
         lastUpdated: dashboard['lastUpdated'] as String,
-        transactionTrend: TransactionTrend.fromJson(transactionTrend),
+        transactionTrend: transactionTrend == null
+            ? null
+            : TransactionTrend.fromJson(
+                transactionTrend as Map<String, dynamic>,
+              ),
       );
 
       return DashboardResponse(

@@ -354,11 +354,6 @@ class _KomisiDetailScreenContentState
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Icon(
-                    Icons.remove_red_eye_outlined,
-                    size: 18,
-                    color: AppColors.textGray,
-                  ),
                 ],
               ),
             ],

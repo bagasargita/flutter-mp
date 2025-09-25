@@ -4,23 +4,26 @@ import 'transaction_trend.dart';
 class DashboardData {
   final List<DashboardCard> cards;
   final String lastUpdated;
-  final TransactionTrend transactionTrend;
+  final TransactionTrend? transactionTrend;
 
   const DashboardData({
     required this.cards,
     required this.lastUpdated,
-    required this.transactionTrend,
+    this.transactionTrend,
   });
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
+    final List<dynamic> rawCards = (json['cards'] as List<dynamic>? ?? []);
     return DashboardData(
-      cards: (json['cards'] as List<dynamic>)
+      cards: rawCards
           .map((item) => DashboardCard.fromJson(item as Map<String, dynamic>))
           .toList(),
-      lastUpdated: json['lastUpdated'] as String,
-      transactionTrend: TransactionTrend.fromJson(
-        json['transactionTrend'] as Map<String, dynamic>,
-      ),
+      lastUpdated: (json['lastUpdated'] as String? ?? ''),
+      transactionTrend: json['transactionTrend'] is Map<String, dynamic>
+          ? TransactionTrend.fromJson(
+              json['transactionTrend'] as Map<String, dynamic>,
+            )
+          : null,
     );
   }
 
@@ -28,7 +31,8 @@ class DashboardData {
     return {
       'cards': cards.map((item) => item.toJson()).toList(),
       'lastUpdated': lastUpdated,
-      'transactionTrend': transactionTrend.toJson(),
+      if (transactionTrend != null)
+        'transactionTrend': transactionTrend!.toJson(),
     };
   }
 }
