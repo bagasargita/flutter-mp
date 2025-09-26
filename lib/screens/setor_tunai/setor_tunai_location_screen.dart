@@ -7,9 +7,13 @@ import 'package:merah_putih/core/services/location_service.dart';
 import 'package:merah_putih/core/api/api_client.dart';
 import 'dart:io';
 import 'package:merah_putih/screens/setor_tunai/setor_tunai_location_list_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 class SetorTunaiLocationScreen extends StatefulWidget {
-  const SetorTunaiLocationScreen({super.key});
+  final bool fromBottomNav;
+
+  const SetorTunaiLocationScreen({super.key, this.fromBottomNav = false});
 
   @override
   State<SetorTunaiLocationScreen> createState() =>
@@ -218,6 +222,9 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
   }
 
   Widget _buildTopBar() {
+    final bool canPop = Navigator.of(context).canPop();
+    final bool showBackButton = canPop && !widget.fromBottomNav;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
@@ -233,23 +240,26 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.black,
-                size: 20,
+          if (showBackButton)
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.black,
+                  size: 20,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
+          if (showBackButton) const SizedBox(width: 16),
+          if (!showBackButton && widget.fromBottomNav)
+            const SizedBox(width: 40),
           Expanded(
             child: Text(
               'Lokasi',
@@ -260,6 +270,8 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
               textAlign: TextAlign.center,
             ),
           ),
+          if (!showBackButton && widget.fromBottomNav)
+            const SizedBox(width: 40),
           GestureDetector(
             onTap: _showFilterPopup,
             child: Container(
@@ -324,7 +336,7 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
             if (_isOnline)
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.smartmob.app',
+                userAgentPackageName: 'com.merahputih.app',
                 errorTileCallback: (tile, error, stackTrace) {},
               ),
             MarkerLayer(
@@ -396,6 +408,80 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
     );
   }
 
+  Future<void> _openMaps({
+    required double latitude,
+    required double longitude,
+    required String label,
+  }) async {
+    try {
+      // Try Google Maps app first (Android/iOS)
+      final Uri googleMaps = Uri.parse(
+        'comgooglemaps://?q=${Uri.encodeComponent(label)}&center=$latitude,$longitude&zoom=16',
+      );
+
+      if (await canLaunchUrl(googleMaps)) {
+        await launchUrl(googleMaps, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      // Try Apple Maps (iOS)
+      final Uri appleMaps = Uri.parse(
+        'maps://?q=${Uri.encodeComponent(label)}&ll=$latitude,$longitude',
+      );
+
+      if (await canLaunchUrl(appleMaps)) {
+        await launchUrl(appleMaps, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      // Try generic geo URI (Android)
+      final Uri geoUri = Uri.parse(
+        'geo:$latitude,$longitude?q=$latitude,$longitude(${Uri.encodeComponent(label)})',
+      );
+
+      if (await canLaunchUrl(geoUri)) {
+        await launchUrl(geoUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      // Fallback to Google Maps web
+      final Uri googleWeb = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+      );
+
+      await launchUrl(googleWeb, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      // Show error message if navigation fails
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tidak dapat membuka aplikasi peta: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _copyLocationToClipboard({
+    required double latitude,
+    required double longitude,
+    required String name,
+  }) {
+    final locationText =
+        '$name\nLatitude: $latitude\nLongitude: $longitude\n\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+
+    Clipboard.setData(ClipboardData(text: locationText));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Location copied to clipboard'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   void _showLocationInfo(Map<String, dynamic> location) {
     showModalBottomSheet(
       context: context,
@@ -450,27 +536,66 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
             _buildInfoRow('Operating Hours', location['operatingHours']),
             _buildInfoRow('Status', location['status']),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRed,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _openMaps(
+                        latitude: location['latitude'],
+                        longitude: location['longitude'],
+                        label: location['name'],
+                      );
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.navigation, size: 18),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryRed,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    label: Text(
+                      'Navigate',
+                      style: AppText.kaiseiRegular.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                 ),
-                child: Text(
-                  'Pilih Lokasi Ini',
-                  style: AppText.kaiseiRegular.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      _copyLocationToClipboard(
+                        latitude: location['latitude'],
+                        longitude: location['longitude'],
+                        name: location['name'],
+                      );
+                    },
+                    icon: const Icon(Icons.copy, size: 18),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primaryRed,
+                      side: BorderSide(color: AppColors.primaryRed),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    label: Text(
+                      'Copy Location',
+                      style: AppText.kaiseiRegular.copyWith(
+                        color: AppColors.primaryRed,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -482,10 +607,10 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 80,
+            width: 140,
             child: Text(
               label,
               style: AppText.kaiseiRegular.copyWith(
@@ -592,8 +717,8 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
 
   Widget _buildLocationItem(Map<String, dynamic> location) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 5),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -694,15 +819,60 @@ class _SetorTunaiLocationScreenState extends State<SetorTunaiLocationScreen> {
               ],
             ),
           ),
-          Text(
-            location['distance'],
-            style: TextStyle(
-              color: AppColors.textGray,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Roboto',
-              height: 1.2,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                location['distance'],
+                style: TextStyle(
+                  color: AppColors.textGray,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Roboto',
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {
+                  _openMaps(
+                    latitude: location['latitude'],
+                    longitude: location['longitude'],
+                    label: location['name'],
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryRed,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.navigation,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Navigate',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Roboto',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
