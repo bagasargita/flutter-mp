@@ -8,11 +8,12 @@ import '../constants/app_text.dart';
 import '../features/app/presentation/bloc/app_bloc.dart';
 import 'setor_tunai/setor_tunai_screen.dart';
 import 'mesin/komisi_screen.dart';
-import 'mesin/riwayat_screen.dart';
+// import 'mesin/riwayat_screen.dart';
 import 'mesin/faq_screen.dart';
 import '../widgets/common/app_top_bar.dart';
 import 'setor_tunai/setor_tunai_help_screen.dart';
 import 'non_mesin/qr_scanner_screen.dart';
+import 'setor_tunai/setor_tunai_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userRoleMobile;
@@ -215,12 +216,23 @@ class _ServicesSectionState extends State<ServicesSection>
 
   // Keep this widget alive even when parent rebuilds
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => false;
 
   @override
   void initState() {
     super.initState();
     _preloadServiceIcons();
+  }
+
+  @override
+  void didUpdateWidget(ServicesSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Clear cache when role changes
+    if (oldWidget.userRoleMobile != widget.userRoleMobile ||
+        oldWidget.selectedRole != widget.selectedRole) {
+      _svgCache.clear();
+      _preloadServiceIcons();
+    }
   }
 
   void _preloadServiceIcons() {
@@ -256,41 +268,49 @@ class _ServicesSectionState extends State<ServicesSection>
           'name': 'Non Tunai',
           'image': 'assets/images/NonTunai.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Kirim Uang',
           'image': 'assets/images/KirimUang.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Bayar Tagihan',
           'image': 'assets/images/BayarTagihan.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Kirim Barang',
           'image': 'assets/images/KirimBarang.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Isi ulang',
           'image': 'assets/images/IsiUlang.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Pinjaman',
           'image': 'assets/images/Pinjaman.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Kirim Barang',
           'image': 'assets/images/KirimBarang2.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Lainnya',
           'image': 'assets/images/Lainnya.svg',
           'color': Colors.red,
+          'disabled': true,
         },
       ];
     } else if (role == 'NON_MESIN' && selectedRole != 'PELANGGAN') {
@@ -299,17 +319,25 @@ class _ServicesSectionState extends State<ServicesSection>
           'name': 'Scan QR',
           'image': 'assets/images/scanner.svg',
           'color': Colors.red,
+          'disabled': true,
         },
         {
           'name': 'Riwayat',
           'image': 'assets/images/Riwayat.svg',
           'color': Colors.red,
+          'disabled': false,
         },
-        {'name': 'FAQ', 'image': 'assets/images/faq.svg', 'color': Colors.red},
+        {
+          'name': 'FAQ',
+          'image': 'assets/images/faq.svg',
+          'color': Colors.red,
+          'disabled': false,
+        },
         {
           'name': 'Bantuan',
           'image': 'assets/images/Bantuan.svg',
           'color': Colors.red,
+          'disabled': false,
         },
       ];
     } else if (role == 'MESIN' && selectedRole != 'PELANGGAN') {
@@ -318,17 +346,25 @@ class _ServicesSectionState extends State<ServicesSection>
           'name': 'Komisi',
           'image': 'assets/images/BayarTagihan.svg',
           'color': Colors.green,
+          'disabled': false,
         },
         {
           'name': 'Riwayat',
           'image': 'assets/images/Riwayat.svg',
           'color': Colors.green,
+          'disabled': false,
         },
-        {'name': 'FAQ', 'image': 'assets/images/faq.svg', 'color': Colors.blue},
+        {
+          'name': 'FAQ',
+          'image': 'assets/images/faq.svg',
+          'color': Colors.blue,
+          'disabled': false,
+        },
         {
           'name': 'Bantuan',
           'image': 'assets/images/Bantuan.svg',
           'color': Colors.orange,
+          'disabled': false,
         },
       ];
     } else {
@@ -430,61 +466,81 @@ class _ServicesSectionState extends State<ServicesSection>
 
   Widget _buildServiceItem(Map<String, dynamic> service) {
     return RepaintBoundary(
+      key: ValueKey('${service['name']}_${service['disabled'] ?? false}'),
       child: GestureDetector(
-        onTap: () {
-          if (service['name'] == 'Lainnya') {
-          } else if (service['name'] == 'Setor Tunai') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SetorTunaiScreen()),
-            );
-          } else if (service['name'] == 'Scan QR') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const QRScannerScreen()),
-            );
-          } else if (service['name'] == 'KOMISI') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const KomisiScreen()),
-            );
-          } else if (service['name'] == 'Komisi') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const KomisiScreen()),
-            );
-          } else if (service['name'] == 'Riwayat' ||
-              service['name'] == 'Riwayat Layanan') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RiwayatScreen()),
-            );
-          } else if (service['name'] == 'FAQ') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FAQScreen()),
-            );
-          } else if (service['name'] == 'Bantuan') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SetorTunaiHelpScreen(),
-              ),
-            );
-          }
-        },
+        onTap: (service['disabled'] ?? false)
+            ? null
+            : () {
+                if (service['name'] == 'Lainnya') {
+                } else if (service['name'] == 'Setor Tunai') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SetorTunaiScreen(),
+                    ),
+                  );
+                } else if (service['name'] == 'Scan QR') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QRScannerScreen(),
+                    ),
+                  );
+                } else if (service['name'] == 'KOMISI') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const KomisiScreen(),
+                    ),
+                  );
+                } else if (service['name'] == 'Komisi') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const KomisiScreen(),
+                    ),
+                  );
+                } else if (service['name'] == 'Riwayat' ||
+                    service['name'] == 'Riwayat Layanan') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SetorTunaiHistoryScreen(),
+                    ),
+                  );
+                } else if (service['name'] == 'FAQ') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FAQScreen()),
+                  );
+                } else if (service['name'] == 'Bantuan') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SetorTunaiHelpScreen(),
+                    ),
+                  );
+                }
+              },
         child: Container(
           decoration: BoxDecoration(
-            color: const Color.fromRGBO(243, 239, 239, 1),
+            color: (service['disabled'] ?? false)
+                ? Colors.grey[100]
+                : const Color.fromRGBO(243, 239, 239, 1),
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: (service['disabled'] ?? false)
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+            border: (service['disabled'] ?? false)
+                ? Border.all(color: Colors.grey[300]!, width: 1)
+                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -497,7 +553,13 @@ class _ServicesSectionState extends State<ServicesSection>
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: _buildServiceIcon(service['image'], service['color']),
+                  child: Center(
+                    child: _buildServiceIcon(
+                      service['image'],
+                      service['color'],
+                      service['disabled'] ?? false,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -505,7 +567,12 @@ class _ServicesSectionState extends State<ServicesSection>
                 service['name'],
                 style: AppText.kaiseiRegular.copyWith(
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: (service['disabled'] ?? false)
+                      ? FontWeight.w400
+                      : FontWeight.w500,
+                  color: (service['disabled'] ?? false)
+                      ? Colors.grey[500]
+                      : Colors.black,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -519,34 +586,8 @@ class _ServicesSectionState extends State<ServicesSection>
     );
   }
 
-  Widget _buildServiceIcon(String imagePath, Color color) {
-    // Check if content is already cached
-    if (_svgCache.containsKey(imagePath)) {
-      final svgContent = _svgCache[imagePath]!;
-      if (svgContent.contains('data:image/png;base64,')) {
-        return RepaintBoundary(child: _buildBase64Image(svgContent));
-      } else {
-        return RepaintBoundary(
-          child: SvgPicture.asset(
-            imagePath,
-            width: 40,
-            height: 40,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              print('Service SVG Error for $imagePath: $error');
-              return Container(
-                width: 40,
-                height: 40,
-                color: Colors.grey[200],
-                child: Icon(Icons.image, color: color, size: 20),
-              );
-            },
-          ),
-        );
-      }
-    }
-
-    // If not cached, use FutureBuilder
+  Widget _buildServiceIcon(String imagePath, Color color, bool disabled) {
+    // Always rebuild to ensure disabled state is properly applied
     return FutureBuilder<String>(
       future: _loadSvgContent(imagePath),
       builder: (context, snapshot) {
@@ -570,23 +611,57 @@ class _ServicesSectionState extends State<ServicesSection>
 
         final svgContent = snapshot.data!;
         if (svgContent.contains('data:image/png;base64,')) {
-          return RepaintBoundary(child: _buildBase64Image(svgContent));
+          return RepaintBoundary(
+            child: Stack(
+              children: [
+                _buildBase64Image(svgContent),
+                if (disabled)
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Center(
+                      child: Icon(Icons.block, color: Colors.white, size: 24),
+                    ),
+                  ),
+              ],
+            ),
+          );
         } else {
           return RepaintBoundary(
-            child: SvgPicture.asset(
-              imagePath,
-              width: 40,
-              height: 40,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                print('Service SVG Error for $imagePath: $error');
-                return Container(
+            child: Stack(
+              children: [
+                SvgPicture.asset(
+                  imagePath,
                   width: 40,
                   height: 40,
-                  color: Colors.grey[200],
-                  child: Icon(Icons.image, color: color, size: 20),
-                );
-              },
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Service SVG Error for $imagePath: $error');
+                    return Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.grey[200],
+                      child: Icon(Icons.image, color: color, size: 20),
+                    );
+                  },
+                ),
+                if (disabled)
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Center(
+                      child: Icon(Icons.block, color: Colors.white, size: 24),
+                    ),
+                  ),
+              ],
             ),
           );
         }

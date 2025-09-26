@@ -233,7 +233,7 @@ class ApiClient {
     final queryParams = <String, dynamic>{
       'page': page,
       'size': size,
-      'user': 'Own User',
+      'user': '',
     };
 
     if (sort != null && sort.isNotEmpty) {

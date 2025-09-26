@@ -33,7 +33,7 @@ class ApiEndpoints {
 
   // Dashboard endpoints
   static const String dashboard = '/home/dashboard';
-  static const String transactionData = '/transaction-data';
+  static const String transactionData = '$baseUrl/transaction-data';
 
   // Beneficiary account endpoints
   static const String beneficiaryAccount =
