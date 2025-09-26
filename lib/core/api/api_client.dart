@@ -285,4 +285,8 @@ class ApiClient {
       data: data,
     );
   }
+
+  Future<Response<List<dynamic>>> getTransactions() async {
+    return await _dio.get<List<dynamic>>(ApiEndpoints.transactions);
+  }
 }

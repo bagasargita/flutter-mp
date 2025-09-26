@@ -1,6 +1,4 @@
 import '../models/transaction_data_response.dart';
-import '../models/transaction_pagination.dart';
-import '../models/transaction_item.dart';
 import '../../../../core/api/api_client.dart';
 import 'package:dio/dio.dart';
 
@@ -27,14 +25,54 @@ class TransactionDataService {
       print('TransactionDataService: TransactionDateTo: $transactionDateTo');
       print('TransactionDataService: TransactionNo: $transactionNo');
 
-      final response = await _apiClient.getTransactionData(
-        page: page,
-        size: size,
-        sort: sort,
-        transactionDateFrom: transactionDateFrom,
-        transactionDateTo: transactionDateTo,
-        transactionNo: transactionNo,
-      );
+      // Try alternative endpoints if transaction-data fails
+      Response<Map<String, dynamic>>? response;
+      try {
+        response = await _apiClient.getTransactionData(
+          page: page,
+          size: size,
+          sort: sort,
+          transactionDateFrom: transactionDateFrom,
+          transactionDateTo: transactionDateTo,
+          transactionNo: transactionNo,
+        );
+      } catch (e) {
+        print(
+          'TransactionDataService: transaction-data failed, trying transactions/history...',
+        );
+        // Try transactions/history endpoint as fallback
+        try {
+          final historyResponse = await _apiClient.getTransactionHistory();
+          // Convert List response to Map response format
+          response = Response<Map<String, dynamic>>(
+            data: {'transactions': historyResponse.data},
+            statusCode: historyResponse.statusCode,
+            statusMessage: historyResponse.statusMessage,
+            requestOptions: historyResponse.requestOptions,
+            headers: historyResponse.headers,
+            isRedirect: historyResponse.isRedirect,
+            redirects: historyResponse.redirects,
+            extra: historyResponse.extra,
+          );
+        } catch (e2) {
+          print(
+            'TransactionDataService: transactions/history also failed, trying transactions...',
+          );
+          // Try basic transactions endpoint
+          final transactionsResponse = await _apiClient.getTransactions();
+          // Convert List response to Map response format
+          response = Response<Map<String, dynamic>>(
+            data: {'transactions': transactionsResponse.data},
+            statusCode: transactionsResponse.statusCode,
+            statusMessage: transactionsResponse.statusMessage,
+            requestOptions: transactionsResponse.requestOptions,
+            headers: transactionsResponse.headers,
+            isRedirect: transactionsResponse.isRedirect,
+            redirects: transactionsResponse.redirects,
+            extra: transactionsResponse.extra,
+          );
+        }
+      }
 
       print(
         'TransactionDataService: Response received - Status: ${response.statusCode}',
@@ -42,9 +80,38 @@ class TransactionDataService {
 
       if (response.statusCode == 200 && response.data != null) {
         print('TransactionDataService: Parsing transaction data...');
-        final transactionDataResponse = TransactionDataResponse.fromJson(
-          response.data!,
-        );
+        // Handle different response formats
+        TransactionDataResponse transactionDataResponse;
+        if (response.data!.containsKey('data') &&
+            response.data!['data'] is Map) {
+          // Standard paginated response
+          transactionDataResponse = TransactionDataResponse.fromJson(
+            response.data!,
+          );
+        } else {
+          // Convert simple list to paginated format
+          final transactions =
+              response.data!['transactions'] as List<dynamic>? ?? [];
+          final mockPagination = {
+            'content': transactions,
+            'page': page,
+            'size': size,
+            'totalElements': transactions.length,
+            'totalPages': 1,
+            'first': true,
+            'last': true,
+            'empty': transactions.isEmpty,
+          };
+          final mockResponse = {
+            'timestamp': DateTime.now().toIso8601String(),
+            'status': 200,
+            'message': 'Transaction data loaded successfully',
+            'data': mockPagination,
+          };
+          transactionDataResponse = TransactionDataResponse.fromJson(
+            mockResponse,
+          );
+        }
         print('TransactionDataService: Transaction data parsed successfully');
         print(
           'TransactionDataService: Total elements: ${transactionDataResponse.data.totalElements}',
@@ -74,18 +141,11 @@ class TransactionDataService {
         'TransactionDataService: DioException Request Params: ${e.requestOptions.queryParameters}',
       );
 
-      // If it's a 500 error, the server might not have implemented this endpoint yet
-      // Return mock data for testing
+      // If it's a 500 error, the server endpoint is not available
       if (e.response?.statusCode == 500) {
-        print(
-          'TransactionDataService: Server returned 500, using mock data for testing',
-        );
-        return _getMockTransactionData(
-          page: page,
-          size: size,
-          transactionDateFrom: transactionDateFrom,
-          transactionDateTo: transactionDateTo,
-          transactionNo: transactionNo,
+        print('TransactionDataService: Server returned 500, no data available');
+        throw Exception(
+          'Server error: Transaction data endpoint not available',
         );
       }
 
@@ -94,74 +154,5 @@ class TransactionDataService {
       print('TransactionDataService: Unexpected error - $e');
       throw Exception('Unexpected error: $e');
     }
-  }
-
-  TransactionDataResponse _getMockTransactionData({
-    required int page,
-    required int size,
-    String? transactionDateFrom,
-    String? transactionDateTo,
-    String? transactionNo,
-  }) {
-    // Generate mock data based on filters
-    final mockTransactions = <Map<String, dynamic>>[];
-
-    for (int i = 0; i < size; i++) {
-      final transactionId = (page * size) + i + 1;
-      final transactionDate = DateTime.now().subtract(
-        Duration(days: i + (page * size)),
-      );
-
-      // Apply date filter if specified
-      if (transactionDateFrom != null) {
-        final fromDate = DateTime.tryParse(transactionDateFrom);
-        if (fromDate != null && transactionDate.isBefore(fromDate)) {
-          continue;
-        }
-      }
-
-      if (transactionDateTo != null) {
-        final toDate = DateTime.tryParse(transactionDateTo);
-        if (toDate != null && transactionDate.isAfter(toDate)) {
-          continue;
-        }
-      }
-
-      // Apply transaction number filter if specified
-      if (transactionNo != null && transactionNo.isNotEmpty) {
-        if (!'KSN${transactionId.toString().padLeft(12, '0')}'.contains(
-          transactionNo,
-        )) {
-          continue;
-        }
-      }
-
-      mockTransactions.add({
-        'transactionDate': transactionDate.toIso8601String(),
-        'name': 'User $transactionId',
-        'user': 'Own User',
-        'transactionNumber': 'KSN${transactionId.toString().padLeft(12, '0')}',
-        'amount': 1000000 + (transactionId * 100000),
-        'commission': 5000 + (transactionId * 500),
-      });
-    }
-
-    return TransactionDataResponse(
-      timestamp: DateTime.now().toIso8601String(),
-      status: 200,
-      message: 'Mock transaction data for testing',
-      data: TransactionPagination(
-        content: mockTransactions
-            .map((item) => TransactionItem.fromJson(item))
-            .toList(),
-        page: page,
-        size: size,
-        totalElements: 100, // Mock total
-        totalPages: 10, // Mock total pages
-        first: page == 0,
-        last: page >= 9,
-        empty: mockTransactions.isEmpty,
-      ),
-    );
   }
 }
