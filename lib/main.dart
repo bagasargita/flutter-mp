@@ -53,6 +53,23 @@ Future<void> clearAuthState(BuildContext context) async {
       print('Error in additional clearUser: $e');
     }
 
+    // Show success toast notification
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Berhasil keluar dari akun',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: AppColors.primaryRed,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+
     print('All states cleared successfully');
   } catch (e) {
     print('Error clearing states: $e');

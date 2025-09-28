@@ -264,11 +264,15 @@ class _FAQScreenState extends State<FAQScreen> {
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF25D366),
-                    borderRadius: BorderRadius.circular(8),
+                  decoration: const BoxDecoration(shape: BoxShape.circle),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/bantuan.png',
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  child: const Icon(Icons.chat, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

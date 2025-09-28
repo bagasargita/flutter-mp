@@ -51,6 +51,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _currentUser = user;
   }
 
+  String _getUserInitials(String name) {
+    if (name.isEmpty) return 'U';
+
+    final words = name.trim().split(' ');
+    if (words.length == 1) {
+      return words[0].substring(0, 1).toUpperCase();
+    } else {
+      return '${words[0].substring(0, 1)}${words[words.length - 1].substring(0, 1)}'
+          .toUpperCase();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
@@ -121,11 +133,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             CircleAvatar(
               radius: 50,
+              backgroundColor: AppColors.primaryRed,
               backgroundImage: _currentUser?.profilePicture != null
                   ? NetworkImage(_currentUser!.profilePicture!)
-                  : const AssetImage('assets/images/profile.png')
-                        as ImageProvider,
-              onBackgroundImageError: (exception, stackTrace) {},
+                  : null,
+              onBackgroundImageError: _currentUser?.profilePicture != null
+                  ? (exception, stackTrace) {}
+                  : null,
+              child: _currentUser?.profilePicture == null
+                  ? Text(
+                      _getUserInitials(_currentUser?.name ?? ''),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
             ),
             Positioned(
               bottom: 0,
