@@ -63,9 +63,25 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 AppTopBar(
                   title: _getTitleForRole(widget.userRoleMobile),
-                  leading: const CircleAvatar(
-                    radius: 20,
-                    backgroundImage: AssetImage('assets/images/profile.png'),
+                  leading: BlocBuilder<AppBloc, AppState>(
+                    builder: (context, state) {
+                      final userName = state.userName;
+                      final initial = userName.isNotEmpty
+                          ? userName[0].toUpperCase()
+                          : 'U';
+                      return CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.primaryRed,
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Expanded(child: _buildMainContent()),
