@@ -238,14 +238,14 @@ class _ServicesSectionState extends State<ServicesSection>
   void _preloadServiceIcons() {
     final serviceImages = [
       'assets/images/SetorTunai.svg',
-      'assets/images/NonTunai.svg',
-      'assets/images/KirimUang.svg',
-      'assets/images/BayarTagihan.svg',
-      'assets/images/KirimBarang.svg',
-      'assets/images/IsiUlang.svg',
-      'assets/images/Pinjaman.svg',
-      'assets/images/KirimBarang2.svg',
-      'assets/images/Lainnya.svg',
+      // 'assets/images/NonTunai.svg',
+      // 'assets/images/KirimUang.svg',
+      // 'assets/images/BayarTagihan.svg',
+      // 'assets/images/KirimBarang.svg',
+      // 'assets/images/IsiUlang.svg',
+      // // 'assets/images/Pinjaman.svg',
+      // 'assets/images/KirimBarang2.svg',
+      // 'assets/images/Lainnya.svg',
     ];
 
     for (final imagePath in serviceImages) {
@@ -261,57 +261,61 @@ class _ServicesSectionState extends State<ServicesSection>
       return [
         {
           'name': 'Setor Tunai',
-          'image': 'assets/images/SetorTunai.svg',
+          'image': 'assets/images/setor_tunai.png',
           'color': Colors.red,
         },
         {
           'name': 'Non Tunai',
-          'image': 'assets/images/NonTunai.svg',
+          'image': 'assets/images/under_dev.png',
           'color': Colors.red,
-          'disabled': true,
         },
         {
           'name': 'Kirim Uang',
-          'image': 'assets/images/KirimUang.svg',
+          'image': 'assets/images/under_dev.png',
           'color': Colors.red,
-          'disabled': true,
         },
-        {
-          'name': 'Bayar Tagihan',
-          'image': 'assets/images/BayarTagihan.svg',
-          'color': Colors.red,
-          'disabled': true,
-        },
-        {
-          'name': 'Kirim Barang',
-          'image': 'assets/images/KirimBarang.svg',
-          'color': Colors.red,
-          'disabled': true,
-        },
-        {
-          'name': 'Isi ulang',
-          'image': 'assets/images/IsiUlang.svg',
-          'color': Colors.red,
-          'disabled': true,
-        },
-        {
-          'name': 'Pinjaman',
-          'image': 'assets/images/Pinjaman.svg',
-          'color': Colors.red,
-          'disabled': true,
-        },
-        {
-          'name': 'Kirim Barang',
-          'image': 'assets/images/KirimBarang2.svg',
-          'color': Colors.red,
-          'disabled': true,
-        },
-        {
-          'name': 'Lainnya',
-          'image': 'assets/images/Lainnya.svg',
-          'color': Colors.red,
-          'disabled': true,
-        },
+        // {
+        //   'name': 'Kirim Uang',
+        //   'image': 'assets/images/KirimUang.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
+        // {
+        //   'name': 'Bayar Tagihan',
+        //   'image': 'assets/images/BayarTagihan.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
+        // {
+        //   'name': 'Kirim Barang',
+        //   'image': 'assets/images/KirimBarang.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
+        // {
+        //   'name': 'Isi ulang',
+        //   'image': 'assets/images/IsiUlang.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
+        // {
+        //   'name': 'Pinjaman',
+        //   'image': 'assets/images/Pinjaman.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
+        // {
+        //   'name': 'Kirim Barang',
+        //   'image': 'assets/images/KirimBarang2.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
+        // {
+        //   'name': 'Lainnya',
+        //   'image': 'assets/images/Lainnya.svg',
+        //   'color': Colors.red,
+        //   'disabled': true,
+        // },
       ];
     } else if (role == 'NON_MESIN' && selectedRole != 'PELANGGAN') {
       return [
@@ -322,20 +326,20 @@ class _ServicesSectionState extends State<ServicesSection>
           'disabled': true,
         },
         {
-          'name': 'Riwayat',
-          'image': 'assets/images/Riwayat.svg',
+          'name': 'Riwayat Transaksi',
+          'image': 'assets/images/riwayat_transaksi.png',
           'color': Colors.red,
           'disabled': false,
         },
         {
           'name': 'FAQ',
-          'image': 'assets/images/faq.svg',
+          'image': 'assets/images/faq.png',
           'color': Colors.red,
           'disabled': false,
         },
         {
           'name': 'Bantuan',
-          'image': 'assets/images/Bantuan.svg',
+          'image': 'assets/images/bantuan.png',
           'color': Colors.red,
           'disabled': false,
         },
@@ -344,26 +348,26 @@ class _ServicesSectionState extends State<ServicesSection>
       return [
         {
           'name': 'Komisi',
-          'image': 'assets/images/BayarTagihan.svg',
+          'image': 'assets/images/komisi.png',
           'color': Colors.green,
           'disabled': false,
         },
         {
-          'name': 'Riwayat',
-          'image': 'assets/images/Riwayat.svg',
+          'name': 'Riwayat Transaksi',
+          'image': 'assets/images/riwayat_transaksi.png',
           'color': Colors.green,
           'disabled': false,
         },
         {
           'name': 'FAQ',
-          'image': 'assets/images/faq.svg',
-          'color': Colors.blue,
+          'image': 'assets/images/faq.png',
+          'color': Colors.green,
           'disabled': false,
         },
         {
           'name': 'Bantuan',
-          'image': 'assets/images/Bantuan.svg',
-          'color': Colors.orange,
+          'image': 'assets/images/bantuan.png',
+          'color': Colors.green,
           'disabled': false,
         },
       ];
@@ -378,12 +382,27 @@ class _ServicesSectionState extends State<ServicesSection>
     }
 
     try {
-      final assetBundle = DefaultAssetBundle.of(context);
-      final content = await assetBundle.loadString(imagePath);
-      _svgCache[imagePath] = content;
-      return content;
+      // Check if the file is SVG or PNG
+      if (imagePath.toLowerCase().endsWith('.svg')) {
+        // Load SVG content as string
+        final assetBundle = DefaultAssetBundle.of(context);
+        final content = await assetBundle.loadString(imagePath);
+        _svgCache[imagePath] = content;
+        return content;
+      } else if (imagePath.toLowerCase().endsWith('.png')) {
+        // For PNG files, return a special marker to indicate it's a PNG
+        // The calling code should handle PNG files differently
+        _svgCache[imagePath] = 'PNG_FILE';
+        return 'PNG_FILE';
+      } else {
+        // Try to load as SVG by default for backward compatibility
+        final assetBundle = DefaultAssetBundle.of(context);
+        final content = await assetBundle.loadString(imagePath);
+        _svgCache[imagePath] = content;
+        return content;
+      }
     } catch (e) {
-      print('Error loading SVG content: $e');
+      print('Error loading image content: $e');
       return '';
     }
   }
@@ -500,7 +519,7 @@ class _ServicesSectionState extends State<ServicesSection>
                       builder: (context) => const KomisiScreen(),
                     ),
                   );
-                } else if (service['name'] == 'Riwayat' ||
+                } else if (service['name'] == 'Riwayat Transaksi' ||
                     service['name'] == 'Riwayat Layanan') {
                   Navigator.push(
                     context,
@@ -524,23 +543,8 @@ class _ServicesSectionState extends State<ServicesSection>
               },
         child: Container(
           decoration: BoxDecoration(
-            color: (service['disabled'] ?? false)
-                ? Colors.grey[100]
-                : const Color.fromRGBO(243, 239, 239, 1),
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: (service['disabled'] ?? false)
-                ? null
-                : [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-            border: (service['disabled'] ?? false)
-                ? Border.all(color: Colors.grey[300]!, width: 1)
-                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -609,16 +613,32 @@ class _ServicesSectionState extends State<ServicesSection>
           );
         }
 
-        final svgContent = snapshot.data!;
-        if (svgContent.contains('data:image/png;base64,')) {
+        final content = snapshot.data!;
+
+        // Handle PNG files
+        if (content == 'PNG_FILE') {
           return RepaintBoundary(
             child: Stack(
               children: [
-                _buildBase64Image(svgContent),
+                Image.asset(
+                  imagePath,
+                  width: 65,
+                  height: 65,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Service PNG Error for $imagePath: $error');
+                    return Container(
+                      width: 65,
+                      height: 65,
+                      color: Colors.grey[200],
+                      child: Icon(Icons.image, color: color, size: 20),
+                    );
+                  },
+                ),
                 if (disabled)
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: 65,
+                    height: 65,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(4),
@@ -630,20 +650,44 @@ class _ServicesSectionState extends State<ServicesSection>
               ],
             ),
           );
-        } else {
+        }
+        // Handle base64 PNG content
+        else if (content.contains('data:image/png;base64,')) {
+          return RepaintBoundary(
+            child: Stack(
+              children: [
+                _buildBase64Image(content),
+                if (disabled)
+                  Container(
+                    width: 65,
+                    height: 65,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Center(
+                      child: Icon(Icons.block, color: Colors.white, size: 24),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }
+        // Handle SVG files
+        else {
           return RepaintBoundary(
             child: Stack(
               children: [
                 SvgPicture.asset(
                   imagePath,
-                  width: 40,
-                  height: 40,
+                  width: 65,
+                  height: 65,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     print('Service SVG Error for $imagePath: $error');
                     return Container(
-                      width: 60,
-                      height: 60,
+                      width: 65,
+                      height: 65,
                       color: Colors.grey[200],
                       child: Icon(Icons.image, color: color, size: 20),
                     );
@@ -651,8 +695,8 @@ class _ServicesSectionState extends State<ServicesSection>
                 ),
                 if (disabled)
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: 65,
+                    height: 65,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(4),
@@ -798,7 +842,23 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
   }
 
   Widget _buildImageWidget(String imagePath) {
-    if (imagePath.endsWith('.svg')) {
+    // Handle PNG files directly
+    if (imagePath.toLowerCase().endsWith('.png')) {
+      return RepaintBoundary(
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey[200],
+              child: const Icon(Icons.image, size: 64, color: Colors.grey),
+            );
+          },
+        ),
+      );
+    }
+    // Handle SVG files
+    else if (imagePath.toLowerCase().endsWith('.svg')) {
       if (_svgCache.containsKey(imagePath)) {
         final svgContent = _svgCache[imagePath]!;
         if (svgContent.contains('data:image/png;base64,')) {
@@ -837,9 +897,27 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
             );
           }
 
-          final svgContent = snapshot.data!;
-          if (svgContent.contains('data:image/png;base64,')) {
-            return RepaintBoundary(child: _buildBase64Image(svgContent));
+          final content = snapshot.data!;
+          if (content == 'PNG_FILE') {
+            // This shouldn't happen for SVG files, but handle it gracefully
+            return RepaintBoundary(
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[200],
+                    child: const Icon(
+                      Icons.image,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
+            );
+          } else if (content.contains('data:image/png;base64,')) {
+            return RepaintBoundary(child: _buildBase64Image(content));
           } else {
             return RepaintBoundary(
               child: SvgPicture.asset(
@@ -861,7 +939,9 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
           }
         },
       );
-    } else {
+    }
+    // Handle other image types (fallback)
+    else {
       return RepaintBoundary(
         child: Image.asset(
           imagePath,
@@ -883,12 +963,27 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
     }
 
     try {
-      final assetBundle = DefaultAssetBundle.of(context);
-      final content = await assetBundle.loadString(imagePath);
-      _svgCache[imagePath] = content;
-      return content;
+      // Check if the file is SVG or PNG
+      if (imagePath.toLowerCase().endsWith('.svg')) {
+        // Load SVG content as string
+        final assetBundle = DefaultAssetBundle.of(context);
+        final content = await assetBundle.loadString(imagePath);
+        _svgCache[imagePath] = content;
+        return content;
+      } else if (imagePath.toLowerCase().endsWith('.png')) {
+        // For PNG files, return a special marker to indicate it's a PNG
+        // The calling code should handle PNG files differently
+        _svgCache[imagePath] = 'PNG_FILE';
+        return 'PNG_FILE';
+      } else {
+        // Try to load as SVG by default for backward compatibility
+        final assetBundle = DefaultAssetBundle.of(context);
+        final content = await assetBundle.loadString(imagePath);
+        _svgCache[imagePath] = content;
+        return content;
+      }
     } catch (e) {
-      print('Error loading SVG content: $e');
+      print('Error loading image content: $e');
       return '';
     }
   }
