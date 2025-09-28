@@ -57,32 +57,32 @@ class AccountMenuWidget {
                       );
                     },
                   ),
-                  _buildMenuItem(
-                    context,
-                    'Kontak',
-                    Icons.contact_support,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ContactScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    context,
-                    'Pengaturan',
-                    Icons.settings,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                  // _buildMenuItem(
+                  //   context,
+                  //   'Kontak',
+                  //   Icons.contact_support,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (context) => const ContactScreen(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  // _buildMenuItem(
+                  //   context,
+                  //   'Pengaturan',
+                  //   Icons.settings,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (context) => const SettingsScreen(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                   _buildMenuItem(
                     context,
                     'Keluar',

@@ -426,7 +426,7 @@ class _SetorTunaiHelpScreenState extends State<SetorTunaiHelpScreen> {
                   decoration: const BoxDecoration(shape: BoxShape.circle),
                   child: ClipOval(
                     child: Image.asset(
-                      'assets/images/whatsapp.png',
+                      'assets/images/bantuan.png',
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,

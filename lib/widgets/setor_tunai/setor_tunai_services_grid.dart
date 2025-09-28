@@ -29,10 +29,10 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
 
   void _preloadServiceIcons() {
     final serviceImages = [
-      'assets/images/Setor.svg',
-      'assets/images/Riwayat.svg',
-      'assets/images/Lokasi.svg',
-      'assets/images/Bantuan.svg',
+      'assets/images/setor_tunai.png',
+      'assets/images/riwayat_transaksi.png',
+      'assets/images/lokasi.png',
+      'assets/images/bantuan.png',
     ];
 
     for (final imagePath in serviceImages) {
@@ -46,12 +46,27 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
     }
 
     try {
-      final assetBundle = DefaultAssetBundle.of(context);
-      final content = await assetBundle.loadString(imagePath);
-      _svgCache[imagePath] = content;
-      return content;
+      // Check if the file is SVG or PNG
+      if (imagePath.toLowerCase().endsWith('.svg')) {
+        // Load SVG content as string
+        final assetBundle = DefaultAssetBundle.of(context);
+        final content = await assetBundle.loadString(imagePath);
+        _svgCache[imagePath] = content;
+        return content;
+      } else if (imagePath.toLowerCase().endsWith('.png')) {
+        // For PNG files, return a special marker to indicate it's a PNG
+        // The calling code should handle PNG files differently
+        _svgCache[imagePath] = 'PNG_FILE';
+        return 'PNG_FILE';
+      } else {
+        // Try to load as SVG by default for backward compatibility
+        final assetBundle = DefaultAssetBundle.of(context);
+        final content = await assetBundle.loadString(imagePath);
+        _svgCache[imagePath] = content;
+        return content;
+      }
     } catch (e) {
-      print('Error loading SVG content: $e');
+      print('Error loading image content: $e');
       return '';
     }
   }
@@ -90,10 +105,34 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
   Widget _buildServiceIcon(String imagePath, Color color) {
     // Check if content is already cached
     if (_svgCache.containsKey(imagePath)) {
-      final svgContent = _svgCache[imagePath]!;
-      if (svgContent.contains('data:image/png;base64,')) {
-        return RepaintBoundary(child: _buildBase64Image(svgContent));
-      } else {
+      final content = _svgCache[imagePath]!;
+
+      // Handle PNG files
+      if (content == 'PNG_FILE') {
+        return RepaintBoundary(
+          child: Image.asset(
+            imagePath,
+            width: 32,
+            height: 32,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              print('Service PNG Error for $imagePath: $error');
+              return Container(
+                width: 32,
+                height: 32,
+                color: Colors.grey[200],
+                child: Icon(Icons.image, color: color, size: 16),
+              );
+            },
+          ),
+        );
+      }
+      // Handle base64 PNG content
+      else if (content.contains('data:image/png;base64,')) {
+        return RepaintBoundary(child: _buildBase64Image(content));
+      }
+      // Handle SVG files
+      else {
         return RepaintBoundary(
           child: SvgPicture.asset(
             imagePath,
@@ -136,10 +175,34 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
           );
         }
 
-        final svgContent = snapshot.data!;
-        if (svgContent.contains('data:image/png;base64,')) {
-          return RepaintBoundary(child: _buildBase64Image(svgContent));
-        } else {
+        final content = snapshot.data!;
+
+        // Handle PNG files
+        if (content == 'PNG_FILE') {
+          return RepaintBoundary(
+            child: Image.asset(
+              imagePath,
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                print('Service PNG Error for $imagePath: $error');
+                return Container(
+                  width: 32,
+                  height: 32,
+                  color: Colors.grey[200],
+                  child: Icon(Icons.image, color: color, size: 16),
+                );
+              },
+            ),
+          );
+        }
+        // Handle base64 PNG content
+        else if (content.contains('data:image/png;base64,')) {
+          return RepaintBoundary(child: _buildBase64Image(content));
+        }
+        // Handle SVG files
+        else {
           return RepaintBoundary(
             child: SvgPicture.asset(
               imagePath,
@@ -166,21 +229,18 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
   Widget build(BuildContext context) {
     final services = [
       {
-        'name': 'Setor',
-        'image': 'assets/images/Setor.svg',
-        'color': Colors.red,
+        r'name': 'Setor',
+        'image': 'assets/images/setor_tunai.png',
+        'color': Colors.grey,
         'onTap': () async {
-          print('Setor service tapped'); // Debug print
           // Navigate to machine selection screen
           final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const SetorTunaiQRScreen()),
           );
 
-          print('Returned from machine selection: $result'); // Debug print
           // If machine was selected from machine details screen, call the callback
           if (result != null && result is Map<String, dynamic>) {
-            print('Calling onMachineSelected callback'); // Debug print
             if (widget.onMachineSelected != null) {
               widget.onMachineSelected!(result);
             }
@@ -188,9 +248,9 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
         },
       },
       {
-        'name': 'Riwayat',
-        'image': 'assets/images/Riwayat.svg',
-        'color': Colors.blue,
+        'name': 'Riwayat Transaksi',
+        'image': 'assets/images/riwayat_transaksi.png',
+        'color': Colors.grey,
         'onTap': () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -200,8 +260,8 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
       },
       {
         'name': 'Lokasi',
-        'image': 'assets/images/Lokasi.svg',
-        'color': Colors.green,
+        'image': 'assets/images/lokasi.png',
+        'color': Colors.grey,
         'onTap': () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -211,8 +271,8 @@ class _SetorTunaiServicesGridState extends State<SetorTunaiServicesGrid> {
       },
       {
         'name': 'Bantuan',
-        'image': 'assets/images/Bantuan.svg',
-        'color': Colors.orange,
+        'image': 'assets/images/bantuan.png',
+        'color': Colors.grey,
         'onTap': () => Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SetorTunaiHelpScreen()),

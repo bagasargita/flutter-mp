@@ -279,12 +279,12 @@ class _ServicesSectionState extends State<ServicesSection>
           'color': Colors.red,
         },
         {
-          'name': 'Non Tunai',
+          'name': 'Under Development',
           'image': 'assets/images/under_dev.png',
           'color': Colors.red,
         },
         {
-          'name': 'Kirim Uang',
+          'name': 'Under Development',
           'image': 'assets/images/under_dev.png',
           'color': Colors.red,
         },
