@@ -167,8 +167,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-
-          // const SizedBox(height: 16),
           // Use a separate widget that won't rebuild with carousel changes
           ServicesSection(
             userRoleMobile: widget.userRoleMobile,
@@ -486,16 +484,16 @@ class _ServicesSectionState extends State<ServicesSection>
         // Grid of circular icons only
         GridView.builder(
           padding: isMachineRole
-              ? const EdgeInsets.symmetric(vertical: 8, horizontal: 12)
+              ? const EdgeInsets.symmetric(vertical: 1, horizontal: 12)
               : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            crossAxisSpacing: isMachineRole ? 8 : 4,
-            mainAxisSpacing: isMachineRole ? 8 : 4,
+            crossAxisSpacing: isMachineRole ? 1 : 4,
+            mainAxisSpacing: isMachineRole ? 1 : 4,
             childAspectRatio: isMachineRole
-                ? 0.85
+                ? 1
                 : 0.8, // Better spacing for machine roles
           ),
           itemCount: services.length,
