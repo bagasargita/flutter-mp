@@ -361,13 +361,13 @@ class _ServicesSectionState extends State<ServicesSection>
         {
           'name': 'FAQ',
           'image': 'assets/images/faq.png',
-          'color': Colors.green,
+          'color': Colors.blue,
           'disabled': false,
         },
         {
           'name': 'Bantuan',
           'image': 'assets/images/bantuan.png',
-          'color': Colors.green,
+          'color': Colors.orange,
           'disabled': false,
         },
       ];
@@ -458,32 +458,44 @@ class _ServicesSectionState extends State<ServicesSection>
             widget.selectedRole != 'PELANGGAN')
         ? 2
         : 3;
-    final childAspectRatio =
-        ((widget.userRoleMobile == 'MESIN' ||
-                widget.userRoleMobile == 'NON_MESIN') &&
-            widget.selectedRole != 'PELANGGAN')
-        ? 1.0
-        : 0.8;
 
-    return GridView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: childAspectRatio,
-      ),
-      itemCount: services.length,
-      itemBuilder: (context, index) {
-        final service = services[index];
-        return _buildServiceItem(service);
-      },
+    // Different spacing for MESIN/NON_MESIN vs other roles
+    final isMachineRole =
+        (widget.userRoleMobile == 'MESIN' ||
+            widget.userRoleMobile == 'NON_MESIN') &&
+        widget.selectedRole != 'PELANGGAN';
+
+    return Column(
+      children: [
+        // Grid of circular icons only
+        GridView.builder(
+          padding: isMachineRole
+              ? const EdgeInsets.symmetric(vertical: 8, horizontal: 12)
+              : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: isMachineRole ? 8 : 4,
+            mainAxisSpacing: isMachineRole ? 8 : 4,
+            childAspectRatio: isMachineRole
+                ? 0.85
+                : 0.8, // Better spacing for machine roles
+          ),
+          itemCount: services.length,
+          itemBuilder: (context, index) {
+            final service = services[index];
+            return _buildServiceIconOnly(service, isMachineRole);
+          },
+        ),
+      ],
     );
   }
 
-  Widget _buildServiceItem(Map<String, dynamic> service) {
+  Widget _buildServiceIconOnly(
+    Map<String, dynamic> service,
+    bool isMachineRole,
+  ) {
     return RepaintBoundary(
       key: ValueKey('${service['name']}_${service['disabled'] ?? false}'),
       child: GestureDetector(
@@ -520,7 +532,7 @@ class _ServicesSectionState extends State<ServicesSection>
                     ),
                   );
                 } else if (service['name'] == 'Riwayat Transaksi' ||
-                    service['name'] == 'Riwayat Layanan') {
+                    service['name'] == 'Riwayat Transaksi') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -544,33 +556,43 @@ class _ServicesSectionState extends State<ServicesSection>
         child: Container(
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            shape: BoxShape.circle,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 53,
-                height: 53,
+                width: isMachineRole ? 55 : 50,
+                height: isMachineRole ? 55 : 50,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                child: ClipOval(
                   child: Center(
                     child: _buildServiceIcon(
+                      service['name'],
                       service['image'],
                       service['color'],
                       service['disabled'] ?? false,
+                      isMachineRole,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: isMachineRole ? 6 : 4),
               Text(
                 service['name'],
                 style: AppText.kaiseiRegular.copyWith(
-                  fontSize: 12,
+                  fontSize: isMachineRole ? 11 : 10,
                   fontWeight: (service['disabled'] ?? false)
                       ? FontWeight.w400
                       : FontWeight.w500,
@@ -579,7 +601,7 @@ class _ServicesSectionState extends State<ServicesSection>
                       : Colors.black,
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textScaler: TextScaler.linear(1.0),
               ),
@@ -590,26 +612,49 @@ class _ServicesSectionState extends State<ServicesSection>
     );
   }
 
-  Widget _buildServiceIcon(String imagePath, Color color, bool disabled) {
+  Widget _buildServiceIcon(
+    String name,
+    String imagePath,
+    Color color,
+    bool disabled,
+    bool isMachineRole,
+  ) {
     // Always rebuild to ensure disabled state is properly applied
     return FutureBuilder<String>(
       future: _loadSvgContent(imagePath),
       builder: (context, snapshot) {
+        final iconSize = isMachineRole ? 45 : 40;
+        final iconInnerSize = isMachineRole ? 26 : 22;
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
-            width: 40,
-            height: 40,
-            color: Colors.grey[200],
-            child: Icon(Icons.image, color: color, size: 20),
+            width: iconSize.toDouble(),
+            height: iconSize.toDouble(),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[200],
+            ),
+            child: Icon(
+              Icons.image,
+              color: color,
+              size: iconInnerSize.toDouble(),
+            ),
           );
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
           return Container(
-            width: 40,
-            height: 40,
-            color: Colors.grey[200],
-            child: Icon(Icons.image, color: color, size: 20),
+            width: iconSize.toDouble(),
+            height: iconSize.toDouble(),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[200],
+            ),
+            child: Icon(
+              Icons.image,
+              color: color,
+              size: iconInnerSize.toDouble(),
+            ),
           );
         }
 
@@ -620,31 +665,41 @@ class _ServicesSectionState extends State<ServicesSection>
           return RepaintBoundary(
             child: Stack(
               children: [
-                Image.asset(
-                  imagePath,
-                  width: 65,
-                  height: 65,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Service PNG Error for $imagePath: $error');
-                    return Container(
-                      width: 65,
-                      height: 65,
-                      color: Colors.grey[200],
-                      child: Icon(Icons.image, color: color, size: 20),
-                    );
-                  },
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(shape: BoxShape.circle),
+                  child: ClipOval(
+                    child: Image.asset(
+                      imagePath,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Service PNG Error for $imagePath: $error');
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey[200],
+                          ),
+                          child: Icon(Icons.image, color: color, size: 22),
+                        );
+                      },
+                    ),
+                  ),
                 ),
                 if (disabled)
                   Container(
-                    width: 65,
-                    height: 65,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(4),
+                      shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Icon(Icons.block, color: Colors.white, size: 24),
+                      child: Icon(Icons.block, color: Colors.white, size: 22),
                     ),
                   ),
               ],
@@ -656,17 +711,22 @@ class _ServicesSectionState extends State<ServicesSection>
           return RepaintBoundary(
             child: Stack(
               children: [
-                _buildBase64Image(content),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(shape: BoxShape.circle),
+                  child: ClipOval(child: _buildBase64Image(content)),
+                ),
                 if (disabled)
                   Container(
-                    width: 65,
-                    height: 65,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(4),
+                      shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Icon(Icons.block, color: Colors.white, size: 24),
+                      child: Icon(Icons.block, color: Colors.white, size: 22),
                     ),
                   ),
               ],
@@ -678,31 +738,41 @@ class _ServicesSectionState extends State<ServicesSection>
           return RepaintBoundary(
             child: Stack(
               children: [
-                SvgPicture.asset(
-                  imagePath,
-                  width: 65,
-                  height: 65,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Service SVG Error for $imagePath: $error');
-                    return Container(
-                      width: 65,
-                      height: 65,
-                      color: Colors.grey[200],
-                      child: Icon(Icons.image, color: color, size: 20),
-                    );
-                  },
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(shape: BoxShape.circle),
+                  child: ClipOval(
+                    child: SvgPicture.asset(
+                      imagePath,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Service SVG Error for $imagePath: $error');
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey[200],
+                          ),
+                          child: Icon(Icons.image, color: color, size: 22),
+                        );
+                      },
+                    ),
+                  ),
                 ),
                 if (disabled)
                   Container(
-                    width: 65,
-                    height: 65,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(4),
+                      shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Icon(Icons.block, color: Colors.white, size: 24),
+                      child: Icon(Icons.block, color: Colors.white, size: 22),
                     ),
                   ),
               ],
